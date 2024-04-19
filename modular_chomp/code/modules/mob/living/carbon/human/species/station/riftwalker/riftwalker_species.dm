@@ -96,7 +96,7 @@
 	var/list/riftwalker_ability_datums = list()
 	var/doing_phase = FALSE
 	var/blood_spawn = 0
-	var/size_amount = 1
+	var/prey_size = 1
 	var/poison = "mindbreaker"
 	var/poison_per_bite = 3
 
