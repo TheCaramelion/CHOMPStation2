@@ -1,3 +1,4 @@
+/datum/power/riftwalker
 /datum/power/riftwalker/bloodcrawl
 	name = "Bloodcrawl"
 	desc = "Shift out of reality using blood as your conduit"
@@ -21,7 +22,7 @@
 /mob/living/carbon/human/proc/bloodcrawl()
 	set name = "Bloodcrawl"
 	set desc = "Shift out of reality using blood as your conduit"
-	set category = "Abilities"
+	set category = "Abilities.Riftwalker"
 
 	var/turf/T = get_turf(src)
 	var/datum/species/riftwalker/RIFT = species
@@ -30,7 +31,7 @@
 		to_chat(src, "<span class='warning'>You are already trying to phase!</span>")
 		return FALSE
 
-	else if(!(locate(/obj/effect/decal/cleanable/blood) in src.loc) && !(ability_flags & AB_PHASE_SHIFTED))
+	else if(!(locate(/obj/effect/decal/cleanable/blood) in src.loc))
 		to_chat(src,"<span class='warning'>You need blood to shift between realities!</span>")
 		return FALSE
 
@@ -71,7 +72,6 @@
 		for(var/obj/belly/B as anything in vore_organs)
 			B.escapable = initial(B.escapable)
 
-		//cut_overlays()
 		invisibility = initial(invisibility)
 		see_invisible = initial(see_invisible)
 		see_invisible_default = initial(see_invisible_default) // CHOMPEdit - Allow seeing phased entities while phased.
@@ -84,10 +84,12 @@
 		update_icon()
 
 		// Cosmetics only
-		flick("phasein",src)
+		new /obj/effect/temp_visual/riftwalker/phasein(src.loc)
+		alpha = 0
 		custom_emote(1,"phases in!")
-		sleep(30) //The duration of the TP animation
+		sleep(30)
 		canmove = original_canmove
+		alpha = initial(alpha)
 
 		//Potential phase-in vore
 		if(can_be_drop_pred || can_be_drop_prey) //Toggleable in vore panel
@@ -104,6 +106,17 @@
 					to_chat(src, "<span class='vwarning'>You phase into [target], having them [target.vore_selected.vore_verb] you into their [target.vore_selected.name]!</span>")
 
 		ability_flags &= ~AB_PHASE_SHIFTING
+
+/obj/effect/temp_visual/riftwalker
+	randomdir = FALSE
+	duration = 30
+	icon = 'icons/mob/demon_vr.dmi'
+
+/obj/effect/temp_visual/riftwalker/phasein
+	icon_state = "phasein"
+
+/obj/effect/temp_visual/riftwalker/phaseout
+	icon_state = "phaseout"
 
 /mob/living/carbon/human/proc/bloodcrawl_out(var/turf/T)
 	if(!(ability_flags & AB_PHASE_SHIFTED))
@@ -140,8 +153,10 @@
 		for(var/obj/belly/B as anything in vore_organs)
 			B.escapable = FALSE
 
-		flick("phaseout",src)
+		new /obj/effect/temp_visual/riftwalker/phaseout(src.loc)
+		alpha = 0
 		sleep(30)
+		invisibility = INVISIBILITY_LEVEL_TWO
 		update_icon()
 		alpha = 127
 
@@ -154,7 +169,7 @@
 /mob/living/carbon/human/proc/blood_burst()
 	set name = "Blood burst"
 	set desc = "Spawn bloody remains from your past hunts."
-	set category = "Abilities"
+	set category = "Abilities.Riftwalker"
 
 	var/turf/T = get_turf(src)
 	var/datum/species/riftwalker/RIFT = species
@@ -178,9 +193,9 @@
 
 /mob/living/carbon/human/proc/sizechange()
 	set name = "Shrink/Grow Prey"
-	set category = "Abilities"
+	set category = "Abilities.Riftwalker"
 	set desc = "Shrink/Grow someone nearby using redspace power"
-	set popup_menu = FALSE // Stop licking by accident! //Yes this is from lick code, sue me.
+	set popup_menu = FALSE
 
 	var/obj/item/weapon/grab/G = src.get_active_hand()
 	var/datum/species/riftwalker/RIFT = species
@@ -206,7 +221,7 @@
 
 /mob/living/carbon/human/proc/demon_bite()
 	set name = "Poisonous Bite"
-	set category = "Abilities"
+	set category = "Abilities.Riftwalker"
 	set desc = "Inject poison into your grabbed prey."
 	set popup_menu = FALSE
 

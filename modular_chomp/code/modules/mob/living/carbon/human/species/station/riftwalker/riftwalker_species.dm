@@ -3,6 +3,9 @@
 	name_plural = "Riftwalkers"
 	blurb = "This is a Riftwalker. It is a large item."
 
+	icobase = 'icons/mob/human_races/r_fox_vr.dmi'
+	deform = 'icons/mob/human_races/r_def_fox.dmi'
+
 	language = LANGUAGE_DAEMON
 	name_language = LANGUAGE_DAEMON
 	species_language = LANGUAGE_DAEMON
@@ -30,16 +33,17 @@
 	warning_high_pressure = 300
 	hazard_high_pressure = INFINITY
 
-	cold_level_1 = -1	//Immune to cold
+	cold_level_1 = -1
 	cold_level_2 = -1
 	cold_level_3 = -1
 
-	heat_level_1 = 850	//Resistant to heat
+	heat_level_1 = 850
 	heat_level_2 = 1000
 	heat_level_3 = 1150
 
-	flags = NO_SCAN | NO_MINOR_CUT | NO_INFECT
-	spawn_flags = SPECIES_CAN_JOIN | SPECIES_IS_WHITELISTED | SPECIES_WHITELIST_SELECTABLE
+	spawn_flags = SPECIES_CAN_JOIN
+
+	appearance_flags = HAS_HAIR_COLOR | HAS_LIPS | HAS_SKIN_COLOR | HAS_EYE_COLOR | HAS_UNDERWEAR
 
 	flesh_color = "#FFC896"
 	blood_color = "#A10808"
@@ -56,10 +60,8 @@
 	poison_type = null
 	water_breather = TRUE
 
-	vision_flags = SEE_SELF | SEE_MOBS
-	appearance_flags = HAS_HAIR_COLOR | HAS_LIPS | HAS_SKIN_COLOR | HAS_EYE_COLOR | HAS_UNDERWEAR
-
 	move_trail = /obj/effect/decal/cleanable/blood/tracks/claw/riftwalker
+	digi_allowed = TRUE
 
 	has_organ = list(
 		O_HEART =		/obj/item/organ/internal/heart,
@@ -86,19 +88,33 @@
 		BP_R_FOOT = list("path" = /obj/item/organ/external/foot/right)
 		)
 
-	var/list/riftwalker_abilities = list (
+	var/list/riftwalker_abilities = list(
+		/datum/power/riftwalker/bloodcrawl,
 		/datum/power/riftwalker/blood_burst,
 		/datum/power/riftwalker/sizechange,
 		/datum/power/riftwalker/demon_bite)
-	var/list/riftwalker_abilities_datums = list()
+	var/list/riftwalker_ability_datums = list()
 	var/doing_phase = FALSE
 	var/blood_spawn = 0
-	var/size_amount = 100
+	var/size_amount = 1
 	var/poison = "mindbreaker"
 	var/poison_per_bite = 3
 
 /datum/species/riftwalker/New()
 	..()
 	for(var/power in riftwalker_abilities)
-		var/datum/power/riftwalker/riftpower = new power(src)
-		riftwalker_abilities_datums.Add(riftpower)
+		var/datum/power/riftwalker/RIFT = new power(src)
+		riftwalker_ability_datums.Add(RIFT)
+
+/datum/species/riftwalker/get_bodytype()
+	return SPECIES_RIFTWALKER
+
+/datum/species/riftwalker/add_inherent_verbs(var/mob/living/carbon/human/H)
+	..()
+	add_riftwalker_abilities(H)
+
+/datum/species/riftwalker/proc/add_riftwalker_abilities(var/mob/living/carbon/human/H)
+
+	for(var/datum/power/riftwalker/P in riftwalker_ability_datums)
+		if(!(P.verbpath in H.verbs))
+			add_verb(H,P.verbpath)
