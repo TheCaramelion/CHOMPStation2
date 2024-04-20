@@ -1,4 +1,11 @@
 /datum/power/riftwalker
+
+/datum/power/riftwalker/riftwalker_phase
+	name = "Phase Shift"
+	desc = "Temporarily shift out of reality"
+	verbpath = /mob/living/carbon/human/proc/riftwalker_phase
+	ability_icon_state = "const_harvest"
+
 /datum/power/riftwalker/bloodcrawl
 	name = "Bloodcrawl"
 	desc = "Shift out of reality using blood as your conduit"
@@ -29,7 +36,7 @@
 		to_chat(src, "<span class='warning'>Only a riftwalker can use that!</span>")
 		return FALSE
 
-// BLOODCRAWLING
+// BLOODCRAWLING - PHASING
 
 // Visual stuff
 /obj/effect/temp_visual/riftwalker
@@ -43,38 +50,65 @@
 /obj/effect/temp_visual/riftwalker/phaseout
 	icon_state = "phaseout"
 
-// Actual bloodcrawl
+/mob/living/carbon/human/proc/riftwalker_phase()
+	set name = "Phase Shift"
+	set desc = "Temporarily shift out of reality"
+	set category = "Abilities.Riftwalker"
+
+	var/datum/species/riftwalker/RIFT = species
+
+	if(RIFT.doing_bloodcrawl)
+		bloodcrawl()
+	else
+		riftwalker_phase_check(get_turf(src), species)
+		riftwalker_do_phase(get_turf(src), species)
+
+		sleep(RIFT.shift_time)
+
+		if(ability_flags & AB_PHASE_SHIFTED && !RIFT.doing_bloodcrawl)
+			riftwalker_do_phase(get_turf(src), species)
+
+// Bloodcrawl
 /mob/living/carbon/human/proc/bloodcrawl()
 	set name = "Bloodcrawl"
 	set desc = "Shift out of reality using blood as your conduit"
 	set category = "Abilities.Riftwalker"
 
-	var/turf/T = get_turf(src)
 	var/datum/species/riftwalker/RIFT = species
+
+	riftwalker_phase_check(get_turf(src), species)
+
+	if(!(locate(/obj/effect/decal/cleanable/blood) in src.loc))
+		to_chat(src,"<span class='warning'>You need blood to shift between realities!</span>")
+		return FALSE
+
+	RIFT.doing_bloodcrawl = TRUE
+
+	riftwalker_do_phase(get_turf(src), species)
+
+/mob/living/carbon/human/proc/riftwalker_phase_check(var/turf/T, var/datum/species/riftwalker/RIFT)
 
 	if(RIFT.doing_phase)
 		to_chat(src, "<span class='warning'>You are already trying to phase!</span>")
-		return FALSE
-
-	else if(!(locate(/obj/effect/decal/cleanable/blood) in src.loc))
-		to_chat(src,"<span class='warning'>You need blood to shift between realities!</span>")
 		return FALSE
 
 	else if(!T.CanPass(src, T) || loc != T)
 		to_chat(src,"<span class='warning'>You can't use that here!</span>")
 		return FALSE
 
+/mob/living/carbon/human/proc/riftwalker_do_phase(var/turf/T, var/datum/species/riftwalker/RIFT)
+	RIFT.doing_phase = TRUE
 	playsound(src, 'sound/misc/demonlaugh.ogg', 50, 1)
 
-	RIFT.doing_phase = TRUE
-
 	if(ability_flags & AB_PHASE_SHIFTED)
-		bloodcrawl_in(T)
+		riftwalker_phase_in(T)
+		RIFT.doing_bloodcrawl = FALSE
 	else
-		bloodcrawl_out(T)
+		riftwalker_phase_out(T)
+
 	RIFT.doing_phase = FALSE
 
-/mob/living/carbon/human/proc/bloodcrawl_in(var/turf/T)
+/mob/living/carbon/human/proc/riftwalker_phase_in(var/turf/T)
 	if(ability_flags & AB_PHASE_SHIFTED)
 
 		// pre-change
@@ -140,7 +174,7 @@
 
 		ability_flags &= ~AB_PHASE_SHIFTING
 
-/mob/living/carbon/human/proc/bloodcrawl_out(var/turf/T)
+/mob/living/carbon/human/proc/riftwalker_phase_out(var/turf/T)
 	if(!(ability_flags & AB_PHASE_SHIFTED))
 		// pre-change
 		forceMove(T)

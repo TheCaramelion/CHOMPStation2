@@ -89,16 +89,21 @@
 		)
 
 	var/list/riftwalker_abilities = list(
+		/datum/power/riftwalker/riftwalker_phase,
 		/datum/power/riftwalker/bloodcrawl,
 		/datum/power/riftwalker/blood_burst,
 		/datum/power/riftwalker/sizechange,
 		/datum/power/riftwalker/demon_bite)
+
 	var/list/riftwalker_ability_datums = list()
+
 	var/doing_phase = FALSE
+	var/doing_bloodcrawl = FALSE
 	var/blood_spawn = 0
 	var/prey_size = 1
 	var/poison = "mindbreaker"
 	var/poison_per_bite = 3
+	var/shift_time = 30 SECONDS
 
 /datum/species/riftwalker/New()
 	..()
