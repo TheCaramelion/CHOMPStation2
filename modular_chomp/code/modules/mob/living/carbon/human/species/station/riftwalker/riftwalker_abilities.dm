@@ -3,28 +3,27 @@
 	name = "Bloodcrawl"
 	desc = "Shift out of reality using blood as your conduit"
 	verbpath = /mob/living/carbon/human/proc/bloodcrawl
+	ability_icon_state = "const_shift"
 
 /datum/power/riftwalker/blood_burst
 	name = "Blood Burst"
 	desc = "Spawn bloody remains from your past hunts."
 	verbpath = /mob/living/carbon/human/proc/blood_burst
+	ability_icon_state = "wiz_disint_old"
 
 /datum/power/riftwalker/sizechange
 	name = "Shrink/Grow Prey"
 	desc = "Shrink/Grow someone nearby using redspace power"
 	verbpath = /mob/living/carbon/human/proc/sizechange
+	ability_icon_state = "wiz_tele"
 
 /datum/power/riftwalker/demon_bite
 	name = "Poisonous Bite"
 	desc = "Inject poison into your grabbed prey."
 	verbpath = /mob/living/carbon/human/proc/demon_bite
+	ability_icon_state = "const_pylon"
 
-/datum/power/riftwalker/choose_prey_size
-	name = "Choose Prey Size"
-	desc = "Choose your prey size"
-	verbpath = /mob/living/carbon/human/proc/choose_prey_size
-
-/mob/living/carbon/human/proc/riftwalker_abilty_check()
+/mob/living/carbon/human/proc/riftwalker_ability_check()
 	var/datum/species/riftwalker/RIFT = species
 	if(!istype(RIFT))
 		to_chat(src, "<span class='warning'>Only a riftwalker can use that!</span>")
@@ -110,11 +109,18 @@
 		update_icon()
 
 		// Cosmetics
-		new /obj/effect/temp_visual/riftwalker/phasein(src.loc)
+		var/obj/effect/temp_visual/riftwalker/phasein/phaseanim = new /obj/effect/temp_visual/riftwalker/phasein(src.loc)
+		phaseanim.pixel_y = (src.size_multiplier - 1) * 16 // Pixel shift for the animation placement
+		phaseanim.adjust_scale(src.size_multiplier, src.size_multiplier)
 		alpha = 0
-		custom_emote(1,"phases in!")
+		balloon_alert_visible("Phases in!")
 
 		// Phase-in vore
+		/* Also as a note, Riftwalkers have a longer animation so they
+			can catch prey before the portal just goes away.
+			And also because making the portal and stepping out of it
+			with a full belly is pretty neat :)
+		*/
 		if(can_be_drop_pred || can_be_drop_prey) //Toggleable in vore panel
 			var/list/potentials = living_mobs(0)
 			if(potentials.len)
@@ -152,7 +158,7 @@
 		ability_flags |= AB_PHASE_SHIFTED
 		ability_flags |= AB_PHASE_SHIFTING
 		mouse_opacity = 0
-		custom_emote(1,"phases out!")
+		balloon_alert_visible("Phases out!")
 		name = get_visible_name()
 
 		if(l_hand)
@@ -169,7 +175,9 @@
 		for(var/obj/belly/B as anything in vore_organs)
 			B.escapable = FALSE
 
-		new /obj/effect/temp_visual/riftwalker/phaseout(src.loc)
+		var/obj/effect/temp_visual/riftwalker/phasein/phaseanim = new /obj/effect/temp_visual/riftwalker/phaseout(src.loc)
+		phaseanim.pixel_y = (src.size_multiplier - 1) * 16 // Pixel shift for the animation placement
+		phaseanim.adjust_scale(src.size_multiplier, src.size_multiplier)
 		alpha = 0
 		sleep(30)
 		invisibility = INVISIBILITY_LEVEL_TWO
@@ -246,8 +254,9 @@
 		to_chat(src, "<span class='warning'>You must be grabbing a creature in your active hand to affect them.</span>")
 		return
 	var/mob/living/carbon/human/T = G.affecting
-	if(!istype(T))
-		to_chat(src, "<span class='warning'>\The [T] is not able to be affected.</span>")
+
+	if(!istype(T) || T.isSynthetic())
+		to_chat(src, "<span class='warning'>\The [T] is not able to be bitten.</span>")
 		return
 
 	if(G.state != GRAB_NECK)
@@ -257,8 +266,9 @@
 	if(!checkClickCooldown() || incapacitated(INCAPACITATION_ALL))
 		return
 
-	T.reagents.add_reagent(RIFT.poison_type, RIFT.poison_per_bite)
-	visible_message("<span class='warning'>[src] bites [T]!</span>","<span class='notice'>You bite [T].</span>")
+	if(do_after(usr, 1.5 SECONDS, target = usr))
+		T.bloodstr.add_reagent(RIFT.poison, RIFT.poison_per_bite)
+		visible_message("<span class='warning'>[src] bites [T]!</span>","<span class='notice'>You bite [T].</span>")
 
 /mob/living/carbon/human/proc/choose_prey_size()
 	set name = "Choose Prey Size"
@@ -267,10 +277,26 @@
 
 	var/datum/species/riftwalker/RIFT = species
 
-	var/size_select = tgui_input_number(usr, "Put the desired size (25-200%), (1-600%) in dormitory areas.", "Set Size", size_set_to * 100, 600, 1)
+	var/size_select = tgui_input_number(usr, "Put the desired size (25-200%), (1-600%) in dormitory areas.", "Set Size", RIFT.prey_size * 100, 600, 1)
 	if(!size_select)
 		return
+
 	RIFT.prey_size = clamp((size_select/100), RESIZE_MINIMUM_DORMS, RESIZE_MAXIMUM_DORMS)
 	balloon_alert(usr, "Prey size set to [size_select]")
 	if(RIFT.prey_size < RESIZE_MINIMUM || RIFT.prey_size > RESIZE_MAXIMUM)
 		to_chat(usr, "<span class='notice'>Note: Resizing limited to 25-200% automatically while outside dormatory areas.</span>")
+
+/mob/living/carbon/human/proc/choose_poison()
+	set name = "Choose Poison"
+	set category = "Abilities.Riftwalker"
+	set desc = "Pick your poison!"
+
+	var/datum/species/riftwalker/RIFT = species
+	var/poisons = list("mindbreaker", "succubi_aphrodisiac", "numbenzyme", "succubi_paralize")
+	var/poison_choice = tgui_input_list(usr, "Pick your poison", "Poisons", poisons)
+
+	if(!poison_choice)
+		return
+
+	balloon_alert(usr, "[poison_choice] selected")
+	RIFT.poison = poison_choice

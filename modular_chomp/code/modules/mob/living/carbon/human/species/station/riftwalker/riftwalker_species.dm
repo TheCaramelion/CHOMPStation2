@@ -114,7 +114,18 @@
 	add_riftwalker_abilities(H)
 
 /datum/species/riftwalker/proc/add_riftwalker_abilities(var/mob/living/carbon/human/H)
-
+	if(!H.ability_master || !istype(H.ability_master, /obj/screen/movable/ability_master/riftwalker))
+		H.ability_master = null
+		H.ability_master = new /obj/screen/movable/ability_master/riftwalker(H)
 	for(var/datum/power/riftwalker/P in riftwalker_ability_datums)
 		if(!(P.verbpath in H.verbs))
 			add_verb(H,P.verbpath)
+			H.ability_master.add_riftwalker_ability(
+				object_given = H,
+				verb_given = P.verbpath,
+				name_given = P.name,
+				ability_icon_given = P.ability_icon_state,
+				arguments = list()
+			)
+	add_verb(H,/mob/living/carbon/human/proc/choose_prey_size)
+	add_verb(H,/mob/living/carbon/human/proc/choose_poison)
