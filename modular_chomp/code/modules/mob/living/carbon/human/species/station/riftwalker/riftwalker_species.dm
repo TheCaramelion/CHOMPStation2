@@ -11,7 +11,7 @@
 	species_language = LANGUAGE_DAEMON
 	secondary_langs = list(LANGUAGE_DAEMON)
 	num_alternate_languages = 3
-	unarmed_types = list(/datum/unarmed_attack/stomp, /datum/unarmed_attack/kick, /datum/unarmed_attack/claws/strong, /datum/unarmed_attack/bite/sharp/numbing)
+	unarmed_types = list(/datum/unarmed_attack/stomp, /datum/unarmed_attack/kick)
 	rarity_value = 15
 
 	inherent_verbs = list(
@@ -41,7 +41,8 @@
 	heat_level_2 = 1000
 	heat_level_3 = 1150
 
-	spawn_flags = SPECIES_CAN_JOIN
+	flags =  NO_SCAN | NO_MINOR_CUT | NO_INFECT
+	spawn_flags = SPECIES_CAN_JOIN | SPECIES_IS_WHITELISTED | SPECIES_WHITELIST_SELECTABLE
 
 	appearance_flags = HAS_HAIR_COLOR | HAS_LIPS | HAS_SKIN_COLOR | HAS_EYE_COLOR | HAS_UNDERWEAR
 

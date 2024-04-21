@@ -30,6 +30,14 @@
 	verbpath = /mob/living/carbon/human/proc/demon_bite
 	ability_icon_state = "const_pylon"
 
+/datum/modifier/riftwalker_phase
+	name = "Riftwalker Phasing"
+	evasion = 100
+
+/datum/modifier/riftwalker_phase_vision
+	name = "Riftwalker Phase Vision"
+	vision_flags = SEE_THRU
+
 /mob/living/carbon/human/proc/riftwalker_ability_check()
 	var/datum/species/riftwalker/RIFT = species
 	if(!istype(RIFT))
@@ -57,16 +65,15 @@
 
 	var/datum/species/riftwalker/RIFT = species
 
-	if(RIFT.doing_bloodcrawl)
+	if(RIFT.doing_bloodcrawl) // Check if we're bloodcrawling, if so, let bloodcrawl handle it
 		bloodcrawl()
 	else
 		riftwalker_phase_check(get_turf(src), species)
 		riftwalker_do_phase(get_turf(src), species)
 
-		sleep(RIFT.shift_time)
-
-		if(ability_flags & AB_PHASE_SHIFTED && !RIFT.doing_bloodcrawl)
-			riftwalker_do_phase(get_turf(src), species)
+		spawn(RIFT.shift_time)
+			if(ability_flags & AB_PHASE_SHIFTED && !RIFT.doing_bloodcrawl)
+				riftwalker_do_phase(get_turf(src), species)
 
 // Bloodcrawl
 /mob/living/carbon/human/proc/bloodcrawl()
@@ -171,6 +178,8 @@
 		sleep(30)
 		canmove = original_canmove
 		alpha = initial(alpha)
+		remove_modifiers_of_type(/datum/modifier/riftwalker_phase_vision)
+		remove_modifiers_of_type(/datum/modifier/riftwalker_phase)
 
 		ability_flags &= ~AB_PHASE_SHIFTING
 
@@ -213,8 +222,12 @@
 		phaseanim.pixel_y = (src.size_multiplier - 1) * 16 // Pixel shift for the animation placement
 		phaseanim.adjust_scale(src.size_multiplier, src.size_multiplier)
 		alpha = 0
+		add_modifier(/datum/modifier/riftwalker_phase_vision)
+		add_modifier(/datum/modifier/riftwalker_phase)
 		sleep(30)
-		invisibility = INVISIBILITY_LEVEL_TWO
+		invisibility = INVISIBILITY_SHADEKIN
+		see_invisible = INVISIBILITY_SHADEKIN
+		see_invisible_default = INVISIBILITY_SHADEKIN
 		update_icon()
 		alpha = 127
 
@@ -247,8 +260,6 @@
 
 	RIFT.blood_spawn = world.time
 
-	return
-
 /mob/living/carbon/human/proc/sizechange()
 	set name = "Shrink/Grow Prey"
 	set category = "Abilities.Riftwalker"
@@ -272,6 +283,8 @@
 
 	if(!checkClickCooldown() || incapacitated(INCAPACITATION_ALL))
 		return
+
+	playsound(src.loc, 'sound/effects/EMPulse.ogg', 50, 1)
 
 	T.resize(RIFT.prey_size)
 	visible_message("<span class='warning'>[src] shrinks [T]!</span>","<span class='notice'>You shrink [T].</span>")
@@ -326,11 +339,17 @@
 	set desc = "Pick your poison!"
 
 	var/datum/species/riftwalker/RIFT = species
-	var/poisons = list("mindbreaker", "succubi_aphrodisiac", "numbenzyme", "succubi_paralize")
+	var/poisons = list()
+
+	poisons["Mindbreaker"] = "mindbreaker"
+	poisons["Aphrodisiac"] = "succubi_aphrodisiac"
+	poisons["Numbing"] = "numbenzyme"
+	poisons["Paralyzing"] = "succubi_paralize"
+
 	var/poison_choice = tgui_input_list(usr, "Pick your poison", "Poisons", poisons)
 
 	if(!poison_choice)
 		return
 
 	balloon_alert(usr, "[poison_choice] selected")
-	RIFT.poison = poison_choice
+	RIFT.poison = poisons[poison_choice]
