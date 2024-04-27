@@ -90,15 +90,17 @@
 		)
 
 	var/list/riftwalker_abilities = list(
-		/datum/power/riftwalker/riftwalker_phase,
 		/datum/power/riftwalker/bloodcrawl,
 		/datum/power/riftwalker/blood_burst,
 		/datum/power/riftwalker/sizechange,
-		/datum/power/riftwalker/demon_bite)
+		/datum/power/riftwalker/demon_bite,
+		/datum/power/riftwalker/temporal_cloak,
+		/datum/power/riftwalker/echo_image,
+		/datum/power/riftwalker/bloodgate,
+		/datum/power/riftwalker/possesion)
 
 	var/list/riftwalker_ability_datums = list()
 
-	var/doing_phase = FALSE
 	var/doing_bloodcrawl = FALSE
 	var/blood_spawn = 0
 	var/prey_size = 1
