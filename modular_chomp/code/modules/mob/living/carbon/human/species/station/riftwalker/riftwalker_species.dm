@@ -11,7 +11,7 @@
 	species_language = LANGUAGE_DAEMON
 	secondary_langs = list(LANGUAGE_DAEMON)
 	num_alternate_languages = 3
-	unarmed_types = list(/datum/unarmed_attack/stomp, /datum/unarmed_attack/kick)
+	unarmed_types = list(/datum/unarmed_attack/stomp, /datum/unarmed_attack/kick, /datum/unarmed_attack/claws, /datum/unarmed_attack/bite/sharp)
 	rarity_value = 15
 
 	inherent_verbs = list(
@@ -33,13 +33,21 @@
 	warning_high_pressure = 300
 	hazard_high_pressure = INFINITY
 
-	cold_level_1 = -1
-	cold_level_2 = -1
-	cold_level_3 = -1
+	cold_level_1 = 280 //Default 260 - Lower is better
+	cold_level_2 = 220 //Default 200
+	cold_level_3 = 130 //Default 120
 
-	heat_level_1 = 850
-	heat_level_2 = 1000
-	heat_level_3 = 1150
+	breath_cold_level_1 = 260	//Default 240 - Lower is better
+	breath_cold_level_2 = 200	//Default 180
+	breath_cold_level_3 = 120	//Default 100
+
+	heat_level_1 = 420 //Default 360 - Higher is better
+	heat_level_2 = 480 //Default 400
+	heat_level_3 = 1100 //Default 1000
+
+	breath_heat_level_1 = 450	//Default 380 - Higher is better
+	breath_heat_level_2 = 530	//Default 450
+	breath_heat_level_3 = 1400	//Default 1250
 
 	flags =  NO_SCAN | NO_MINOR_CUT | NO_INFECT
 	spawn_flags = SPECIES_CAN_JOIN | SPECIES_IS_WHITELISTED | SPECIES_WHITELIST_SELECTABLE
@@ -50,6 +58,8 @@
 	blood_color = "#A10808"
 	base_color = "#f0f0f0"
 	color_mult = 1
+
+	reagent_tag = IS_RIFTWALKER
 
 	speech_bubble_appearance = "ghost"
 
@@ -90,10 +100,9 @@
 		)
 
 	var/list/riftwalker_abilities = list(
+		/datum/power/riftwalker/sacrifice,
+		//datum/power/riftwalker/bloodjaunt,
 		/datum/power/riftwalker/bloodcrawl,
-		/datum/power/riftwalker/blood_burst,
-		/datum/power/riftwalker/sizechange,
-		/datum/power/riftwalker/demon_bite,
 		/datum/power/riftwalker/temporal_cloak,
 		/datum/power/riftwalker/echo_image,
 		/datum/power/riftwalker/bloodgate,
@@ -103,10 +112,21 @@
 
 	var/doing_bloodcrawl = FALSE
 	var/blood_spawn = 0
+	var/sacrifice = 0
 	var/prey_size = 1
 	var/poison = "mindbreaker"
 	var/poison_per_bite = 3
 	var/shift_time = 30 SECONDS
+	var/weakened = FALSE
+
+	var/list/mob/living/carbon/human/mirrors = list()
+	var/mob/living/carbon/human/real_body = null
+	var/datum/species/species_holder = null
+
+	var/blood_resource = 150
+	var/blood_min = 0
+	var/blood_max = 150
+	var/blood_infinite = FALSE
 
 /datum/species/riftwalker/New()
 	..()
@@ -135,5 +155,41 @@
 				ability_icon_given = P.ability_icon_state,
 				arguments = list()
 			)
+	add_verb(H,/mob/living/carbon/human/proc/sizechange)
 	add_verb(H,/mob/living/carbon/human/proc/choose_prey_size)
 	add_verb(H,/mob/living/carbon/human/proc/choose_poison)
+	add_verb(H,/mob/living/carbon/human/proc/echo_talk)
+	add_verb(H,/mob/living/carbon/human/proc/demon_bite)
+
+/datum/species/riftwalker/proc/remove_riftwalker_abilities(var/mob/living/carbon/human/H)
+	if(H.ability_master || istype(H.ability_master, /obj/screen/movable/ability_master/riftwalker))
+		qdel(H.ability_master)
+		H.ability_master = null
+	for(var/datum/power/riftwalker/P in riftwalker_ability_datums)
+		if(P.verbpath in H.verbs)
+			remove_verb(H, P.verbpath)
+	remove_verb(H,/mob/living/carbon/human/proc/sizechange)
+	remove_verb(H,/mob/living/carbon/human/proc/choose_prey_size)
+	remove_verb(H,/mob/living/carbon/human/proc/choose_poison)
+	remove_verb(H,/mob/living/carbon/human/proc/echo_talk)
+	remove_verb(H,/mob/living/carbon/human/proc/demon_bite)
+
+/datum/species/riftwalker/handle_death(mob/living/carbon/human/H)
+	if(real_body)
+		var/mob/living/carbon/human/new_body = new /mob/living/carbon/human(H)
+		var/client/user_client = H.client
+
+		to_chat(src, "With your old vessel destroyed, you start to gather the needed energy to burst back to your original form...")
+
+		user_client.prefs.copy_to(new_body)
+		if(src.real_body.dna)
+			src.real_body.dna.ResetUIFrom(new_body)
+			src.real_body.sync_organ_dna()
+
+		H.mind.transfer_to(new_body)
+		qdel(src.real_body)
+
+		spawn(10 SECONDS)
+			H.gib()
+	else
+		return

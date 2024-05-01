@@ -10,9 +10,98 @@
 
 /mob/living/carbon/human/proc/riftwalker_ability_check()
 	var/datum/species/riftwalker/RIFT = species
+
 	if(!istype(RIFT))
 		to_chat(src, "<span class='warning'>Only a riftwalker can use that!</span>")
 		return FALSE
+
+	if(RIFT.weakened)
+		to_chat(src, "<span class='warning'>A strange substance won't allow us to use that.</span>")
+		return FALSE
+
+	return TRUE
+
+
+/*
+/mob/living/carbon/human/proc/choose_sacrifice(var/sacrifices)
+
+	var/list/possible_mobs = list()
+	var/list/snackInput = list()
+	for(var/obj/belly/B in src.vore_organs)
+		for(var/mob/living/L in B)
+			if(isliving(L) && L.digestable)
+				possible_mobs |= L
+			else
+				continue
+
+	snackInput = tgui_input_checkboxes(src, "Chose sacrifices", "Sacrifices", possible_mobs, sacrifices, sacrifices)
+*/
+
+/mob/living/carbon/human/proc/rift_consume_blood(var/quantity)
+	var/datum/species/riftwalker/RIFT = species
+
+	if(RIFT.blood_infinite)
+		return FALSE
+
+	if(RIFT.blood_resource+quantity >= 0)
+		riftwalker_adjust_blood(quantity)
+		return FALSE
+	else
+		to_chat(src, "<span class='warning'>We don't have enough power to do this</span>")
+		return TRUE
+
+/mob/living/carbon/human/proc/riftwalker_adjust_blood(var/amount)
+	var/datum/species/riftwalker/RIFT = species
+
+	if(!istype(RIFT))
+		return 0
+
+	RIFT.blood_resource = clamp(RIFT.blood_resource+amount, RIFT.blood_min, RIFT.blood_max)
+
+// Sacrifice
+
+/datum/power/riftwalker/sacrifice
+	name = "Sacrifice"
+	desc = "Sacrifice the living to gain power"
+	verbpath = /mob/living/carbon/human/proc/sacrifice
+	ability_icon_state = "wiz_disint_old"
+
+/mob/living/carbon/human/proc/sacrifice()
+	set name = "Sacrifice"
+	set desc = "Sacrifice the livig to gain power"
+	set category = "Abilities.Riftwalker"
+
+	var/obj/item/weapon/grab/G = src.get_active_hand()
+	var/datum/species/riftwalker/RIFT = species
+	var/blood_gained
+
+	if(!(riftwalker_ability_check()))
+		return
+
+	if(!istype(G) && !istype(G, /mob/living/))
+		to_chat(src, "<span class='warning'>You must be grabbing a creature in your active hand to affect them.</span>")
+		return
+	var/mob/living/T = G.affecting
+
+	if(G.state != GRAB_NECK)
+		to_chat(src, "<span class='warning'>You must have a tighter grip to affect this creature.</span>")
+		return
+
+	if(world.time - RIFT.sacrifice < 90 SECONDS)
+		to_chat(src,"<span class='warning'>You can't make a sacrifice so soon! You need to wait [round(((RIFT.sacrifice+90 SECONDS)-world.time)/10)] second\s!</span>")
+		return
+
+	if(istype(T, /mob/living/carbon/human))
+		blood_gained = 50
+	else if (istype(T, /mob/living/carbon))
+		blood_gained = 25
+	else
+		blood_gained = 10
+
+	if(do_after(src, 5 SECONDS, target = src))
+		riftwalker_adjust_blood(blood_gained)
+		T.gib()
+
 
 // BLOODCRAWLING - PHASING
 
@@ -28,18 +117,40 @@
 /obj/effect/temp_visual/riftwalker/phaseout
 	icon_state = "phaseout"
 
+// Blood Jaunt
+/*
+/datum/power/riftwalker/bloodjaunt
+	name = "Blood Jaunt"
+	desc = "Temporarily phase out of reality"
+	verbpath = /mob/living/carbon/human/proc/bloodjaunt
+
+/mob/living/carbon/human/proc/bloodjaunt()
+	set name = "Blood Jaunt"
+	set desc = "Temporarily phase out of reality"
+	set category = "Abilities.Riftwalker"
+
+	riftwalker_do_phase(get_turf(src), species)
+
+	riftwalker_do_phase(get_turf(src), species)
+
+	spawn(3 SECONDS)
+		riftwalker_do_phase(get_turf(src), species)
+*/
 // Bloodcrawl
 
 /datum/power/riftwalker/bloodcrawl
-	name = "Bloodcrawl"
+	name = "Bloodcrawl (100)"
 	desc = "Shift out of reality using blood as your conduit"
 	verbpath = /mob/living/carbon/human/proc/bloodcrawl
 	ability_icon_state = "const_shift"
 
 /mob/living/carbon/human/proc/bloodcrawl()
-	set name = "Bloodcrawl"
+	set name = "Bloodcrawl (100)"
 	set desc = "Shift out of reality using blood as your conduit"
 	set category = "Abilities.Riftwalker"
+
+	if(!(riftwalker_ability_check()))
+		return
 
 	riftwalker_phase_check(get_turf(src), species)
 
@@ -60,12 +171,17 @@
 		return FALSE
 
 /mob/living/carbon/human/proc/riftwalker_do_phase(var/turf/T, var/datum/species/riftwalker/RIFT)
-	playsound(src, 'sound/misc/demonlaugh.ogg', 50, 1)
+
+	RIFT = species
 
 	if(ability_flags & AB_PHASE_SHIFTED)
 		riftwalker_phase_in(T)
 	else
-		riftwalker_phase_out(T)
+		if(!rift_consume_blood(-100))
+			riftwalker_phase_out(T)
+		else return
+
+	playsound(src, 'sound/misc/demonlaugh.ogg', 50, 1)
 
 /mob/living/carbon/human/proc/riftwalker_phase_in(var/turf/T)
 	if(ability_flags & AB_PHASE_SHIFTED)
@@ -109,7 +225,7 @@
 		balloon_alert_visible("Phases in!")
 
 		// Phase-in vore
-		/* Also as a note, Riftwalkers have a longer animation so they
+		/* As a note, Riftwalkers have a longer animation so they
 			can catch prey before the portal just goes away.
 			And also because making the portal and stepping out of it
 			with a full belly is pretty neat :)
@@ -191,28 +307,27 @@
 
 // Bloodburst
 
-/datum/power/riftwalker/blood_burst
-	name = "Blood Burst"
-	desc = "Spawn bloody remains from your past hunts."
-	verbpath = /mob/living/carbon/human/proc/blood_burst
-	ability_icon_state = "wiz_disint_old"
-
 /mob/living/carbon/human/proc/blood_burst()
-	set name = "Blood burst"
+	set name = "Blood burst (10)"
 	set desc = "Spawn bloody remains from your past hunts."
 	set category = "Abilities.Riftwalker"
 
 	var/turf/T = get_turf(src)
 	var/datum/species/riftwalker/RIFT = species
 
+	if(!(riftwalker_ability_check()))
+		return
+
 	if(ability_flags & AB_PHASE_SHIFTED)
 		to_chat(src,"<span class='warning'>You must be in the physical world to create blood!</span>")
 		return FALSE
 
-	if(world.time - RIFT.blood_spawn < 1500)
-		to_chat(src,"<span class='warning'>You can't create blood so soon! You need to wait [round(((RIFT.blood_spawn+1500)-world.time)/10)] second\s!</span>")
+	if(world.time - RIFT.blood_spawn < 150 SECONDS)
+		to_chat(src,"<span class='warning'>You can't create blood so soon! You need to wait [round(((RIFT.blood_spawn+150 SECONDS)-world.time)/10)] second\s!</span>")
 		return FALSE
 
+	if(rift_consume_blood(-10))
+		return
 
 	new /obj/effect/gibspawner/generic(T)
 
@@ -222,12 +337,6 @@
 
 // Size change
 
-/datum/power/riftwalker/sizechange
-	name = "Shrink/Grow Prey"
-	desc = "Shrink/Grow someone nearby using redspace power"
-	verbpath = /mob/living/carbon/human/proc/sizechange
-	ability_icon_state = "wiz_tele"
-
 /mob/living/carbon/human/proc/sizechange()
 	set name = "Shrink/Grow Prey"
 	set category = "Abilities.Riftwalker"
@@ -235,6 +344,9 @@
 
 	var/obj/item/weapon/grab/G = src.get_active_hand()
 	var/datum/species/riftwalker/RIFT = species
+
+	if(!(riftwalker_ability_check()))
+		return
 
 	if(!istype(G))
 		to_chat(src, "<span class='warning'>You must be grabbing a creature in your active hand to affect them.</span>")
@@ -274,19 +386,16 @@
 
 // Demon Bite
 
-/datum/power/riftwalker/demon_bite
-	name = "Poisonous Bite"
-	desc = "Inject poison into your grabbed prey."
-	verbpath = /mob/living/carbon/human/proc/demon_bite
-	ability_icon_state = "const_pylon"
-
 /mob/living/carbon/human/proc/demon_bite()
-	set name = "Poisonous Bite"
+	set name = "Poisonous Bite (10)"
 	set category = "Abilities.Riftwalker"
 	set desc = "Inject poison into your grabbed prey."
 
 	var/obj/item/weapon/grab/G = src.get_active_hand()
 	var/datum/species/riftwalker/RIFT = species
+
+	if(!(riftwalker_ability_check()))
+		return
 
 	if(!istype(G))
 		to_chat(src, "<span class='warning'>You must be grabbing a creature in your active hand to affect them.</span>")
@@ -302,6 +411,9 @@
 		return
 
 	if(!checkClickCooldown() || incapacitated(INCAPACITATION_ALL))
+		return
+
+	if(rift_consume_blood(-10))
 		return
 
 	if(do_after(usr, 1.5 SECONDS, target = usr))
@@ -332,16 +444,19 @@
 // Temporal Cloak
 
 /datum/power/riftwalker/temporal_cloak
-	name = "Temporal Cloak"
+	name = "Temporal Cloak (20)"
 	desc = "Become temporarily cloaked"
 	verbpath = /mob/living/carbon/human/proc/temporal_cloak
 
 /mob/living/carbon/human/proc/temporal_cloak()
-	set name = "Temporal Cloak"
+	set name = "Temporal Cloak (20)"
 	set category = "Abilities.Riftwalker"
 	set desc = "Become temporarily cloaked"
 
 	var/datum/species/riftwalker/RIFT = species
+
+	if(!(riftwalker_ability_check()))
+		return
 
 	if(ability_flags & AB_PHASE_SHIFTED)
 		balloon_alert(usr, "We can't do this while phased")
@@ -356,45 +471,48 @@
 	if(ability_flags & RW_CLOAKED)
 		temporal_cloak_off()
 	else
-		temporal_cloak_on()
+		if(!rift_consume_blood(-20))
+			temporal_cloak_on()
 
 /mob/living/carbon/human/proc/temporal_cloak_off()
 	if(ability_flags & RW_CLOAKED)
 
 		ability_flags &= ~RW_CLOAKED
-		ability_flags |= RW_CLOAKING
 		mouse_opacity = 1
 		name = get_visible_name()
 		alpha = initial(alpha)
-
-		ability_flags &= ~RW_CLOAKING
 
 /mob/living/carbon/human/proc/temporal_cloak_on()
 	if(!(ability_flags & RW_CLOAKED))
 
 		ability_flags |= RW_CLOAKED
-		ability_flags |= RW_CLOAKING
 		mouse_opacity = 0
 		name = get_visible_name()
 		alpha = 13
 
-		ability_flags &= ~RW_CLOAKING
-
 // Echo Image
 
 /datum/power/riftwalker/echo_image
-	name = "Echo Image"
+	name = "Echo Image (50)"
 	desc = "Create a weak copy of yourself"
 	verbpath = /mob/living/carbon/human/proc/echo_image
 
 /mob/living/carbon/human/proc/echo_image()
-	set name = "Echo Image"
+	set name = "Echo Image (50)"
 	set desc = "Create a weak copy of yourself"
 	set category = "Abilities.Riftwalker"
+
+	var/datum/species/riftwalker/RIFT = species
+
+	if(!(riftwalker_ability_check()))
+		return
 
 	if(ability_flags & AB_PHASE_SHIFTED)
 		to_chat(src, "<span class='warning'>You can't use that while phase shifted!</span>")
 		return FALSE
+
+	if(rift_consume_blood(-50))
+		return
 
 	var/client/rw_client = src.client
 	var/mob/living/carbon/human/dummy/mirror = get_mannequin(rw_client)
@@ -404,32 +522,55 @@
 	rw_client.prefs.copy_to(mirror)
 	mirror.ability_flags = CANPUSH
 
+	RIFT.mirrors += mirror
+
 	spawn(5 MINUTES)
 		mirror.visible_emote("turns into ashes.")
 		new /obj/effect/decal/cleanable/ash(mirror.loc)
+		RIFT.mirrors -= mirror
 		qdel(mirror)
 
+/mob/living/carbon/human/proc/echo_talk()
+	set name = "Echo Talk"
+	set desc = "Talk through your mirrors"
+	set category = "Abilities.Riftwalker"
+
+	var/datum/species/riftwalker/RIFT = species
+
+	if(!(riftwalker_ability_check()))
+		return
+
+	var/message = tgui_input_text(src, "Speak through our mirrors", "Echo Talk")
+
+	for(var/mob/mirror in RIFT.mirrors)
+		mirror.say(message)
 
 // Bloodgate
 
 /datum/power/riftwalker/bloodgate
-	name = "Bloodgate"
+	name = "Bloodgate (100)"
 	desc = "Open the way to a redspace pocket"
 	verbpath = /mob/living/carbon/human/proc/bloodgate
 
 /mob/living/carbon/human/proc/bloodgate()
-	set name = "Bloodgate"
+	set name = "Bloodgate (100)"
 	set desc = "Open the way to a redspace pocket"
 	set category = "Abilities.Riftwalker"
 
 	var/template_id = "dark_portal"
 	var/datum/map_template/shelter/template
 
+	if(!(riftwalker_ability_check()))
+		return
+
 	if(ability_flags & AB_PHASE_SHIFTED)
 		to_chat(src, "<span class='warning'>You can't use that while phase shifted!</span>")
 		return FALSE
 	else if(ability_flags & RW_BLOODGATE)
 		to_chat(src, "<span class='warning'>You have already made a portal to redspace</span>")
+
+	if(rift_consume_blood(-100))
+		return
 
 	if(!template)
 		template = SSmapping.shelter_templates[template_id]
@@ -485,38 +626,47 @@
 
 	var/obj/item/weapon/grab/G = src.get_active_hand()
 
+	if(!(riftwalker_ability_check()))
+		return
+
 	if(!istype(G))
 		to_chat(src, "<span class='warning'>You must be grabbing a creature in your active hand to affect them.</span>")
 		return
 	var/mob/living/carbon/human/M = G.affecting
 
-	if(tgui_alert(src, "You selected [M] to attempt to dominate. Are you sure?", "Dominate Prey",list("No","Yes")) != "Yes")
+	if(M.stat == DEAD)
+		to_chat(src, "<span class='warning'>\The [M]'s blood doesn't flow, we can't posses this creature.")
+
+	if(M.isSynthetic())
+		to_chat(src, "<span class='warning'>\The [M] is a bloodless creature. We can't posses them.</span>")
 		return
 
-	log_admin("[key_name_admin(src)] offered to use dominate prey on [M] ([M.ckey]).")
+	if(tgui_alert(src, "You selected [M] to attempt to posses. Are you sure?", "Posses Prey",list("No","Yes")) != "Yes")
+		return
+
+	log_admin("[key_name_admin(src)] offered to use posses on [M] ([M.ckey]).")
 	to_chat(src, "<span class='warning'>Attempting to dominate and gather \the [M]'s mind...</span>")
 /*
-	if(tgui_alert(M, "\The [src] has elected collect your mind into their own. Is this something you will allow to happen?", "Allow Dominate Prey",list("No","Yes")) != "Yes")
-		to_chat(src, "<span class='warning'>\The [M] has declined your Dominate Prey attempt.</span>")
+	if(tgui_alert(M, "\The [src] has elected to posses you. Is this something you will allow to happen?", "Allow Possesing",list("No","Yes")) != "Yes")
+		to_chat(src, "<span class='warning'>\The [M] has declined your possessing attempt.</span>")
 		return
 
-	if(tgui_alert(M, "Are you sure? You can only undo this while your body is inside of [src]. (You can resist, or use the resist verb in the abilities tab)", "Allow Dominate Prey",list("No","Yes")) != "Yes")
-		to_chat(src, "<span class='warning'>\The [M] has declined your Dominate Prey attempt.</span>")
+	if(tgui_alert(M, "Are you sure? This might be hard to come back from.", "Allow Possesing",list("No","Yes")) != "Yes")
+		to_chat(src, "<span class='warning'>\The [M] has declined your possessing attempt.</span>")
 		return
 */
-	to_chat(M, "<span class='warning'>You can feel the will of another pulling you away from your body...</span>")
-	to_chat(src, "<span class='warning'>You can feel the will of your prey diminishing as you gather them!</span>")
 
 	if(istype(G) && M == G.affecting)
 		src.visible_message("<span class='danger'>[src] seems to be doing something to [M], resulting in [M]'s body looking increasingly drowsy with every passing moment!</span>")
 
 	var/mob/living/dominated_brain/db = new /mob/living/dominated_brain(M, src, M.name, M)
 	var/datum/mind/user_mind = src.mind
+	var/datum/mind/victim_mind = M.mind
+	var/datum/species/old_species = M.species
 
 	db.name = M.name
 	db.prey_ckey = M.ckey
 	db.pred_ckey = src.ckey
-
 
 	db.real_name = M.real_name
 
@@ -536,12 +686,77 @@
 
 	db.ckey = db.prey_ckey
 
-	log_admin("[db] ([db.ckey]) has agreed to [src]'s dominate prey attempt, and so no longer occupies their original body.")
-	to_chat(src, "<span class='notice'>You feel your mind expanded as [M] is incorporated into you.</span>")
-	to_chat(M, "<span class='warning'>Your mind is gathered into \the [src], becoming part of them...</span>")
+	log_admin("[db] ([db.ckey]) has agreed to [src]'s possesion, and no longer occupies their original body.")
 
-	if(istype(G) && M == G.affecting)
-		visible_message("<span class='danger'>[src] seems to finish whatever they were doing to [M].</span>")
+	var/datum/species/riftwalker/rift = src.species
+	var/datum/species/riftwalker/new_rift = rift.produceCopy(M.dna.species_traits, M)
 
-	src.drop_both_hands()
+	new_rift.species_holder = old_species
+	new_rift.name = old_species.name
+	new_rift.add_riftwalker_abilities(M)
+	new_rift.blood_resource = rift.blood_resource
+	add_verb(M,/mob/living/carbon/human/proc/riftwalker_release)
+
+	if(new_rift.real_body)
+		new_rift.real_body = rift.real_body
+		qdel(rift.real_body)
+	else
+		new_rift.real_body = new /mob/living/carbon/human
+
+	src.gib()
 	user_mind.transfer_to(M)
+	victim_mind.transfer_to(db)
+
+/mob/living/carbon/human/proc/riftwalker_release()
+	set name = "Release vessel"
+	set category = "Abilities.Riftwalker"
+	set desc = "Release your prey's body"
+
+	var/datum/species/riftwalker/RIFT = species
+
+	var/mob/living/dominated_brain/db = locate(/mob/living/dominated_brain/) in src
+	var/mob/living/carbon/human/new_body = new /mob/living/carbon/human(src.loc)
+	var/client/user_client = src.client
+	var/client/victim_mind
+
+	user_client.prefs.copy_to(new_body)
+	if(RIFT.real_body.dna)
+		RIFT.real_body.dna.ResetUIFrom(RIFT.real_body)
+		RIFT.real_body.sync_organ_dna()
+
+	RIFT.remove_riftwalker_abilities(src)
+
+	species = RIFT.species_holder
+
+	src.mind.transfer_to(new_body)
+
+	if(db)
+		victim_mind = db.client
+		victim_mind.prefs.copy_to(src)
+		db.mind.transfer_to(src)
+	else
+		log_admin("[key_name_admin(RIFT.real_body)] released [key_name_admin(src)], but there was no mind to place back.")
+
+	qdel(RIFT.real_body)
+
+	remove_verb(src, /mob/living/carbon/human/proc/riftwalker_release)
+
+// De-Phase
+
+/mob/living/carbon/human/proc/riftwalker_dephase(var/turf/T = null, atom/dephaser)
+
+	var/datum/species/riftwalker/RIFT = species
+
+	if(!T)
+		T = get_turf(src)
+
+	if(!istype(RIFT) || RIFT.doing_bloodcrawl || !T.CanPass(src, T) || loc != T || !(ability_flags & AB_PHASE_SHIFTED))
+		return FALSE
+
+	log_admin("[key_name_admin(src)] was stunned out of phase at [T.x],[T.y],[T.z] by [dephaser.name], last touched by [dephaser.fingerprintslast].")
+	message_admins("[key_name_admin(src)] was stunned out of phase at [T.x],[T.y],[T.z] by [dephaser.name], last touched by [dephaser.fingerprintslast]. (<A HREF='?_src_=holder;[HrefToken()];adminplayerobservecoodjump=1;X=[T.x];Y=[T.y];Z=[T.z]'>JMP</a>)", 1)
+
+	riftwalker_phase_out(T)
+
+	riftwalker_adjust_blood(-25)
+	src.Weaken(3)

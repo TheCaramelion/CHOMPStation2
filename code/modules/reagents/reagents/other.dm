@@ -489,6 +489,12 @@
 			return
 	M.clean_blood()
 
+	/* CHOMPAdd - Riftwalker stuff
+	if(alien == IS_RIFTWALKER)
+		var/datum/species/RIFT = M.species
+		RIFT.weakened = TRUE
+	 CHOMPEnd */
+
 /datum/reagent/space_cleaner/affect_ingest(var/mob/living/carbon/M, var/alien, var/removed)
 	if(alien == IS_SLIME)
 		M.adjustToxLoss(6 * removed)

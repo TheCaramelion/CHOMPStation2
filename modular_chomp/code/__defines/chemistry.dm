@@ -1,0 +1,1 @@
+#define IS_RIFTWALKER 16

@@ -4651,6 +4651,7 @@
 #include "modular_chomp\code\coalesce_ch.dm"
 #include "modular_chomp\code\global.dm"
 #include "modular_chomp\code\__defines\_planes+layers.dm"
+#include "modular_chomp\code\__defines\chemistry.dm"
 #include "modular_chomp\code\__defines\mobs.dm"
 #include "modular_chomp\code\__defines\span.dm"
 #include "modular_chomp\code\__defines\text.dm"
