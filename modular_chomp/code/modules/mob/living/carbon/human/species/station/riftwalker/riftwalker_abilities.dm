@@ -22,21 +22,6 @@
 	return TRUE
 
 
-/*
-/mob/living/carbon/human/proc/choose_sacrifice(var/sacrifices)
-
-	var/list/possible_mobs = list()
-	var/list/snackInput = list()
-	for(var/obj/belly/B in src.vore_organs)
-		for(var/mob/living/L in B)
-			if(isliving(L) && L.digestable)
-				possible_mobs |= L
-			else
-				continue
-
-	snackInput = tgui_input_checkboxes(src, "Chose sacrifices", "Sacrifices", possible_mobs, sacrifices, sacrifices)
-*/
-
 /mob/living/carbon/human/proc/rift_consume_blood(var/quantity)
 	var/datum/species/riftwalker/RIFT = species
 
@@ -54,9 +39,11 @@
 	var/datum/species/riftwalker/RIFT = species
 
 	if(!istype(RIFT))
-		return 0
+		return FALSE
 
 	RIFT.blood_resource = clamp(RIFT.blood_resource+amount, RIFT.blood_min, RIFT.blood_max)
+
+	return TRUE
 
 // Sacrifice
 
@@ -102,14 +89,11 @@
 		riftwalker_adjust_blood(blood_gained)
 		T.gib()
 
-
-// BLOODCRAWLING - PHASING
-
 // Visual stuff
 /obj/effect/temp_visual/riftwalker
 	randomdir = FALSE
 	duration = 30
-	icon = 'icons/mob/demon_vr.dmi'
+	icon = 'modular_chomp/icons/mob/species/riftwalker/riftwalker.dmi'
 
 /obj/effect/temp_visual/riftwalker/phasein
 	icon_state = "phasein"
@@ -117,12 +101,19 @@
 /obj/effect/temp_visual/riftwalker/phaseout
 	icon_state = "phaseout"
 
+/obj/effect/temp_visual/riftwalker/bloodin
+	icon_state = "bloodin"
+
+/obj/effect/temp_visual/riftwalker/bloodout
+	icon_state = "bloodout"
+
 // Blood Jaunt
-/*
+
 /datum/power/riftwalker/bloodjaunt
 	name = "Blood Jaunt"
 	desc = "Temporarily phase out of reality"
 	verbpath = /mob/living/carbon/human/proc/bloodjaunt
+	ability_icon_state = "rifwalker_jaunt"
 
 /mob/living/carbon/human/proc/bloodjaunt()
 	set name = "Blood Jaunt"
@@ -135,7 +126,82 @@
 
 	spawn(3 SECONDS)
 		riftwalker_do_phase(get_turf(src), species)
-*/
+
+/mob/living/carbon/human/proc/riftwalker_do_bloodjaunt(var/turf/T, var/datum/species/riftwalker/RIFT)
+
+	RIFT = species
+
+	if(ability_flags & AB_PHASE_SHIFTED)
+		riftwalker_bloodjaunt_in(T)
+	else
+		riftwalker_bloodjaunt_out(T)
+
+/mob/living/carbon/human/proc/riftwalker_bloodjaunt_in(var/turf/T)
+
+	if(ability_flags & AB_PHASE_SHIFTED)
+
+		// pre-change
+		forceMove(T)
+		var/original_canmove = canmove
+		SetStunned(0)
+		SetWeakened(0)
+		if(buckled)
+			buckled.unbuckle_mob()
+		if(pulledby)
+			pulledby.stop_pulling()
+		stop_pulling()
+		canmove = FALSE
+
+		// change
+		ability_flags &= ~AB_PHASE_SHIFTED
+		ability_flags |= AB_PHASE_SHIFTING
+		mouse_opacity = 1
+		name = get_visible_name()
+		for(var/obj/belly/B as anything in vore_organs)
+			B.escapable = initial(B.escapable)
+
+		invisibility = initial(invisibility)
+		see_invisible = initial(see_invisible)
+		see_invisible_default = initial(see_invisible_default)
+		incorporeal_move = initial(incorporeal_move)
+		density = initial(density)
+		force_max_speed = initial(force_max_speed)
+		can_pull_size = initial(can_pull_size)
+		can_pull_mobs = initial(can_pull_mobs)
+		hovering = initial(hovering)
+		update_icon()
+
+		// Cosmetics
+		var/obj/effect/temp_visual/riftwalker/phasein/phaseanim = new /obj/effect/temp_visual/riftwalker/bloodin(src.loc)
+		phaseanim.pixel_y = (src.size_multiplier - 1) * 16 // Pixel shift for the animation placement
+		phaseanim.adjust_scale(src.size_multiplier, src.size_multiplier)
+		alpha = 0
+
+		if(can_be_drop_pred || can_be_drop_prey) //Toggleable in vore panel
+			var/list/potentials = living_mobs(0)
+			if(potentials.len)
+				var/mob/living/target = pick(potentials)
+				if(can_be_drop_pred && istype(target) && target.devourable && target.can_be_drop_prey && target.phase_vore && vore_selected && phase_vore)
+					target.forceMove(vore_selected)
+					to_chat(target, "<span class='vwarning'>\The [src] phases in around you, [vore_selected.vore_verb]ing you into their [vore_selected.name]!</span>")
+					to_chat(src, "<span class='vwarning'>You phase around [target], [vore_selected.vore_verb]ing them into your [vore_selected.name]!</span>")
+				else if(can_be_drop_prey && istype(target) && devourable && target.can_be_drop_pred && target.phase_vore && target.vore_selected && phase_vore)
+					forceMove(target.vore_selected)
+					to_chat(target, "<span class='vwarning'>\The [src] phases into you, [target.vore_selected.vore_verb]ing them into your [target.vore_selected.name]!</span>")
+					to_chat(src, "<span class='vwarning'>You phase into [target], having them [target.vore_selected.vore_verb] you into their [target.vore_selected.name]!</span>")
+
+		spawn(30)
+		canmove = original_canmove
+		alpha = initial(alpha)
+		remove_modifiers_of_type(/datum/modifier/riftwalker_phase_vision)
+		remove_modifiers_of_type(/datum/modifier/riftwalker_phase)
+
+		ability_flags &= ~AB_PHASE_SHIFTING
+
+/mob/living/carbon/human/proc/riftwalker_bloodjaunt_out(var/turf/T)
+
+
+
 // Bloodcrawl
 
 /datum/power/riftwalker/bloodcrawl
@@ -175,13 +241,13 @@
 	RIFT = species
 
 	if(ability_flags & AB_PHASE_SHIFTED)
+		playsound(src, 'sound/misc/demonlaugh.ogg', 50, 1)
 		riftwalker_phase_in(T)
 	else
 		if(!rift_consume_blood(-100))
+			playsound(src, 'sound/misc/demonlaugh.ogg', 50, 1)
 			riftwalker_phase_out(T)
 		else return
-
-	playsound(src, 'sound/misc/demonlaugh.ogg', 50, 1)
 
 /mob/living/carbon/human/proc/riftwalker_phase_in(var/turf/T)
 	if(ability_flags & AB_PHASE_SHIFTED)
@@ -243,7 +309,7 @@
 					to_chat(target, "<span class='vwarning'>\The [src] phases into you, [target.vore_selected.vore_verb]ing them into your [target.vore_selected.name]!</span>")
 					to_chat(src, "<span class='vwarning'>You phase into [target], having them [target.vore_selected.vore_verb] you into their [target.vore_selected.name]!</span>")
 
-		sleep(30)
+		spawn(3 SECONDS)
 		canmove = original_canmove
 		alpha = initial(alpha)
 		remove_modifiers_of_type(/datum/modifier/riftwalker_phase_vision)
@@ -292,7 +358,7 @@
 		alpha = 0
 		add_modifier(/datum/modifier/riftwalker_phase_vision)
 		add_modifier(/datum/modifier/riftwalker_phase)
-		sleep(30)
+		spawn(3 SECONDS)
 		invisibility = INVISIBILITY_SHADEKIN
 		see_invisible = INVISIBILITY_SHADEKIN
 		see_invisible_default = INVISIBILITY_SHADEKIN
@@ -447,6 +513,8 @@
 	name = "Temporal Cloak (20)"
 	desc = "Become temporarily cloaked"
 	verbpath = /mob/living/carbon/human/proc/temporal_cloak
+	ability_icon_state = "const_ambush"
+
 
 /mob/living/carbon/human/proc/temporal_cloak()
 	set name = "Temporal Cloak (20)"
@@ -496,6 +564,7 @@
 	name = "Echo Image (50)"
 	desc = "Create a weak copy of yourself"
 	verbpath = /mob/living/carbon/human/proc/echo_image
+	ability_icon_state = "const_harvest"
 
 /mob/living/carbon/human/proc/echo_image()
 	set name = "Echo Image (50)"
@@ -528,7 +597,7 @@
 		mirror.visible_emote("turns into ashes.")
 		new /obj/effect/decal/cleanable/ash(mirror.loc)
 		RIFT.mirrors -= mirror
-		qdel(mirror)
+		mirror.Destroy()
 
 /mob/living/carbon/human/proc/echo_talk()
 	set name = "Echo Talk"
@@ -618,6 +687,7 @@
 	name = "Possesion"
 	desc = "Posses your target and take their appearance"
 	verbpath = /mob/living/carbon/human/proc/possesion
+	ability_icon_state = "ling_transform"
 
 /mob/living/carbon/human/proc/possesion()
 	set name = "Posses"
@@ -646,18 +716,16 @@
 
 	log_admin("[key_name_admin(src)] offered to use posses on [M] ([M.ckey]).")
 	to_chat(src, "<span class='warning'>Attempting to dominate and gather \the [M]'s mind...</span>")
-/*
-	if(tgui_alert(M, "\The [src] has elected to posses you. Is this something you will allow to happen?", "Allow Possesing",list("No","Yes")) != "Yes")
-		to_chat(src, "<span class='warning'>\The [M] has declined your possessing attempt.</span>")
-		return
 
-	if(tgui_alert(M, "Are you sure? This might be hard to come back from.", "Allow Possesing",list("No","Yes")) != "Yes")
-		to_chat(src, "<span class='warning'>\The [M] has declined your possessing attempt.</span>")
-		return
-*/
+	if(M.ckey)
+		if(tgui_alert(M, "\The [src] has elected to posses you. Is this something you will allow to happen?", "Allow Possesing",list("No","Yes")) != "Yes")
+			to_chat(src, "<span class='warning'>\The [M] has declined your possessing attempt.</span>")
+			return
 
-	if(istype(G) && M == G.affecting)
-		src.visible_message("<span class='danger'>[src] seems to be doing something to [M], resulting in [M]'s body looking increasingly drowsy with every passing moment!</span>")
+		if(tgui_alert(M, "Are you sure? This might be difficult to come back from.", "Allow Possesing",list("No","Yes")) != "Yes")
+			to_chat(src, "<span class='warning'>\The [M] has declined your possessing attempt.</span>")
+			return
+
 
 	var/mob/living/dominated_brain/db = new /mob/living/dominated_brain(M, src, M.name, M)
 	var/datum/mind/user_mind = src.mind
@@ -758,5 +826,4 @@
 
 	riftwalker_phase_out(T)
 
-	riftwalker_adjust_blood(-25)
 	src.Weaken(3)

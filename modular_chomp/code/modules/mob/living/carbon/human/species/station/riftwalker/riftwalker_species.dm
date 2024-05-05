@@ -101,7 +101,7 @@
 
 	var/list/riftwalker_abilities = list(
 		/datum/power/riftwalker/sacrifice,
-		//datum/power/riftwalker/bloodjaunt,
+		/datum/power/riftwalker/bloodjaunt,
 		/datum/power/riftwalker/bloodcrawl,
 		/datum/power/riftwalker/temporal_cloak,
 		/datum/power/riftwalker/echo_image,
@@ -173,6 +173,17 @@
 	remove_verb(H,/mob/living/carbon/human/proc/choose_poison)
 	remove_verb(H,/mob/living/carbon/human/proc/echo_talk)
 	remove_verb(H,/mob/living/carbon/human/proc/demon_bite)
+
+/datum/species/riftwalker/handle_environment_special(var/mob/living/carbon/human/H)
+
+	var/temp_diff = body_temperature - H.bodytemperature
+	if(temp_diff >= 50)
+		if(blood_resource > 0)
+			H.riftwalker_adjust_blood(-1)
+		else if(H.nutrition)
+			H.adjust_nutrition(-5)
+		else
+			H.adjustFireLoss(2)
 
 /datum/species/riftwalker/handle_death(mob/living/carbon/human/H)
 	if(real_body)

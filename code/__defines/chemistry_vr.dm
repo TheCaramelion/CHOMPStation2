@@ -3,3 +3,4 @@
 #define IS_SHADEKIN 13
 #define IS_ALRAUNE 14
 #define IS_GREY 15 //ywedit
+#define IS_RIFTWALKER 16 // CHOMPEdit
