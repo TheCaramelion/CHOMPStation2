@@ -16,3 +16,11 @@
 
 /mob/living/carbon/human/ai_controlled
 	low_priority = TRUE
+
+/mob/living/carbon/human/proc/riftwalker_get_blood()
+	var/datum/species/riftwalker/RIFT = species
+
+	if(!istype(RIFT))
+		return 0
+
+	return RIFT.blood_resource

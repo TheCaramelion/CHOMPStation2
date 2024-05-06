@@ -59,7 +59,9 @@
 		-----Notice: The outsider role is relatively new; if you encounter bugs, please notify a staff member and avoid using exploits."}
 
 /datum/job/shadekin/is_species_banned(species_name, brain_type)
-	if((species_name != SPECIES_SHADEKIN || species_name != SPECIES_RIFTWALKER))
-		return TRUE
-	else
+	if(species_name == SPECIES_SHADEKIN)
 		return FALSE
+	else if(species_name == SPECIES_RIFTWALKER)
+		return FALSE
+	else
+		return TRUE

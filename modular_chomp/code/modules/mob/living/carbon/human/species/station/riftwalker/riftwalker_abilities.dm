@@ -120,12 +120,10 @@
 	set desc = "Temporarily phase out of reality"
 	set category = "Abilities.Riftwalker"
 
-	riftwalker_do_phase(get_turf(src), species)
-
-	riftwalker_do_phase(get_turf(src), species)
+	riftwalker_do_bloodjaunt(get_turf(src), species)
 
 	spawn(3 SECONDS)
-		riftwalker_do_phase(get_turf(src), species)
+		riftwalker_do_bloodjaunt(get_turf(src), species)
 
 /mob/living/carbon/human/proc/riftwalker_do_bloodjaunt(var/turf/T, var/datum/species/riftwalker/RIFT)
 
@@ -215,39 +213,52 @@
 	set desc = "Shift out of reality using blood as your conduit"
 	set category = "Abilities.Riftwalker"
 
-	if(!(riftwalker_ability_check()))
-		return
-
-	riftwalker_phase_check(get_turf(src), species)
-
-	if(!(locate(/obj/effect/decal/cleanable/blood) in src.loc))
-		to_chat(src,"<span class='warning'>You need blood to shift between realities!</span>")
+	var/ability_cost = 100
+	var/turf/T = get_turf(src)
+	if(!T)
+		to_chat(src,"<span class='warning'>You can't use that here!</span>")
+		return FALSE
+	if((get_area(src).flags & PHASE_SHIELDED))
+		to_chat(src,"<span class='warning'>This area is preventing you from phasing!</span>")
 		return FALSE
 
-	riftwalker_do_phase(get_turf(src), species)
-
-/mob/living/carbon/human/proc/riftwalker_phase_check(var/turf/T, var/datum/species/riftwalker/RIFT)
-
 	if(ability_flags & AB_PHASE_SHIFTING)
+		return FALSE
+
+	var/datum/species/riftwalker/RIFT = species
+
+	if(!riftwalker_ability_check())
+		return FALSE
+	else if(RIFT.doing_bloodcrawl)
 		to_chat(src, "<span class='warning'>You are already trying to phase!</span>")
 		return FALSE
 
-	else if(!T.CanPass(src, T) || loc != T)
+	else if(riftwalker_get_blood() < ability_cost && !(ability_flags & AB_PHASE_SHIFTED))
+		to_chat(src, "<span class='warning'>Not enough blood for that ability!</span>")
+		return FALSE
+
+	else if(locate(/obj/effect/decal/cleanable/blood/oil) in src.loc || locate(/obj/effect/decal/cleanable/blood/gibs/robot) in src.loc)
+		to_chat(src,"<span class='warning'>You need blood to shift between realities!</span>")
+		return FALSE
+
+	else if(!(locate(/obj/effect/decal/cleanable/blood) in src.loc))
+		to_chat(src,"<span class='warning'>You need blood to shift between realities!</span>")
+		return FALSE
+
+	if(!T.CanPass(src, T) || loc != T)
 		to_chat(src,"<span class='warning'>You can't use that here!</span>")
 		return FALSE
 
-/mob/living/carbon/human/proc/riftwalker_do_phase(var/turf/T, var/datum/species/riftwalker/RIFT)
+	if(!(ability_flags & AB_PHASE_SHIFTED))
+		rift_consume_blood(ability_cost)
+	playsound(src, 'sound/misc/demonlaugh.ogg', 50, 1)
 
-	RIFT = species
-
+	RIFT.doing_bloodcrawl = TRUE
 	if(ability_flags & AB_PHASE_SHIFTED)
-		playsound(src, 'sound/misc/demonlaugh.ogg', 50, 1)
 		riftwalker_phase_in(T)
 	else
-		if(!rift_consume_blood(-100))
-			playsound(src, 'sound/misc/demonlaugh.ogg', 50, 1)
-			riftwalker_phase_out(T)
-		else return
+		riftwalker_phase_out(T)
+	RIFT.doing_bloodcrawl = FALSE
 
 /mob/living/carbon/human/proc/riftwalker_phase_in(var/turf/T)
 	if(ability_flags & AB_PHASE_SHIFTED)
@@ -309,7 +320,8 @@
 					to_chat(target, "<span class='vwarning'>\The [src] phases into you, [target.vore_selected.vore_verb]ing them into your [target.vore_selected.name]!</span>")
 					to_chat(src, "<span class='vwarning'>You phase into [target], having them [target.vore_selected.vore_verb] you into their [target.vore_selected.name]!</span>")
 
-		spawn(3 SECONDS)
+		sleep(3 SECONDS)
+		src.Stun(1)
 		canmove = original_canmove
 		alpha = initial(alpha)
 		remove_modifiers_of_type(/datum/modifier/riftwalker_phase_vision)
@@ -358,7 +370,7 @@
 		alpha = 0
 		add_modifier(/datum/modifier/riftwalker_phase_vision)
 		add_modifier(/datum/modifier/riftwalker_phase)
-		spawn(3 SECONDS)
+		sleep(3 SECONDS)
 		invisibility = INVISIBILITY_SHADEKIN
 		see_invisible = INVISIBILITY_SHADEKIN
 		see_invisible_default = INVISIBILITY_SHADEKIN

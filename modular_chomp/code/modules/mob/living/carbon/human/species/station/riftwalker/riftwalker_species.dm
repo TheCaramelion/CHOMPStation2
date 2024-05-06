@@ -52,6 +52,7 @@
 	flags =  NO_SCAN | NO_MINOR_CUT | NO_INFECT
 	spawn_flags = SPECIES_CAN_JOIN | SPECIES_IS_WHITELISTED | SPECIES_WHITELIST_SELECTABLE
 
+	vision_flags = SEE_SELF|SEE_MOBS
 	appearance_flags = HAS_HAIR_COLOR | HAS_LIPS | HAS_SKIN_COLOR | HAS_EYE_COLOR | HAS_UNDERWEAR
 
 	flesh_color = "#FFC896"
@@ -179,9 +180,9 @@
 	var/temp_diff = body_temperature - H.bodytemperature
 	if(temp_diff >= 50)
 		if(blood_resource > 0)
-			H.riftwalker_adjust_blood(-1)
+			H.riftwalker_adjust_blood(-5)
 		else if(H.nutrition)
-			H.adjust_nutrition(-5)
+			H.adjust_nutrition(-10)
 		else
 			H.adjustFireLoss(2)
 
