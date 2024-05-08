@@ -15,6 +15,10 @@
 		to_chat(src, "<span class='warning'>Only a riftwalker can use that!</span>")
 		return FALSE
 
+	if(cloaked)
+		to_chat(src, "<span class='warning'>We can't do this while cloaked</span>")
+		return FALSE
+
 	if(RIFT.weakened)
 		to_chat(src, "<span class='warning'>A strange substance won't allow us to use that.</span>")
 		return FALSE
@@ -120,19 +124,10 @@
 	set desc = "Temporarily phase out of reality"
 	set category = "Abilities.Riftwalker"
 
-	riftwalker_do_bloodjaunt(get_turf(src), species)
+	riftwalker_bloodjaunt_out(src.loc)
 
 	spawn(3 SECONDS)
-		riftwalker_do_bloodjaunt(get_turf(src), species)
-
-/mob/living/carbon/human/proc/riftwalker_do_bloodjaunt(var/turf/T, var/datum/species/riftwalker/RIFT)
-
-	RIFT = species
-
-	if(ability_flags & AB_PHASE_SHIFTED)
-		riftwalker_bloodjaunt_in(T)
-	else
-		riftwalker_bloodjaunt_out(T)
+		riftwalker_bloodjaunt_in(src.loc)
 
 /mob/living/carbon/human/proc/riftwalker_bloodjaunt_in(var/turf/T)
 
@@ -188,7 +183,7 @@
 					to_chat(target, "<span class='vwarning'>\The [src] phases into you, [target.vore_selected.vore_verb]ing them into your [target.vore_selected.name]!</span>")
 					to_chat(src, "<span class='vwarning'>You phase into [target], having them [target.vore_selected.vore_verb] you into their [target.vore_selected.name]!</span>")
 
-		spawn(30)
+		sleep(2 SECONDS)
 		canmove = original_canmove
 		alpha = initial(alpha)
 		remove_modifiers_of_type(/datum/modifier/riftwalker_phase_vision)
@@ -198,7 +193,55 @@
 
 /mob/living/carbon/human/proc/riftwalker_bloodjaunt_out(var/turf/T)
 
+	if(!(ability_flags & AB_PHASE_SHIFTED))
+		forceMove(T)
+		var/original_canmove = canmove
+		SetStunned(0)
+		SetWeakened(0)
+		if(buckled)
+			buckled.unbuckle_mob()
+		if(pulledby)
+			pulledby.stop_pulling()
+		stop_pulling()
+		canmove = FALSE
 
+		ability_flags |= AB_PHASE_SHIFTED
+		ability_flags |= AB_PHASE_SHIFTING
+		mouse_opacity = 0
+		name = get_visible_name()
+
+		if(l_hand)
+			unEquip(l_hand)
+		if(r_hand)
+			unEquip(r_hand)
+		if(back)
+			unEquip(back)
+
+		can_pull_size = 0
+		can_pull_mobs = MOB_PULL_NONE
+		hovering = TRUE
+
+		for(var/obj/belly/B as anything in vore_organs)
+			B.escapable = FALSE
+
+		var/obj/effect/temp_visual/riftwalker/phasein/phaseanim = new /obj/effect/temp_visual/riftwalker/bloodout(src.loc)
+		phaseanim.dir = dir
+		alpha = 0
+		add_modifier(/datum/modifier/shadekin_phase_vision)
+		add_modifier(/datum/modifier/shadekin_phase) //CHOMPEdit - Shadekin probably shouldn't be hit while phasing
+		sleep(5)
+		invisibility = INVISIBILITY_SHADEKIN
+		see_invisible = INVISIBILITY_SHADEKIN
+		see_invisible_default = INVISIBILITY_SHADEKIN // CHOMPEdit - Allow seeing phased entities while phased.
+		//cut_overlays()
+		update_icon()
+		alpha = 127
+
+		canmove = original_canmove
+		incorporeal_move = TRUE
+		density = FALSE
+		force_max_speed = TRUE
+		ability_flags &= ~AB_PHASE_SHIFTING
 
 // Bloodcrawl
 
@@ -527,7 +570,6 @@
 	verbpath = /mob/living/carbon/human/proc/temporal_cloak
 	ability_icon_state = "const_ambush"
 
-
 /mob/living/carbon/human/proc/temporal_cloak()
 	set name = "Temporal Cloak (20)"
 	set category = "Abilities.Riftwalker"
@@ -544,31 +586,37 @@
 		do_cloak()
 
 		spawn(RIFT.shift_time)
-			if(ability_flags & RW_CLOAKED)
-				temporal_cloak_off()
+			if(cloaked)
+				uncloak()
 
 /mob/living/carbon/human/proc/do_cloak()
-	if(ability_flags & RW_CLOAKED)
-		temporal_cloak_off()
+	if(cloaked)
+		uncloak()
 	else
 		if(!rift_consume_blood(-20))
-			temporal_cloak_on()
+			cloak()
 
-/mob/living/carbon/human/proc/temporal_cloak_off()
-	if(ability_flags & RW_CLOAKED)
+// Many things breaks Rift cloaks
 
-		ability_flags &= ~RW_CLOAKED
-		mouse_opacity = 1
-		name = get_visible_name()
-		alpha = initial(alpha)
+/mob/living/carbon/human/attack_hand(mob/user)
+	break_cloak()
+	. = ..()
 
-/mob/living/carbon/human/proc/temporal_cloak_on()
-	if(!(ability_flags & RW_CLOAKED))
+/mob/living/carbon/human/hitby(atom/movable/AM, speed)
+	break_cloak()
+	. = ..()
 
-		ability_flags |= RW_CLOAKED
-		mouse_opacity = 0
-		name = get_visible_name()
-		alpha = 13
+/mob/living/carbon/human/bullet_act(obj/item/projectile/P, def_zone)
+	break_cloak()
+	. = ..()
+
+/mob/living/carbon/human/hit_with_weapon(obj/item/I, mob/living/user, effective_force, hit_zone)
+	break_cloak()
+	. = ..()
+
+/mob/living/carbon/human/standard_weapon_hit_effects(obj/item/I, mob/living/user, effective_force, blocked, soaked, hit_zone)
+	break_cloak()
+	. = ..()
 
 // Echo Image
 
@@ -596,12 +644,11 @@
 		return
 
 	var/client/rw_client = src.client
-	var/mob/living/carbon/human/dummy/mirror = get_mannequin(rw_client)
+	var/mob/living/carbon/human/mirror = get_mannequin(rw_client)
 
 	mirror = new(loc)
 	mirror.health = 50
 	rw_client.prefs.copy_to(mirror)
-	mirror.ability_flags = CANPUSH
 
 	RIFT.mirrors += mirror
 
@@ -738,7 +785,6 @@
 			to_chat(src, "<span class='warning'>\The [M] has declined your possessing attempt.</span>")
 			return
 
-
 	var/mob/living/dominated_brain/db = new /mob/living/dominated_brain(M, src, M.name, M)
 	var/datum/mind/user_mind = src.mind
 	var/datum/mind/victim_mind = M.mind
@@ -763,6 +809,8 @@
 	db.prey_ooc_style = M.ooc_notes_style
 	db.prey_ooc_likes = M.ooc_notes_likes
 	db.prey_ooc_dislikes = M.ooc_notes_dislikes
+
+	remove_verb(db,/mob/living/dominated_brain/proc/resist_control)
 
 	db.ckey = db.prey_ckey
 
@@ -794,7 +842,7 @@
 
 	var/datum/species/riftwalker/RIFT = species
 
-	var/mob/living/dominated_brain/db = locate(/mob/living/dominated_brain/) in src
+	var/mob/living/dominated_brain/db = locate(/mob/living/dominated_brain/) in src.contents
 	var/mob/living/carbon/human/new_body = new /mob/living/carbon/human(src.loc)
 	var/client/user_client = src.client
 	var/client/victim_mind

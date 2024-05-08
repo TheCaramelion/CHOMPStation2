@@ -1379,8 +1379,10 @@ GLOBAL_LIST_EMPTY_TYPED(living_players_by_zlevel, /list)
 	var/icon/selficon = getCompoundIcon(src)
 	selficon.MapColors(0,0,0, 0,0,0, 0,0,0, 1,1,1) //White
 	var/image/selfimage = image(selficon)
-	selfimage.color = "#0000FF"
+	// CHOMPEdit Start - A shadow instead of BLUE
+	selfimage.color = "#000002"
 	selfimage.alpha = 100
+	// CHOMPEdit End - A shadow instead of BLUE
 	selfimage.layer = initial(layer)
 	selfimage.plane = initial(plane)
 	selfimage.loc = src

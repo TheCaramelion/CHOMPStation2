@@ -69,6 +69,9 @@
 				cloaker.deactivate()
 	for(var/obj/item/weapon/deadringer/dr in src)
 		dr.uncloak()
+	// CHOMPEdit Start - Adding riftwalkers here
+	if(istype(species, /datum/species/riftwalker))
+		uncloak()
 
 /mob/living/carbon/human/is_cloaked()
 	if(mind && mind.changeling && mind.changeling.cloaked) // Ling camo.
@@ -78,6 +81,11 @@
 		for(var/obj/item/rig_module/stealth_field/cloaker in suit.installed_modules)
 			if(cloaker.active)
 				return TRUE
+	// CHOMPEdit Start - Adding riftwalkers here
+	else if(istype(species, /datum/species/riftwalker))
+		if(cloaked)
+			return TRUE
+	// CHOMPEdit End
 	for(var/obj/item/weapon/deadringer/dr in src)
 		if(dr.timer > 20)
 			return TRUE

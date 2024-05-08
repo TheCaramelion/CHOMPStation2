@@ -25,6 +25,7 @@
 	slowdown = -0.5
 	item_slowdown_mod = 0.5
 	brute_mod = 1.2
+	burn_mod = 0
 
 	warning_low_pressure = 50
 	hazard_low_pressure = -1
@@ -36,17 +37,11 @@
 	cold_level_2 = 220 //Default 200
 	cold_level_3 = 130 //Default 120
 
-	breath_cold_level_1 = 260	//Default 240 - Lower is better
-	breath_cold_level_2 = 200	//Default 180
-	breath_cold_level_3 = 120	//Default 100
+	// Immune to HEAT
 
-	heat_level_1 = 420 //Default 360 - Higher is better
-	heat_level_2 = 480 //Default 400
-	heat_level_3 = 1100 //Default 1000
-
-	breath_heat_level_1 = 450	//Default 380 - Higher is better
-	breath_heat_level_2 = 530	//Default 450
-	breath_heat_level_3 = 1400	//Default 1250
+	heat_level_1 = 850 //Default 360 - Higher is better
+	heat_level_2 = 100 //Default 400
+	heat_level_3 = 1150 //Default 1000
 
 	flags =  NO_SCAN | NO_MINOR_CUT | NO_INFECT
 	spawn_flags = SPECIES_CAN_JOIN | SPECIES_IS_WHITELISTED | SPECIES_WHITELIST_SELECTABLE
@@ -66,7 +61,6 @@
 	genders = list(MALE, FEMALE, PLURAL, NEUTER)
 
 	virus_immune = 1
-	burn_mod = 0
 
 	breath_type = null
 	poison_type = null
@@ -178,11 +172,14 @@
 /datum/species/riftwalker/handle_environment_special(var/mob/living/carbon/human/H)
 
 	if(H.radiation)
-		H.adjustFireLoss((-0.1))
-		H.adjustBruteLoss((-0.1))
-		H.adjustToxLoss((-0.1))
-		H.adjustCloneLoss((-0.1))
-		H.heal_organ_damage(3,0)
+		var/rad_damage = 0 - H.radiation
+		H.radiation = rad_damage
+		H.adjustFireLoss((rad_damage))
+		H.adjustBruteLoss((rad_damage))
+		H.adjustToxLoss((rad_damage))
+		H.adjustCloneLoss((rad_damage))
+		H.heal_organ_damage(rad_damage,0)
+		H.adjust_nutrition(-rad_damage)
 		H.add_chemical_effect(CE_ANTIBIOTIC, ANTIBIO_NORM)
 		for(var/obj/item/organ/I in H.internal_organs)
 			if(I.robotic >= ORGAN_ROBOT)
@@ -196,14 +193,13 @@
 				O.mend_fracture()
 			for(var/datum/wound/W in O.wounds)
 				if(W.bleeding())
-					W.damage = max(W.damage - 2, 0)
+					W.damage = max(W.damage - rad_damage, 0)
 					if(W.damage <= 0)
 						O.wounds -= W
 				if(W.internal)
-					W.damage = max(W.damage - 2, 0)
+					W.damage = max(W.damage - rad_damage, 0)
 					if(W.damage <= 0)
 						O.wounds -= W
-		H.radiation -= 1
 
 	var/temp_diff = body_temperature - H.bodytemperature
 	if(temp_diff >= 50)
