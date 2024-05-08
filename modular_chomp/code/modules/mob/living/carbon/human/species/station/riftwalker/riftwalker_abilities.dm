@@ -839,3 +839,48 @@
 	riftwalker_phase_out(T)
 
 	src.Weaken(3)
+
+/mob/living/carbon/human/proc/riftwalker_statue_sacrifice()
+	set name = "Statue Sacrifice"
+	set category = "Abilities.Riftwalker"
+	set desc = "Sacrifice a nearby entity to regain your power"
+
+	var/datum/species/riftwalker/RIFT = species
+
+	var/obj/structure/gargoyle/statue = src.loc
+	var/mob/living/sacrifices = statue.living_mobs(1, TRUE)
+
+	var/mob/living/chosen_one = tgui_input_list(usr, "Choose a victim", "Sacrifice", sacrifices)
+
+	if(!chosen_one)
+		return
+	else
+		if(do_after(statue, 30 SECONDS, chosen_one))
+			chosen_one.gib()
+			remove_verb(src,/mob/living/carbon/human/proc/riftwalker_statue_sacrifice)
+			remove_verb(src,/mob/living/carbon/human/proc/riftwalker_surrender)
+			RIFT.add_riftwalker_abilities(src)
+			riftwalker_adjust_blood(100)
+			adjust_nutrition(250)
+			statue.unpetrify(FALSE, TRUE)
+
+/mob/living/carbon/human/proc/riftwalker_surrender()
+	set name = "Statue Surrender"
+	set category = "Abilities.Riftwalker"
+	set desc = "Surrender and give in..."
+
+	var/obj/structure/gargoyle/statue = src.loc
+	var/obj/effect/decal/cleanable/ash/dust = new /obj/effect/decal/cleanable/ash(statue.loc)
+	var/image/red = image(dust.icon, dust.icon_state)
+	var/datum/species/riftwalker/RIFT = species
+
+	red.color = "#A10808"
+
+	dust.name = "bloodstone dust"
+	dust.add_overlay(red)
+
+	remove_verb(src,/mob/living/carbon/human/proc/riftwalker_statue_sacrifice)
+	remove_verb(src,/mob/living/carbon/human/proc/riftwalker_surrender)
+	RIFT.add_riftwalker_abilities(src)
+
+	statue.Destroy()

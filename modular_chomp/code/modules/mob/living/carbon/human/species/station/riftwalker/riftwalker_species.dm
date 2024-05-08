@@ -24,8 +24,7 @@
 
 	slowdown = -0.5
 	item_slowdown_mod = 0.5
-	brute_mod = 0.7
-	burn_mod = 1.2
+	brute_mod = 1.2
 
 	warning_low_pressure = 50
 	hazard_low_pressure = -1
@@ -53,7 +52,7 @@
 	spawn_flags = SPECIES_CAN_JOIN | SPECIES_IS_WHITELISTED | SPECIES_WHITELIST_SELECTABLE
 
 	vision_flags = SEE_SELF|SEE_MOBS
-	appearance_flags = HAS_HAIR_COLOR | HAS_LIPS | HAS_SKIN_COLOR | HAS_EYE_COLOR | HAS_UNDERWEAR
+	appearance_flags = HAS_HAIR_COLOR | HAS_LIPS | HAS_SKIN_COLOR | HAS_EYE_COLOR
 
 	flesh_color = "#FFC896"
 	blood_color = "#A10808"
@@ -67,6 +66,7 @@
 	genders = list(MALE, FEMALE, PLURAL, NEUTER)
 
 	virus_immune = 1
+	burn_mod = 0
 
 	breath_type = null
 	poison_type = null
@@ -177,6 +177,34 @@
 
 /datum/species/riftwalker/handle_environment_special(var/mob/living/carbon/human/H)
 
+	if(H.radiation)
+		H.adjustFireLoss((-0.1))
+		H.adjustBruteLoss((-0.1))
+		H.adjustToxLoss((-0.1))
+		H.adjustCloneLoss((-0.1))
+		H.heal_organ_damage(3,0)
+		H.add_chemical_effect(CE_ANTIBIOTIC, ANTIBIO_NORM)
+		for(var/obj/item/organ/I in H.internal_organs)
+			if(I.robotic >= ORGAN_ROBOT)
+				continue
+			if(I.damage > 0)
+				I.damage = max(I.damage - 0.1, 0)
+			if(I.damage <= 5 && I.organ_tag == O_EYES)
+				H.sdisabilities %= ~BLIND
+		for(var/obj/item/organ/external/O in H.organs)
+			if(O.status & ORGAN_BROKEN)
+				O.mend_fracture()
+			for(var/datum/wound/W in O.wounds)
+				if(W.bleeding())
+					W.damage = max(W.damage - 2, 0)
+					if(W.damage <= 0)
+						O.wounds -= W
+				if(W.internal)
+					W.damage = max(W.damage - 2, 0)
+					if(W.damage <= 0)
+						O.wounds -= W
+		H.radiation -= 1
+
 	var/temp_diff = body_temperature - H.bodytemperature
 	if(temp_diff >= 50)
 		if(blood_resource > 0)
@@ -185,6 +213,9 @@
 			H.adjust_nutrition(-10)
 		else
 			H.adjustFireLoss(2)
+
+	if(world.time < H.l_move_time + 3 MINUTES && blood_resource == 0 && H.nutrition == 0)
+		to_chat(src, "Badness...")
 
 /datum/species/riftwalker/handle_death(mob/living/carbon/human/H)
 	if(real_body)
@@ -204,4 +235,30 @@
 		spawn(10 SECONDS)
 			H.gib()
 	else
-		return
+		petrify_riftwalker(H)
+	return TRUE
+
+/datum/species/riftwalker/proc/petrify_riftwalker(mob/living/carbon/human/H)
+		/*	Yeah this is uh- Not good.
+		 *	But somehows ghosting and reentering the body makes it work?
+		 *	So for now I'll leave this here
+		 */
+		var/mob/observer/dead/ghost = H.client.mob
+		ghost = H.ghostize(1)
+		ghost.reenter_corpse()
+
+		H._AddComponent(/datum/component/gargoyle)
+		var/datum/component/gargoyle/comp = H.GetComponent(/datum/component/gargoyle)
+		new /obj/structure/gargoyle(H.loc, H, "statue", "bloodstone", "petrifies", "#A10808", FALSE, TRUE)
+
+		remove_verb(H,/mob/living/carbon/human/proc/gargoyle_transformation)
+		remove_verb(H,/mob/living/carbon/human/proc/gargoyle_pause)
+		remove_verb(H,/mob/living/carbon/human/proc/gargoyle_checkenergy)
+		comp?.cooldown = INFINITY
+
+		remove_riftwalker_abilities(H)
+
+		H.RemoveComponentSource()
+
+		add_verb(H,/mob/living/carbon/human/proc/riftwalker_statue_sacrifice)
+		add_verb(H,/mob/living/carbon/human/proc/riftwalker_surrender)
