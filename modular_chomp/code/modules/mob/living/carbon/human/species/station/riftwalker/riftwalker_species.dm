@@ -111,16 +111,12 @@
 
 	var/list/riftwalker_ability_datums = list()
 
-	var/doing_bloodcrawl = FALSE
 	var/blood_spawn = 0
 	var/sacrifice = 0
 	var/prey_size = 1
 	var/poison = "mindbreaker"
 	var/poison_per_bite = 3
 	var/shift_time = 30 SECONDS
-	var/weakened = FALSE
-	var/petrified = FALSE
-	var/name_revealed = FALSE
 
 	var/list/mob/living/carbon/human/mirrors = list()
 	var/mob/living/carbon/human/real_body = null
@@ -130,6 +126,15 @@
 	var/blood_min = 0
 	var/blood_max = 150
 	var/blood_infinite = FALSE
+
+	/*
+	RW_BLOODGATE
+	RW_WEAKENED
+	RW_PETRIFIED
+	RW_NAME_REVEALED
+	RW_BLOODCRAWLING
+	*/
+	var/state = 0
 
 /datum/species/riftwalker/New()
 	..()
@@ -242,7 +247,7 @@
 			H.gib()
 	else
 		petrify_riftwalker(H)
-		petrified = TRUE
+		state |= RW_PETRIFIED
 	return TRUE
 
 /datum/species/riftwalker/proc/petrify_riftwalker(mob/living/carbon/human/H)
@@ -271,5 +276,5 @@
 	add_verb(H,/mob/living/carbon/human/proc/riftwalker_surrender)
 
 	spawn(5 MINUTES)
-	if(petrified)
+	if(state & RW_PETRIFIED)
 		H.riftwalker_surrender()

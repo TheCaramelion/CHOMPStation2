@@ -17,11 +17,11 @@
 		to_chat(src, "<span class='warning'>We can't do this while cloaked!</span>")
 		return FALSE
 
-	if(RIFT.weakened)
+	if(RIFT.state & RW_WEAKENED)
 		to_chat(src, "<span class='warning'>A strange substance is keeping us here!</span>")
 		return FALSE
 
-	if(RIFT.petrified)
+	if(RIFT.state & RW_PETRIFIED)
 		to_chat(src, "<span class='warning'>We can't do that in this state!</span>")
 		return FALSE
 
@@ -137,11 +137,11 @@
 	if(!riftwalker_ability_check())
 		return FALSE
 
-	else if(RIFT.doing_bloodcrawl)
+	else if(RIFT.state & RW_BLOODCRAWLING)
 		to_chat(src, "<span class='warning'>You are already trying to phase!</span>")
 		return FALSE
 
-	if(RIFT.name_revealed)
+	if(RIFT.state & RW_NAME_REVEALED)
 		to_chat(src,"<span class='warning'>Revealing our true name has left us weak... We need time to recover.</span>")
 		return FALSE
 
@@ -292,7 +292,7 @@
 
 	if(!riftwalker_ability_check())
 		return FALSE
-	else if(RIFT.doing_bloodcrawl)
+	else if(RIFT.state & RW_BLOODCRAWLING)
 		to_chat(src, "<span class='warning'>You are already trying to phase!</span>")
 		return FALSE
 
@@ -308,7 +308,7 @@
 		to_chat(src,"<span class='warning'>You need blood to shift between realities!</span>")
 		return FALSE
 
-	if(RIFT.name_revealed)
+	if(RIFT.state & RW_NAME_REVEALED)
 		to_chat(src,"<span class='warning'>Revealing our true name has left us weak... We need time to recover.</span>")
 		return FALSE
 
@@ -320,12 +320,12 @@
 		rift_consume_blood(ability_cost)
 	playsound(src, 'sound/misc/demonlaugh.ogg', 50, 1)
 
-	RIFT.doing_bloodcrawl = TRUE
+	RIFT.state |= RW_BLOODCRAWLING
 	if(ability_flags & AB_PHASE_SHIFTED)
 		riftwalker_phase_in(T)
 	else
 		riftwalker_phase_out(T)
-	RIFT.doing_bloodcrawl = FALSE
+	RIFT.state &= ~RW_BLOODCRAWLING
 
 /mob/living/carbon/human/proc/riftwalker_phase_in(var/turf/T)
 	if(ability_flags & AB_PHASE_SHIFTED)
@@ -712,10 +712,12 @@
 	if(!(riftwalker_ability_check()))
 		return
 
+	var/datum/species/riftwalker/RIFT = species
+
 	if(ability_flags & AB_PHASE_SHIFTED)
 		to_chat(src, "<span class='warning'>You can't use that while phase shifted!</span>")
 		return FALSE
-	else if(ability_flags & RW_BLOODGATE)
+	else if(RIFT.state & RW_BLOODGATE)
 		to_chat(src, "<span class='warning'>You have already made a portal to redspace</span>")
 
 	if(rift_consume_blood(-100))
@@ -756,7 +758,7 @@
 		template.annihilate_plants(deploy_location)
 		template.load(deploy_location, centered = TRUE)
 		template.update_lighting(deploy_location)
-		ability_flags |= RW_BLOODGATE
+		RIFT.state |= RW_BLOODGATE
 		return TRUE
 	else
 		return FALSE
@@ -904,7 +906,7 @@
 	if(!T)
 		T = get_turf(src)
 
-	if(!istype(RIFT) || RIFT.doing_bloodcrawl || !T.CanPass(src, T) || loc != T || !(ability_flags & AB_PHASE_SHIFTED))
+	if(!istype(RIFT) || RIFT.state & RW_BLOODCRAWLING || !T.CanPass(src, T) || loc != T || !(ability_flags & AB_PHASE_SHIFTED))
 		return FALSE
 
 	if(dephaser)
@@ -937,7 +939,7 @@
 			remove_verb(src,/mob/living/carbon/human/proc/riftwalker_statue_sacrifice)
 			remove_verb(src,/mob/living/carbon/human/proc/riftwalker_surrender)
 			RIFT.add_riftwalker_abilities(src)
-			RIFT.petrified = FALSE
+			RIFT.state &= ~RW_PETRIFIED
 			src.halloss = 0
 			riftwalker_adjust_blood(100)
 			adjust_nutrition(250)
@@ -978,7 +980,7 @@
 /mob/living/carbon/human/check_mentioned(message)
 	if(get_species() == SPECIES_RIFTWALKER)
 		if(findtext(message, nickname))
-			src.riftwalker_cripple()
+			riftwalker_cripple()
 	..()
 
 /mob/living/carbon/human/proc/riftwalker_cripple()
@@ -988,7 +990,7 @@
 	riftwalker_dephase()
 	if(cloaked)
 		uncloak()
-	RIFT.name_revealed = TRUE
+	RIFT.state |= RW_NAME_REVEALED
 
 	spawn(5 MINUTES)
-		RIFT.name_revealed = FALSE
+		RIFT.state &= ~RW_NAME_REVEALED

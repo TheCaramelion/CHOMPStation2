@@ -1,0 +1,5 @@
+#define RW_BLOODGATE 		0x1
+#define RW_WEAKENED 		0x2
+#define RW_PETRIFIED		0x4
+#define RW_NAME_REVEALED	0x8
+#define RW_BLOODCRAWLING	0x16

@@ -2,4 +2,4 @@
 	..()
 	if(alien == IS_RIFTWALKER)
 		var/datum/species/riftwalker/RIFT = M.species
-		RIFT.weakened = TRUE
+		RIFT.state |= RW_WEAKENED
