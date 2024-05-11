@@ -328,6 +328,7 @@ var/list/wf_speak_void_sound = list ('sound/talksounds/wf/void_1.ogg', 'sound/ta
 var/list/wf_speak_vomva_sound = list ('sound/talksounds/wf/vomva_1.ogg', 'sound/talksounds/wf/vomva_2.ogg', 'sound/talksounds/wf/vomva_3.ogg', 'sound/talksounds/wf/vomva_4.ogg')
 //CHOMPedit start: More sounds.
 var/list/xeno_speak_sound = list('modular_chomp/sound/talksounds/xeno/xenotalk.ogg', 'modular_chomp/sound/talksounds/xeno/xenotalk2.ogg', 'modular_chomp/sound/talksounds/xeno/xenotalk3.ogg')
+var/list/rift_speak_sound = list('modular_chomp/sound/talksounds/xeno/xenotalk.ogg', 'modular_chomp/sound/talksounds/xeno/xenotalk2.ogg', 'modular_chomp/sound/talksounds/xeno/xenotalk3.ogg')
 //CHOMPedit end.
 
 
@@ -348,6 +349,7 @@ var/list/xeno_speak_sound = list('modular_chomp/sound/talksounds/xeno/xenotalk.o
 #define raccoon_sounds list("cough" = null, "sneeze" = null, "scream" = list('sound/voice/raccoon.ogg'), "pain" = list('sound/voice/raccoon.ogg'), "gasp" = null, "death" = list('sound/voice/raccoon.ogg'))
 #define metroid_sounds list("cough" = list('sound/metroid/metroid_cough.ogg'), "sneeze" = list('sound/metroid/metroid_sneeze.ogg'), "scream" = list('sound/metroid/metroid_scream.ogg'), "pain" = list('sound/metroid/metroidsee.ogg'), "gasp" = list('sound/metroid/metroid_gasp.ogg'), "death" = list('sound/metroid/metroiddeath.ogg'))
 #define vulpine_sounds list("cough" = null, "sneeze" = null, "scream" = list('modular_chomp/sound/voice/scream/vulpine/fox_yip1.ogg', 'modular_chomp/sound/voice/scream/vulpine/fox_yip2.ogg', 'modular_chomp/sound/voice/scream/vulpine/fox_yip3.ogg'), "pain" = list('modular_chomp/sound/voice/pain/vulpine/fox_pain1.ogg', 'modular_chomp/sound/voice/pain/vulpine/fox_pain2.ogg', 'modular_chomp/sound/voice/pain/vulpine/fox_pain3.ogg', 'modular_chomp/sound/voice/pain/vulpine/fox_pain4.ogg'), "gasp" = list('modular_chomp/sound/voice/gasp/canine/wolf_gasp.ogg'), "death" = list('modular_chomp/sound/voice/death/canine/wolf_death1.ogg', 'modular_chomp/sound/voice/death/canine/wolf_death2.ogg', 'modular_chomp/sound/voice/death/canine/wolf_death3.ogg', 'modular_chomp/sound/voice/death/canine/wolf_death4.ogg', 'modular_chomp/sound/voice/death/canine/wolf_death5.ogg'))
+#define rift_sounds list("cough" = null, "sneeze" = null, "scream" = list('sound/effects/mob_effects/x_scream1.ogg','sound/effects/mob_effects/x_scream2.ogg','sound/effects/mob_effects/x_scream3.ogg'), "pain" = list('sound/misc/demonattack.ogg'), "gasp" = null, "death" = "sound/misc/demondeath.ogg")
 #define no_sounds list("cough" = null, "sneeze" = null, "scream" = null, "pain" = null, "gasp" = null, "death" = null)
 #define use_default list("cough" = null, "sneeze" = null, "scream" = null, "pain" = null, "gasp" = null, "death" = null)
 /*
@@ -401,6 +403,7 @@ var/list/species_sound_map = list(
 	"Vox" = vox_sounds,
 	"Vulpine" = vulpine_sounds,
 	"Xeno" = xeno_sounds,
+	"Riftwalker" = rift_sounds,
 	"None" = no_sounds,
 	"Unset" = use_default
 )

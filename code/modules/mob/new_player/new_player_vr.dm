@@ -85,6 +85,10 @@
 			else if(LAZYLEN(instance.allowed_species) && !(client.prefs.species in instance.allowed_species)) //We use else if here, so as to prevent getting two errors for one trait.
 				pass = FALSE
 				to_chat(src,"<span class='warning'>One of your traits, [instance.name], is not available for your species! Please fix this conflict and then try again.</span>")
+
+	if(client?.prefs?.species == "Riftwalker" && !client?.prefs?.nickname)
+		pass = FALSE
+		to_chat(src, "<span class='warning'>Riftwalkers need a set nickname! This will be your true name, so don't make it the same name as your character name, as this could make you a very easy target.</span>")
 	//CHOMP Addition End
 
 	//Final popup notice

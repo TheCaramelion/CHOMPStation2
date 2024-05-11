@@ -1,9 +1,7 @@
 /datum/power/riftwalker
-
 /datum/modifier/riftwalker_phase
 	name = "Riftwalker Phasing"
 	evasion = 100
-
 /datum/modifier/riftwalker_phase_vision
 	name = "Riftwalker Phase Vision"
 	vision_flags = SEE_THRU
@@ -16,11 +14,15 @@
 		return FALSE
 
 	if(cloaked)
-		to_chat(src, "<span class='warning'>We can't do this while cloaked</span>")
+		to_chat(src, "<span class='warning'>We can't do this while cloaked!</span>")
 		return FALSE
 
 	if(RIFT.weakened)
-		to_chat(src, "<span class='warning'>A strange substance won't allow us to use that.</span>")
+		to_chat(src, "<span class='warning'>A strange substance is keeping us here!</span>")
+		return FALSE
+
+	if(RIFT.petrified)
+		to_chat(src, "<span class='warning'>We can't do that in this state!</span>")
 		return FALSE
 
 	return TRUE
@@ -89,7 +91,7 @@
 	else
 		blood_gained = 10
 
-	if(do_after(src, 5 SECONDS, target = src))
+	if(do_after(src, 5 SECONDS, target = src, max_distance = 2))
 		riftwalker_adjust_blood(blood_gained)
 		T.gib()
 
@@ -112,9 +114,8 @@
 	icon_state = "bloodout"
 
 // Blood Jaunt
-
 /datum/power/riftwalker/bloodjaunt
-	name = "Blood Jaunt"
+	name = "Bloodjaunt"
 	desc = "Temporarily phase out of reality"
 	verbpath = /mob/living/carbon/human/proc/bloodjaunt
 	ability_icon_state = "rifwalker_jaunt"
@@ -123,6 +124,26 @@
 	set name = "Blood Jaunt"
 	set desc = "Temporarily phase out of reality"
 	set category = "Abilities.Riftwalker"
+
+	if((get_area(src).flags & PHASE_SHIELDED))
+		to_chat(src,"<span class='warning'>This area is preventing you from phasing!</span>")
+		return FALSE
+
+	if(ability_flags & AB_PHASE_SHIFTING)
+		return FALSE
+
+	var/datum/species/riftwalker/RIFT = species
+
+	if(!riftwalker_ability_check())
+		return FALSE
+
+	else if(RIFT.doing_bloodcrawl)
+		to_chat(src, "<span class='warning'>You are already trying to phase!</span>")
+		return FALSE
+
+	if(RIFT.name_revealed)
+		to_chat(src,"<span class='warning'>Revealing our true name has left us weak... We need time to recover.</span>")
+		return FALSE
 
 	riftwalker_bloodjaunt_out(src.loc)
 
@@ -244,7 +265,6 @@
 		ability_flags &= ~AB_PHASE_SHIFTING
 
 // Bloodcrawl
-
 /datum/power/riftwalker/bloodcrawl
 	name = "Bloodcrawl (100)"
 	desc = "Shift out of reality using blood as your conduit"
@@ -286,6 +306,10 @@
 
 	else if(!(locate(/obj/effect/decal/cleanable/blood) in src.loc))
 		to_chat(src,"<span class='warning'>You need blood to shift between realities!</span>")
+		return FALSE
+
+	if(RIFT.name_revealed)
+		to_chat(src,"<span class='warning'>Revealing our true name has left us weak... We need time to recover.</span>")
 		return FALSE
 
 	if(!T.CanPass(src, T) || loc != T)
@@ -619,7 +643,6 @@
 	. = ..()
 
 // Echo Image
-
 /datum/power/riftwalker/echo_image
 	name = "Echo Image (50)"
 	desc = "Create a weak copy of yourself"
@@ -644,10 +667,9 @@
 		return
 
 	var/client/rw_client = src.client
-	var/mob/living/carbon/human/mirror = get_mannequin(rw_client)
+	var/mob/living/carbon/human/dummy/mirror = get_mannequin(rw_client)
 
 	mirror = new(loc)
-	mirror.health = 50
 	rw_client.prefs.copy_to(mirror)
 
 	RIFT.mirrors += mirror
@@ -665,8 +687,8 @@
 
 	var/datum/species/riftwalker/RIFT = species
 
-	if(!(riftwalker_ability_check()))
-		return
+	if(isemptylist(RIFT.mirrors))
+		to_chat(src,"<span class='warning'>We don't have any mirrors to talk throught</span>")
 
 	var/message = tgui_input_text(src, "Speak through our mirrors", "Echo Talk")
 
@@ -674,7 +696,6 @@
 		mirror.say(message)
 
 // Bloodgate
-
 /datum/power/riftwalker/bloodgate
 	name = "Bloodgate (100)"
 	desc = "Open the way to a redspace pocket"
@@ -765,6 +786,7 @@
 
 	if(M.stat == DEAD)
 		to_chat(src, "<span class='warning'>\The [M]'s blood doesn't flow, we can't posses this creature.")
+		return
 
 	if(M.isSynthetic())
 		to_chat(src, "<span class='warning'>\The [M] is a bloodless creature. We can't posses them.</span>")
@@ -819,6 +841,9 @@
 	var/datum/species/riftwalker/rift = src.species
 	var/datum/species/riftwalker/new_rift = rift.produceCopy(M.dna.species_traits, M)
 
+	new_rift.hud = old_species.hud
+	new_rift.hud_type = old_species.hud_type
+
 	new_rift.species_holder = old_species
 	new_rift.name = old_species.name
 	new_rift.add_riftwalker_abilities(M)
@@ -833,7 +858,8 @@
 
 	src.gib()
 	user_mind.transfer_to(M)
-	victim_mind.transfer_to(db)
+	if(victim_mind)
+		victim_mind.transfer_to(db)
 
 /mob/living/carbon/human/proc/riftwalker_release()
 	set name = "Release vessel"
@@ -881,8 +907,9 @@
 	if(!istype(RIFT) || RIFT.doing_bloodcrawl || !T.CanPass(src, T) || loc != T || !(ability_flags & AB_PHASE_SHIFTED))
 		return FALSE
 
-	log_admin("[key_name_admin(src)] was stunned out of phase at [T.x],[T.y],[T.z] by [dephaser.name], last touched by [dephaser.fingerprintslast].")
-	message_admins("[key_name_admin(src)] was stunned out of phase at [T.x],[T.y],[T.z] by [dephaser.name], last touched by [dephaser.fingerprintslast]. (<A HREF='?_src_=holder;[HrefToken()];adminplayerobservecoodjump=1;X=[T.x];Y=[T.y];Z=[T.z]'>JMP</a>)", 1)
+	if(dephaser)
+		log_admin("[key_name_admin(src)] was stunned out of phase at [T.x],[T.y],[T.z] by [dephaser.name], last touched by [dephaser.fingerprintslast].")
+		message_admins("[key_name_admin(src)] was stunned out of phase at [T.x],[T.y],[T.z] by [dephaser.name], last touched by [dephaser.fingerprintslast]. (<A HREF='?_src_=holder;[HrefToken()];adminplayerobservecoodjump=1;X=[T.x];Y=[T.y];Z=[T.z]'>JMP</a>)", 1)
 
 	riftwalker_phase_out(T)
 
@@ -896,20 +923,25 @@
 	var/datum/species/riftwalker/RIFT = species
 
 	var/obj/structure/gargoyle/statue = src.loc
-	var/mob/living/sacrifices = statue.living_mobs(1, TRUE)
+	var/mob/living/sacrifices = statue.living_mobs(2, TRUE)
 
 	var/mob/living/chosen_one = tgui_input_list(usr, "Choose a victim", "Sacrifice", sacrifices)
 
 	if(!chosen_one)
+		to_chat(src, "<span class='warning'>There is no living beings nearby</span>")
 		return
 	else
-		if(do_after(statue, 30 SECONDS, chosen_one))
+		statue.Beam(chosen_one, icon_state = "blood", time = 30 SECONDS, maxdistance=3)
+		if(do_after(src, 30 SECONDS, chosen_one))
 			chosen_one.gib()
 			remove_verb(src,/mob/living/carbon/human/proc/riftwalker_statue_sacrifice)
 			remove_verb(src,/mob/living/carbon/human/proc/riftwalker_surrender)
 			RIFT.add_riftwalker_abilities(src)
+			RIFT.petrified = FALSE
+			src.halloss = 0
 			riftwalker_adjust_blood(100)
 			adjust_nutrition(250)
+			sleep(5 SECONDS)
 			statue.unpetrify(FALSE, TRUE)
 
 /mob/living/carbon/human/proc/riftwalker_surrender()
@@ -919,16 +951,44 @@
 
 	var/obj/structure/gargoyle/statue = src.loc
 	var/obj/effect/decal/cleanable/ash/dust = new /obj/effect/decal/cleanable/ash(statue.loc)
-	var/image/red = image(dust.icon, dust.icon_state)
 	var/datum/species/riftwalker/RIFT = species
 
-	red.color = "#A10808"
+	dust.color = "#E62013"
 
 	dust.name = "bloodstone dust"
-	dust.add_overlay(red)
 
 	remove_verb(src,/mob/living/carbon/human/proc/riftwalker_statue_sacrifice)
 	remove_verb(src,/mob/living/carbon/human/proc/riftwalker_surrender)
 	RIFT.add_riftwalker_abilities(src)
 
+	for(var/obj/item/I in src)
+		src.drop_from_inventory(I, statue.loc)
+
+	var/mob/living/dominated_brain/db = locate(/mob/living/dominated_brain/) in src.contents
+
+	if(db)
+		riftwalker_release()
+
+	qdel(src)
+
 	statue.Destroy()
+
+// Found out the real name? DESTROY them
+
+/mob/living/carbon/human/check_mentioned(message)
+	if(get_species() == SPECIES_RIFTWALKER)
+		if(findtext(message, nickname))
+			src.riftwalker_cripple()
+	..()
+
+/mob/living/carbon/human/proc/riftwalker_cripple()
+	var/datum/species/riftwalker/RIFT = species
+
+	to_chat(src, "<span class='warning'>Your true name has been found; Your powers are temporarily limited by this.</span>")
+	riftwalker_dephase()
+	if(cloaked)
+		uncloak()
+	RIFT.name_revealed = TRUE
+
+	spawn(5 MINUTES)
+		RIFT.name_revealed = FALSE

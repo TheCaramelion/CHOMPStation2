@@ -107,3 +107,9 @@
 /decl/emote/audible/scientist/get_emote_sound(var/atom/user)
 	. = ..()
 	.["vol"] *= 0.4 //these boys are pretty loud on their own lol
+
+/decl/emote/audible/rift_laugh
+	key = "riftlaugh"
+	emote_message_1p = "You laugh with malice."
+	emote_message_3p = "laughs with malice."
+	emote_sound = 'sound/misc/demonlaugh.ogg'

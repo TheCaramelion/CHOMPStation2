@@ -236,4 +236,6 @@
 //CHOMPedit start.
 		if("xeno speak")
 			voice_sounds_list = xeno_speak_sound
+		if("rift speak")
+			voice_sounds_list = rift_speak_sound
 //CHOMPedit end.

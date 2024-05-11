@@ -6,6 +6,8 @@
 	icobase = 'icons/mob/human_races/r_fox_vr.dmi'
 	deform = 'icons/mob/human_races/r_def_fox.dmi'
 
+	hud_type = /datum/hud_data/riftwalker
+
 	language = LANGUAGE_DAEMON
 	name_language = LANGUAGE_DAEMON
 	species_language = LANGUAGE_DAEMON
@@ -17,6 +19,10 @@
 	inherent_verbs = list(
 		/mob/living/carbon/human/proc/bloodsuck,
 		/mob/living/proc/shred_limb
+	)
+
+	default_emotes = list(
+		/decl/emote/audible/rift_laugh
 	)
 
 	siemens_coefficient = 1
@@ -113,6 +119,8 @@
 	var/poison_per_bite = 3
 	var/shift_time = 30 SECONDS
 	var/weakened = FALSE
+	var/petrified = FALSE
+	var/name_revealed = FALSE
 
 	var/list/mob/living/carbon/human/mirrors = list()
 	var/mob/living/carbon/human/real_body = null
@@ -150,6 +158,7 @@
 				ability_icon_given = P.ability_icon_state,
 				arguments = list()
 			)
+	add_verb(H,/mob/living/carbon/human/proc/blood_burst)
 	add_verb(H,/mob/living/carbon/human/proc/sizechange)
 	add_verb(H,/mob/living/carbon/human/proc/choose_prey_size)
 	add_verb(H,/mob/living/carbon/human/proc/choose_poison)
@@ -163,6 +172,7 @@
 	for(var/datum/power/riftwalker/P in riftwalker_ability_datums)
 		if(P.verbpath in H.verbs)
 			remove_verb(H, P.verbpath)
+	remove_verb(H,/mob/living/carbon/human/proc/blood_burst)
 	remove_verb(H,/mob/living/carbon/human/proc/sizechange)
 	remove_verb(H,/mob/living/carbon/human/proc/choose_prey_size)
 	remove_verb(H,/mob/living/carbon/human/proc/choose_poison)
@@ -211,14 +221,14 @@
 			H.adjustFireLoss(2)
 
 	if(world.time < H.l_move_time + 3 MINUTES && blood_resource == 0 && H.nutrition == 0)
-		to_chat(src, "Badness...")
+		petrify_riftwalker(H)
 
 /datum/species/riftwalker/handle_death(mob/living/carbon/human/H)
 	if(real_body)
 		var/mob/living/carbon/human/new_body = new /mob/living/carbon/human(H)
 		var/client/user_client = H.client
 
-		to_chat(src, "With your old vessel destroyed, you start to gather the needed energy to burst back to your original form...")
+		to_chat(src, "<span class='notice'>With your old vessel destroyed, you start to gather the needed energy to burst back to your original form...</span>")
 
 		user_client.prefs.copy_to(new_body)
 		if(src.real_body.dna)
@@ -232,29 +242,34 @@
 			H.gib()
 	else
 		petrify_riftwalker(H)
+		petrified = TRUE
 	return TRUE
 
 /datum/species/riftwalker/proc/petrify_riftwalker(mob/living/carbon/human/H)
-		/*	Yeah this is uh- Not good.
-		 *	But somehows ghosting and reentering the body makes it work?
-		 *	So for now I'll leave this here
-		 */
+	playsound(H.loc, 'sound/misc/demondeath.ogg')
+	/*	Yeah this is uh- Not good.
+	 *	But somehow ghosting and reentering the body makes it work?
+	*	So for now I'll leave this here
+	*/
+	if(H.client)
 		var/mob/observer/dead/ghost = H.client.mob
 		ghost = H.ghostize(1)
 		ghost.reenter_corpse()
 
-		H._AddComponent(/datum/component/gargoyle)
-		var/datum/component/gargoyle/comp = H.GetComponent(/datum/component/gargoyle)
-		new /obj/structure/gargoyle(H.loc, H, "statue", "bloodstone", "petrifies", "#A10808", FALSE, TRUE)
+	// H._AddComponent(/datum/component/gargoyle)
+	var/datum/component/gargoyle/comp = H.GetComponent(/datum/component/gargoyle)
+	new /obj/structure/gargoyle(H.loc, H, "statue", "bloodstone", "petrifies", "#E62013", TRUE, TRUE)
 
-		remove_verb(H,/mob/living/carbon/human/proc/gargoyle_transformation)
-		remove_verb(H,/mob/living/carbon/human/proc/gargoyle_pause)
-		remove_verb(H,/mob/living/carbon/human/proc/gargoyle_checkenergy)
-		comp?.cooldown = INFINITY
+	remove_verb(H,/mob/living/carbon/human/proc/gargoyle_transformation)
+	remove_verb(H,/mob/living/carbon/human/proc/gargoyle_pause)
+	remove_verb(H,/mob/living/carbon/human/proc/gargoyle_checkenergy)
+	comp?.cooldown = INFINITY
 
-		remove_riftwalker_abilities(H)
+	remove_riftwalker_abilities(H)
 
-		H.RemoveComponentSource()
+	add_verb(H,/mob/living/carbon/human/proc/riftwalker_statue_sacrifice)
+	add_verb(H,/mob/living/carbon/human/proc/riftwalker_surrender)
 
-		add_verb(H,/mob/living/carbon/human/proc/riftwalker_statue_sacrifice)
-		add_verb(H,/mob/living/carbon/human/proc/riftwalker_surrender)
+	spawn(5 MINUTES)
+	if(petrified)
+		H.riftwalker_surrender()
