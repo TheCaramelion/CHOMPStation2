@@ -149,6 +149,7 @@
 
 	spawn(3 SECONDS)
 		riftwalker_bloodjaunt_in(src.loc)
+		Stun(1)
 
 /mob/living/carbon/human/proc/riftwalker_bloodjaunt_in(var/turf/T)
 
@@ -388,7 +389,7 @@
 					to_chat(src, "<span class='vwarning'>You phase into [target], having them [target.vore_selected.vore_verb] you into their [target.vore_selected.name]!</span>")
 
 		sleep(3 SECONDS)
-		src.Stun(1)
+		Stun(1)
 		canmove = original_canmove
 		alpha = initial(alpha)
 		remove_modifiers_of_type(/datum/modifier/riftwalker_phase_vision)

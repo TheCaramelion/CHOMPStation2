@@ -67,7 +67,11 @@
 			remove_verb(src,/mob/living/carbon/human/proc/riftwalker_surrender)
 			RIFT.add_riftwalker_abilities(src)
 			RIFT.state &= ~RW_PETRIFIED
-			src.halloss = 0
+			halloss = 0
+			bruteloss = bruteloss/2
+			toxloss = toxloss/2
+			fireloss = fireloss/2
+			cloneloss = cloneloss/2
 			riftwalker_adjust_blood(100)
 			adjust_nutrition(250)
 			sleep(5 SECONDS)
