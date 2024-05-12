@@ -230,10 +230,11 @@
 
 /datum/species/riftwalker/handle_death(mob/living/carbon/human/H)
 	if(real_body)
+		playsound(H, pick(get_species_sound(get_gendered_sound(species_holder))["death"]), H.species.death_volume, 1, 20, volume_channel = VOLUME_CHANNEL_DEATH_SOUNDS)
 		var/mob/living/carbon/human/new_body = new /mob/living/carbon/human(H)
 		var/client/user_client = H.client
 
-		to_chat(src, "<span class='notice'>With your old vessel destroyed, you start to gather the needed energy to burst back to your original form...</span>")
+		to_chat(H, "<span class='notice'>With your old vessel destroyed, you start to gather the needed energy to burst back to your original form...</span>")
 
 		user_client.prefs.copy_to(new_body)
 		if(src.real_body.dna)
@@ -241,40 +242,13 @@
 			src.real_body.sync_organ_dna()
 
 		H.mind.transfer_to(new_body)
+		H.species = species_holder
 		qdel(src.real_body)
 
 		spawn(10 SECONDS)
 			H.gib()
 	else
+		playsound(H, 'sound/misc/demondeath.ogg', H.species.death_volume, 1, 20, volume_channel = VOLUME_CHANNEL_DEATH_SOUNDS)
 		petrify_riftwalker(H)
 		state |= RW_PETRIFIED
 	return TRUE
-
-/datum/species/riftwalker/proc/petrify_riftwalker(mob/living/carbon/human/H)
-	playsound(H.loc, 'sound/misc/demondeath.ogg')
-	/*	Yeah this is uh- Not good.
-	 *	But somehow ghosting and reentering the body makes it work?
-	*	So for now I'll leave this here
-	*/
-	if(H.client)
-		var/mob/observer/dead/ghost = H.client.mob
-		ghost = H.ghostize(1)
-		ghost.reenter_corpse()
-
-	// H._AddComponent(/datum/component/gargoyle)
-	var/datum/component/gargoyle/comp = H.GetComponent(/datum/component/gargoyle)
-	new /obj/structure/gargoyle(H.loc, H, "statue", "bloodstone", "petrifies", "#E62013", TRUE, TRUE)
-
-	remove_verb(H,/mob/living/carbon/human/proc/gargoyle_transformation)
-	remove_verb(H,/mob/living/carbon/human/proc/gargoyle_pause)
-	remove_verb(H,/mob/living/carbon/human/proc/gargoyle_checkenergy)
-	comp?.cooldown = INFINITY
-
-	remove_riftwalker_abilities(H)
-
-	add_verb(H,/mob/living/carbon/human/proc/riftwalker_statue_sacrifice)
-	add_verb(H,/mob/living/carbon/human/proc/riftwalker_surrender)
-
-	spawn(5 MINUTES)
-	if(state & RW_PETRIFIED)
-		H.riftwalker_surrender()
