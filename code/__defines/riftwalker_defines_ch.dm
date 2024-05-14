@@ -3,3 +3,4 @@
 #define RW_PETRIFIED		0x4
 #define RW_NAME_REVEALED	0x8
 #define RW_BLOODCRAWLING	0x16
+#define RW_RSRECOVERY		0x32

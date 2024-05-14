@@ -72,8 +72,18 @@
 			toxloss = toxloss/2
 			fireloss = fireloss/2
 			cloneloss = cloneloss/2
+			vessel.add_reagent("blood", RIFT.blood_volume - vessel.total_volume)
+			for(var/obj/item/organ/external/bp in src.organs)
+				bp.bandage()
+				bp.disinfect()
+
+			BITRESET(src.hud_updateflag, HEALTH_HUD)
+			BITRESET(src.hud_updateflag, STATUS_HUD)
+			BITRESET(src.hud_updateflag, LIFE_HUD)
+
 			riftwalker_adjust_blood(100)
 			adjust_nutrition(250)
+
 			sleep(5 SECONDS)
 			statue.unpetrify(FALSE, TRUE)
 
@@ -101,7 +111,7 @@
 	if(db)
 		riftwalker_release()
 
-	qdel(src)
+	RIFT.handle_death()
 
 	balloon_alert_visible("Crumbles into dust...")
 	statue.Destroy()

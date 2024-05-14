@@ -229,6 +229,67 @@
 		petrify_riftwalker(H)
 
 /datum/species/riftwalker/handle_death(mob/living/carbon/human/H)
+	if(state & RW_PETRIFIED)
+		var/list/floors = list()
+		/*
+			Code to find the floors go here, still pending
+		*/
+		if(!LAZYLEN(floors))
+			log_and_message_admins("[H] died outside of redspace, but there was no valid floos to teleport to.")
+			return
+
+		H.drop_both_hands()
+		blood_resource = 0
+		state |= RW_RSRECOVERY
+
+		H.adjustFireLoss(-(H.getFireLoss() * 0.75))
+		H.adjustBruteLoss(-(H.getBruteLoss() * 0.75))
+		H.adjustToxLoss(-(H.getToxLoss() * 0.75))
+		H.adjustCloneLoss(-(H.getCloneLoss() * 0.75))
+		H.germ_level = 0
+		H.vessel.add_reagent("blood",blood_volume-H.vessel.total_volume)
+		for(var/obj/item/organ/external/bp in H.organs)
+			bp.bandage()
+			bp.disinfect()
+		H.nutrition = 0
+		H.invisibility = INVISIBILITY_SHADEKIN
+		BITRESET(H.hud_updateflag, HEALTH_HUD)
+		BITRESET(H.hud_updateflag, STATUS_HUD)
+		BITRESET(H.hud_updateflag, LIFE_HUD)
+
+		if(istype(H.loc, /obj/belly))
+			var/obj/belly/belly = H.loc
+			add_attack_logs(belly.owner, H, "Digested in [lowertext(belly.name)]")
+			to_chat(belly.owner, "<span class='notice'>You feel \The suddenly harden, then crumble down to dust within your [belly.name]</span>")
+			H.forceMove(pick(floors))
+			if(H.ability_flags & AB_PHASE_SHIFTED)
+				H.riftwalker_phase_in()
+			H.invisibility = initial(H.invisibility)
+			belly.owner.update_fullness()
+			H.clear_fullscreen("belly")
+			if(H.hud_used)
+				if(!H.hud_used.hud_shown)
+					H.toggle_hud_vis()
+			H.stop_sound_channel(CHANNEL_PREYLOOP)
+			H.muffled = FALSE
+			H.forced_psay = FALSE
+
+			spawn(5 MINUTES)
+				state &= ~RW_STAGNATION
+				to_chat(H, "<span class='notice'>You feel your power gathered once again...</span>")
+		else
+
+			spawn(1 SECOND)
+				H.forceMove(pick(floors))
+				if(H.ability_flags & AB_PHASE_SHIFTED)
+					H.riftwalker_phase_out()
+				H.invisibility = initial(H.invisibility)
+
+			spawn(15 MINUTES)
+				state &= ~RW_STAGNATION
+				to_chat(H, "<span class='notice'>You feel your power gathered once again...</span>")
+		H.add_modifier(/datum/modifier/redspace_recovery, 1 MINUTE)
+
 	if(real_body)
 		playsound(H, pick(get_species_sound(get_gendered_sound(species_holder))["death"]), H.species.death_volume, 1, 20, volume_channel = VOLUME_CHANNEL_DEATH_SOUNDS)
 		var/mob/living/carbon/human/new_body = new /mob/living/carbon/human(H)
@@ -252,3 +313,40 @@
 		petrify_riftwalker(H)
 		state |= RW_PETRIFIED
 	return TRUE
+
+/datum/modifier/redspace_recovery
+	name = "Redspace Recovery"
+	pain_immunity = 1
+
+/datum/modifier/redspace_recovery/tick()
+	if(istype(src.holder, /mob/living/carbon/human))
+		var/mob/living/carbon/human/H = src.holder
+		H.add_chemical_effect(CE_BLOODRESTORE, 1)
+
+		if(istype(get_area(H), /area/shadekin)) // Change this to whatever redspace area is later
+			if(!src.pain_immunity)
+				src.pain_immunity = 1
+			H.adjustFireLoss((-0.25))
+			H.adjustBruteLoss((-0.25))
+			H.adjustToxLoss((-0.25))
+			H.heal_organ_damage(3, 0)
+			H.add_chemical_effect(CE_ANTIBIOTIC, ANTIBIO_SUPER)
+			for(var/obj/item/organ/I in H.internal_organs)
+				if(I.robotic >= ORGAN_ROBOT)
+					continue
+				if(I.damage > 0)
+					I.damage = max(I.damage - 0.25, 0)
+				if(I.damage <= 5 && I.organ_tag == O_EYES)
+					H.sdisabilities &= ~BLIND
+			for(var/obj/item/organ/external/O in H.organs)
+				if(O.status & ORGAN_BROKEN)
+					O.mend_fracture()
+				for(var/datum/wound/W in O.wounds)
+					if(W.bleeding())
+						W.damage = max(W.damage - 3, 0)
+						if(W.damage <= 0)
+							O.wounds -= W
+					if(W.internal)
+						W.damage = max(W.damage - 3, 0)
+						if(W.damage <= 0)
+							O.wounds -= W
