@@ -275,7 +275,7 @@
 			H.forced_psay = FALSE
 
 			spawn(5 MINUTES)
-				state &= ~RW_STAGNATION
+				state &= ~RW_RSRECOVERY
 				to_chat(H, "<span class='notice'>You feel your power gathered once again...</span>")
 		else
 
@@ -286,7 +286,7 @@
 				H.invisibility = initial(H.invisibility)
 
 			spawn(15 MINUTES)
-				state &= ~RW_STAGNATION
+				state &= ~RW_RSRECOVERY
 				to_chat(H, "<span class='notice'>You feel your power gathered once again...</span>")
 		H.add_modifier(/datum/modifier/redspace_recovery, 1 MINUTE)
 
