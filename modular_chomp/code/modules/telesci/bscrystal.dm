@@ -22,3 +22,5 @@
 			var/mob/living/carbon/human/H = thing
 			if(H.get_species() == SPECIES_SHADEKIN && (H.ability_flags & AB_PHASE_SHIFTED))
 				H.attack_dephase(null, src)
+			if(H.get_species() == SPECIES_RIFTWALKER && (H.ability_flags & AB_PHASE_SHIFTED))
+				H.riftwalker_dephase()

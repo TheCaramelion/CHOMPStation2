@@ -794,26 +794,6 @@
 	var/datum/mind/victim_mind = M.mind
 	var/datum/species/old_species = M.species
 
-	db.name = M.name
-	db.prey_ckey = M.ckey
-	db.pred_ckey = src.ckey
-
-	db.real_name = M.real_name
-
-	M.languages -= M.temp_languages
-	db.languages |= M.languages
-	db.ooc_notes = M.ooc_notes
-	db.ooc_notes_likes = M.ooc_notes_likes
-	db.ooc_notes_dislikes = M.ooc_notes_dislikes
-	db.ooc_notes_favs = M.ooc_notes_favs
-	db.ooc_notes_maybes = M.ooc_notes_maybes
-	db.ooc_notes_style = M.ooc_notes_style
-	db.prey_ooc_favs = M.ooc_notes_favs
-	db.prey_ooc_maybes = M.ooc_notes_maybes
-	db.prey_ooc_style = M.ooc_notes_style
-	db.prey_ooc_likes = M.ooc_notes_likes
-	db.prey_ooc_dislikes = M.ooc_notes_dislikes
-
 	remove_verb(db,/mob/living/dominated_brain/proc/resist_control)
 
 	db.ckey = db.prey_ckey
@@ -830,6 +810,7 @@
 	new_rift.name = old_species.name
 	new_rift.add_riftwalker_abilities(M)
 	new_rift.blood_resource = RIFT.blood_resource
+
 	add_verb(M,/mob/living/carbon/human/proc/riftwalker_release)
 
 	if(new_rift.real_body)
@@ -838,10 +819,11 @@
 	else
 		new_rift.real_body = new /mob/living/carbon/human
 
+	RIFT.state |= RW_POSSESING
 	gib()
-	user_mind.transfer_to(M)
 	if(victim_mind)
 		victim_mind.transfer_to(db)
+	user_mind.transfer_to(M)
 
 /mob/living/carbon/human/proc/riftwalker_release()
 	set name = "Release vessel"
@@ -850,12 +832,14 @@
 
 	var/datum/species/riftwalker/RIFT = species
 
-	var/mob/living/dominated_brain/db = locate(/mob/living/dominated_brain/) in src.contents
+	var/mob/living/dominated_brain/db
 	var/mob/living/carbon/human/new_body = new /mob/living/carbon/human(src.loc)
-	var/client/user_client = src.client
-	var/client/victim_mind
 
-	user_client.prefs.copy_to(new_body)
+	for(var/I in contents)
+		if(istype(I, /mob/living/dominated_brain))
+			db = I
+
+	src.client.prefs.copy_to(new_body)
 	if(RIFT.real_body.dna)
 		RIFT.real_body.dna.ResetUIFrom(RIFT.real_body)
 		RIFT.real_body.sync_organ_dna()
@@ -867,12 +851,11 @@
 	src.mind.transfer_to(new_body)
 
 	if(db)
-		victim_mind = db.client
-		victim_mind.prefs.copy_to(src)
 		db.mind.transfer_to(src)
 	else
 		log_admin("[key_name_admin(RIFT.real_body)] released [key_name_admin(src)], but there was no mind to place back.")
 
 	qdel(RIFT.real_body)
+	qdel(db)
 
 	remove_verb(src, /mob/living/carbon/human/proc/riftwalker_release)

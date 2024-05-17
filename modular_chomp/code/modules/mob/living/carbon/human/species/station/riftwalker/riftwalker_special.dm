@@ -67,15 +67,33 @@
 			remove_verb(src,/mob/living/carbon/human/proc/riftwalker_surrender)
 			RIFT.add_riftwalker_abilities(src)
 			RIFT.state &= ~RW_PETRIFIED
-			halloss = 0
-			bruteloss = bruteloss/2
-			toxloss = toxloss/2
-			fireloss = fireloss/2
-			cloneloss = cloneloss/2
-			vessel.add_reagent("blood", RIFT.blood_volume - vessel.total_volume)
-			for(var/obj/item/organ/external/bp in src.organs)
-				bp.bandage()
-				bp.disinfect()
+			adjustHalLoss(0)
+			AdjustStunned(0)
+			AdjustWeakened(0)
+			adjustBruteLoss(src.bruteloss/2)
+			adjustToxLoss(src.toxloss/2)
+			adjustFireLoss(src.fireloss/2)
+			adjustCloneLoss(src.cloneloss/2)
+			restore_blood()
+			for(var/obj/item/organ/I in H.internal_organs)
+				if(I.robotic >= ORGAN_ROBOT)
+					continue
+				if(I.damage > 0)
+					I.damage = max(I.damage - 0.25, 0)
+				if(I.damage <= 5 && I.organ_tag == O_EYES)
+					H.sdisabilities &= ~BLIND
+			for(var/obj/item/organ/external/O in H.organs)
+				if(O.status & ORGAN_BROKEN)
+					O.mend_fracture()
+				for(var/datum/wound/W in O.wounds)
+					if(W.bleeding())
+						W.damage = max(W.damage - 3, 0)
+						if(W.damage <= 0)
+							O.wounds -= W
+					if(W.internal)
+						W.damage = max(W.damage - 3, 0)
+						if(W.damage <= 0)
+							O.wounds -= W
 
 			BITRESET(src.hud_updateflag, HEALTH_HUD)
 			BITRESET(src.hud_updateflag, STATUS_HUD)
@@ -92,29 +110,37 @@
 	set category = "Abilities.Riftwalker"
 	set desc = "Surrender and give in..."
 
-	var/obj/structure/gargoyle/statue = src.loc
-	var/obj/effect/decal/cleanable/ash/dust = new /obj/effect/decal/cleanable/ash(statue.loc)
 	var/datum/species/riftwalker/RIFT = species
 
-	dust.color = "#E62013"
-	dust.name = "bloodstone dust"
+	if(RIFT.state & RW_PETRIFIED)
 
-	remove_verb(src,/mob/living/carbon/human/proc/riftwalker_statue_sacrifice)
-	remove_verb(src,/mob/living/carbon/human/proc/riftwalker_surrender)
-	RIFT.add_riftwalker_abilities(src)
+		var/obj/structure/gargoyle/statue = src.loc
+		var/obj/effect/decal/cleanable/ash/dust = new /obj/effect/decal/cleanable/ash(statue.loc)
 
-	for(var/obj/item/I in src)
-		src.drop_from_inventory(I, statue.loc)
+		dust.color = "#E62013"
+		dust.name = "bloodstone dust"
 
-	var/mob/living/dominated_brain/db = locate(/mob/living/dominated_brain/) in src.contents
+		remove_verb(src,/mob/living/carbon/human/proc/riftwalker_statue_sacrifice)
+		remove_verb(src,/mob/living/carbon/human/proc/riftwalker_surrender)
+		RIFT.add_riftwalker_abilities(src)
 
-	if(db)
-		riftwalker_release()
+		for(var/obj/item/I in src)
+			src.drop_from_inventory(I, statue.loc)
 
-	RIFT.handle_death()
+		var/mob/living/dominated_brain/db
 
-	balloon_alert_visible("Crumbles into dust...")
-	statue.Destroy()
+		for(var/I in contents)
+			if(istype(I, /mob/living/dominated_brain))
+				db = I
+
+		if(db)
+			riftwalker_release()
+
+		RIFT.handle_death()
+		RIFT.state &= ~RW_PETRIFIED
+
+		balloon_alert_visible("Crumbles into dust...")
+		statue.Destroy()
 
 // Found out the real name? DESTROY them
 
@@ -128,12 +154,14 @@
 	var/datum/species/riftwalker/RIFT = species
 
 	to_chat(src, "<span class='warning'>Your true name has been found; Your powers are temporarily limited by this.</span>")
-	riftwalker_dephase()
+	if(ability_flags & AB_PHASE_SHIFTED)
+		riftwalker_phase_in(src.loc)
 	if(cloaked)
 		uncloak()
 	RIFT.state |= RW_NAME_REVEALED
 
 	spawn(5 MINUTES)
+		to_chat(src, "<span class='notice'>Our strength recovers...</span>")
 		RIFT.state &= ~RW_NAME_REVEALED
 
 // Many things breaks Rift cloaks

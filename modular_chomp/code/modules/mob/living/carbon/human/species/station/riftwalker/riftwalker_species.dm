@@ -215,6 +215,8 @@
 					W.damage = max(W.damage - rad_damage, 0)
 					if(W.damage <= 0)
 						O.wounds -= W
+		if(prob(5))
+			H.restore_all_organs()
 
 	var/temp_diff = body_temperature - H.bodytemperature
 	if(temp_diff >= 50)
@@ -227,13 +229,15 @@
 
 	if(world.time < H.l_move_time + 3 MINUTES && blood_resource == 0 && H.nutrition == 0)
 		petrify_riftwalker(H)
+		state |= RW_PETRIFIED
 
 /datum/species/riftwalker/handle_death(mob/living/carbon/human/H)
+	//if(state & RW_POSSESING)
+	//	return TRUE
 	if(state & RW_PETRIFIED)
 		var/list/floors = list()
-		/*
-			Code to find the floors go here, still pending
-		*/
+		for(var/turf/unsimulated/floor/dark/floor in get_area_turfs(/area/shadekin))
+			floors.Add(floor)
 		if(!LAZYLEN(floors))
 			log_and_message_admins("[H] died outside of redspace, but there was no valid floos to teleport to.")
 			return
@@ -247,10 +251,8 @@
 		H.adjustToxLoss(-(H.getToxLoss() * 0.75))
 		H.adjustCloneLoss(-(H.getCloneLoss() * 0.75))
 		H.germ_level = 0
-		H.vessel.add_reagent("blood",blood_volume-H.vessel.total_volume)
-		for(var/obj/item/organ/external/bp in H.organs)
-			bp.bandage()
-			bp.disinfect()
+		H.restore_blood()
+		H.restore_all_organs()
 		H.nutrition = 0
 		H.invisibility = INVISIBILITY_SHADEKIN
 		BITRESET(H.hud_updateflag, HEALTH_HUD)
@@ -273,6 +275,11 @@
 			H.stop_sound_channel(CHANNEL_PREYLOOP)
 			H.muffled = FALSE
 			H.forced_psay = FALSE
+
+			var/obj/effect/decal/cleanable/ash/dust = new /obj/effect/decal/cleanable/ash(H.loc)
+
+			dust.color = "#E62013"
+			dust.name = "bloodstone dust"
 
 			spawn(5 MINUTES)
 				state &= ~RW_RSRECOVERY
@@ -309,7 +316,7 @@
 		spawn(10 SECONDS)
 			H.gib()
 	else
-		playsound(H, 'sound/misc/demondeath.ogg', H.species.death_volume, 1, 20, volume_channel = VOLUME_CHANNEL_DEATH_SOUNDS)
+		H.drop_both_hands()
 		petrify_riftwalker(H)
 		state |= RW_PETRIFIED
 	return TRUE
