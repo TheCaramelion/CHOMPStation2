@@ -75,14 +75,14 @@
 			adjustFireLoss(src.fireloss/2)
 			adjustCloneLoss(src.cloneloss/2)
 			restore_blood()
-			for(var/obj/item/organ/I in H.internal_organs)
+			for(var/obj/item/organ/I in internal_organs)
 				if(I.robotic >= ORGAN_ROBOT)
 					continue
 				if(I.damage > 0)
 					I.damage = max(I.damage - 0.25, 0)
 				if(I.damage <= 5 && I.organ_tag == O_EYES)
-					H.sdisabilities &= ~BLIND
-			for(var/obj/item/organ/external/O in H.organs)
+					disabilities &= ~BLIND
+			for(var/obj/item/organ/external/O in organs)
 				if(O.status & ORGAN_BROKEN)
 					O.mend_fracture()
 				for(var/datum/wound/W in O.wounds)

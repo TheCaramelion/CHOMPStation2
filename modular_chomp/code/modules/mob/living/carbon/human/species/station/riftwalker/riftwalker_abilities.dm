@@ -819,7 +819,6 @@
 	else
 		new_rift.real_body = new /mob/living/carbon/human
 
-	RIFT.state |= RW_POSSESING
 	gib()
 	if(victim_mind)
 		victim_mind.transfer_to(db)
