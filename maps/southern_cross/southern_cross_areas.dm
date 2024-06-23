@@ -83,6 +83,11 @@
 	name = "Pathway"
 	icon_state = "purple"
 
+// Used to overmap shuttle landing zones so POIs dont override it
+/area/surface/outside/landing/plains
+	name = "Plains"
+	icon_state = "purple"
+
 /area/surface/outside/path/plains
 
 /area/surface/outside/wilderness/normal
@@ -97,6 +102,11 @@
 /area/surface/outside/wilderness/mountains
 	name = "Mountains"
 	icon_state = "darkred"
+
+// so POIs don't block landing zones
+/area/surface/outside/landing/wilderness
+	name = "Wilderness"
+	icon_state = "purple"
 
 /* //Sky islands removal, lack of use
 /area/surface/outside/wilderness/skylands
@@ -1009,6 +1019,10 @@ z
 /area/maintenance/substation/atmospherics
 	name = "Atmospherics Substation"
 	ambience = AMBIENCE_SUBSTATION //CHOMP Addition
+
+/area/maintenance/substation/maintenance
+	name = "Maintenance Substation"
+	ambience = AMBIENCE_SUBSTATION
 
 /area/maintenance/emergencyeva
 	name = "\improper Emergency EVA Maintenance"
@@ -2324,10 +2338,6 @@ End Chompstation Edit*/
 	name = "Gravity Generator Substation"
 	icon_state = "engineering"
 
-/area/engineering/gravgen
-	name = "Gravity Generator"
-	icon_state = "engineering"
-
 /area/maintenance/engineering/gravgen
 	name = "Gravity Generator Maintenance"
 
@@ -2365,3 +2375,31 @@ End Chompstation Edit*/
 
 /area/maintenance/bar/dorms/dorm_2
 	name = "Maintenance Deck Bar Dorms 2"
+
+/area/maintenance/zerocent
+	name = "Maintenance Deck Central"
+	icon_state = "maintcentral"
+
+/area/maintenance/zeroport
+	name = "Maintenance Deck Port"
+	icon_state = "pmaint"
+
+/area/maintenance/zeroaft
+	name = "Maintenance Deck Aft"
+	icon_state = "amaint"
+
+/area/maintenance/zerostarboard
+	name = "Maintenance Deck Starboard"
+	icon_state = "smaint"
+
+/area/maintenance/zerofore
+	name = "Maintenance Deck Fore"
+	icon_state = "fmaint"
+
+/area/maintenance/gravlobby
+	name = "Gravity Generator Lobby"
+	icon_state = "engineering"
+
+/area/maintenance/zerobar
+	name = "Abandoned Bar"
+	icon_state = "maint_bar"

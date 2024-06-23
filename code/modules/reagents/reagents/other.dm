@@ -729,3 +729,11 @@
 	reagent_state = LIQUID
 	color = "#f16e16"
 	taste_description = "extremely overengineered carpet"
+
+/datum/reagent/essential_oil
+	name = "Essential Oils"
+	id = "essential_oil"
+	description = "A slurry of compounds that contains the basic requirements for life."
+	taste_description = "a mixture of thick, sweet, salty, salty and spicy flavours that all blend together to not be very nice at all"
+	reagent_state = LIQUID
+	color = "#e8e2b0"
