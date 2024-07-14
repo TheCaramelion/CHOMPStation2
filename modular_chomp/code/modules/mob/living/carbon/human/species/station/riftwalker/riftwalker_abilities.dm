@@ -66,7 +66,7 @@
 
 	var/obj/item/weapon/grab/G = src.get_active_hand()
 	var/datum/species/riftwalker/RIFT = species
-	var/blood_gained
+	var/blood_gained = 50
 
 	if(!(riftwalker_ability_check()))
 		return
@@ -83,13 +83,6 @@
 	if(world.time - RIFT.sacrifice < 90 SECONDS)
 		to_chat(src,"<span class='warning'>You can't make a sacrifice so soon! You need to wait [round(((RIFT.sacrifice+90 SECONDS)-world.time)/10)] second\s!</span>")
 		return
-
-	if(istype(T, /mob/living/carbon/human))
-		blood_gained = 50
-	else if (istype(T, /mob/living/carbon))
-		blood_gained = 25
-	else
-		blood_gained = 10
 
 	if(do_after(src, 5 SECONDS, target = src, max_distance = 2))
 		riftwalker_adjust_blood(blood_gained)
@@ -277,7 +270,7 @@
 	set desc = "Shift out of reality using blood as your conduit"
 	set category = "Abilities.Riftwalker"
 
-	var/ability_cost = 100
+	var/ability_cost = 50
 	var/turf/T = get_turf(src)
 	if(!T)
 		to_chat(src,"<span class='warning'>You can't use that here!</span>")

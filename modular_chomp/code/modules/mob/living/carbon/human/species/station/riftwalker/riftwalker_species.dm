@@ -227,6 +227,12 @@
 		else
 			H.adjustFireLoss(2)
 
+	for(var/obj/belly/belly in H)
+		for(var/mob/living/carbon/human/prey in belly)
+			H.riftwalker_adjust_blood(1)
+		for(var/mob/living/silicon/prey in belly)
+			H.riftwalker_adjust_blood(1)
+
 	if(world.time < H.l_move_time + 3 MINUTES && blood_resource == 0 && H.nutrition == 0)
 		petrify_riftwalker(H)
 		state |= RW_PETRIFIED
