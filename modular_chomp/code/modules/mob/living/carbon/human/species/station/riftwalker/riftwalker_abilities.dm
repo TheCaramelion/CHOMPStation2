@@ -851,3 +851,45 @@
 	qdel(db)
 
 	remove_verb(src, /mob/living/carbon/human/proc/riftwalker_release)
+
+// Spawn disguise
+/*
+/mob/living/carbon/human/proc/spawn_disguise()
+
+	var/selecting = FALSE
+
+	if(selecting)
+		return
+
+	var/datum/preferences/pref = preferences_datums[ckey]
+	var/savefile/S = new /savefile(pref.path)
+	if(!S)
+		error("Somehow misssing savefile path?! [pref.path]")
+
+	var/charname
+	var/charnickname
+	var/list/charlist = list()
+
+	for(var/i = 1, i <= CONFIG_GET(number/character_slots), i++)
+		S.cd = "/character[i]"
+		S["real_name"] >> charname
+		S["nickname"] >> charnickname
+		if(!charname)
+			continue
+		charlist["[charname][nickname ? " ([nickname])" : ""]"] = i
+
+	selecting = TRUE
+	var/choice = tgui_input_list(usr, "Select a character", "Select disguise", charlist)
+	selecting = FALSE
+
+	if(!choice)
+		return
+
+	var/slotnum = charlist[choice]
+	if(!slotnum)
+		error("Player picked [choice] slot to spawn as, but that wasn't one we sent.")
+
+	var/mob/living/carbon/human/disguise
+
+	disguise = new(loc)
+*/
