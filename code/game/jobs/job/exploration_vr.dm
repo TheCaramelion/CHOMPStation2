@@ -1,3 +1,4 @@
+/*
 /obj/item/weapon/card/id/medical/sar
 	assignment = "Field Medic"
 	rank = "Field Medic"
@@ -143,3 +144,4 @@
 
 /datum/job/sar/get_request_reasons()
 	return list("Assembling expedition team")
+*/

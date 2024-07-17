@@ -1,3 +1,4 @@
+/* CHOMPEdit - We've got Frontier Defense now
 /datum/job/hos
 	disallow_jobhop = TRUE
 	pto_type = PTO_SECURITY
@@ -70,3 +71,4 @@
 
 /datum/job/officer/get_request_reasons()
 	return list("Wildlife management", "Assembling expedition team")
+*/

@@ -78,11 +78,11 @@ var/list/event_last_fired = list()
 		possibleEvents[/datum/event/radiation_storm] = active_with_role["Medical"] * 10
 		possibleEvents[/datum/event/spontaneous_appendicitis] = active_with_role["Medical"] * 10
 
-	possibleEvents[/datum/event/prison_break] = active_with_role["Security"] * 50
-	if(active_with_role["Security"] > 0)
+	possibleEvents[/datum/event/prison_break] = active_with_role["NT Frontier Defense"] * 50 // CHOMPEdit
+	if(active_with_role["NT Frontier Defense"] > 0)	// CHOMPEdit
 		if(!sent_spiders_to_station)
-			possibleEvents[/datum/event/spider_infestation] = max(active_with_role["Security"], 5) + 5
-		possibleEvents[/datum/event/random_antag] = max(active_with_role["Security"], 5) + 2.5
+			possibleEvents[/datum/event/spider_infestation] = max(active_with_role["NT Frontier Defense"], 5) + 5 // CHOMPEdit
+		possibleEvents[/datum/event/random_antag] = max(active_with_role["NT Frontier Defense"], 5) + 2.5 // CHOMPEdit
 
 	for(var/event_type in event_last_fired) if(possibleEvents[event_type])
 		var/time_passed = world.time - event_last_fired[event_type]
@@ -181,14 +181,14 @@ var/list/event_last_fired = list()
 	var/list/active_with_role = list()
 	active_with_role["Engineer"] = 0
 	active_with_role["Medical"] = 0
-	active_with_role["Security"] = 0
+	active_with_role["NT Frontier Defense"] = 0 // CHOMPEdit
 	active_with_role["Scientist"] = 0
 	active_with_role["AI"] = 0
 	active_with_role["Cyborg"] = 0
 	active_with_role["Janitor"] = 0
 	active_with_role["Botanist"] = 0
-	active_with_role["HOS"] = 0 //CHOMP Add
-	active_with_role["Warden"] = 0 //CHOMP Add
+	active_with_role["NTFD Commander"] = 0 //CHOMP Add
+	active_with_role["NTFD Lieutenant Commander"] = 0 //CHOMP Add
 	active_with_role["Cargo"] = 0 //CHOMP Add
 
 	for(var/mob/M in player_list)
@@ -203,7 +203,7 @@ var/list/event_last_fired = list()
 				if(istype(R.module, /obj/item/weapon/robot_module/robot/engineering))
 					active_with_role["Engineer"]++
 				else if(istype(R.module, /obj/item/weapon/robot_module/robot/security))
-					active_with_role["Security"]++
+					active_with_role["NT Frontier Defense"]++ // CHOMPEdit
 				else if(istype(R.module, /obj/item/weapon/robot_module/robot/medical))
 					active_with_role["Medical"]++
 				else if(istype(R.module, /obj/item/weapon/robot_module/robot/research))
@@ -218,10 +218,10 @@ var/list/event_last_fired = list()
 
 		if(M.mind.assigned_role in SSjob.get_job_titles_in_department(DEPARTMENT_MEDICAL))
 			active_with_role["Medical"]++
-
-		if(M.mind.assigned_role in SSjob.get_job_titles_in_department(DEPARTMENT_SECURITY))
-			active_with_role["Security"]++
-
+		// CHOMPEdit Start
+		if(M.mind.assigned_role in SSjob.get_job_titles_in_department(DEPARTMENT_FRONTIERDEFENSE))
+			active_with_role["NT Frontier Defense"]++
+		// CHOMPEdit End
 		if(M.mind.assigned_role in SSjob.get_job_titles_in_department(DEPARTMENT_RESEARCH))
 			active_with_role["Scientist"]++
 
@@ -237,11 +237,11 @@ var/list/event_last_fired = list()
 		if(M.mind.assigned_role == "Botanist")
 			active_with_role["Botanist"]++
 
-		if(M.mind.assigned_role == "Head of Security") //CHOMP Add
-			active_with_role["Head of Security"]++ //CHOMP Add
+		if(M.mind.assigned_role == "NTFD Commander") //CHOMP Add
+			active_with_role["NTFD Commander"]++ //CHOMP Add
 
-		if(M.mind.assigned_role == "Warden") //CHOMP Add
-			active_with_role["Warden"]++ //CHOMP Add
+		if(M.mind.assigned_role == "NTFD Lieutenant Commander") //CHOMP Add
+			active_with_role["NTFD Lieutenant Commander"]++ //CHOMP Add
 
 		if(M.mind.assigned_role == "Cargo") //CHOMP Add
 			active_with_role["Cargo"]++ //CHOMP Add

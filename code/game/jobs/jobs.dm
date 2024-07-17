@@ -77,7 +77,7 @@ var/list/assistant_occupations = list(
 var/list/command_positions = list(
 	"Site Manager",
 	"Head of Personnel",
-	"Head of Security",
+	"NTFD Commander", // CHOMPEdit
 	"Chief Engineer",
 	"Research Director",
 	"Chief Medical Officer",
@@ -130,8 +130,8 @@ var/list/civilian_positions = list(
 	USELESS_JOB, //VOREStation Edit - Visitor not Assistant
 	"Intern" //VOREStation Edit - Intern
 )
-
-
+// CHOMPEdit Start
+/*
 var/list/security_positions = list(
 	"Head of Security",
 	"Warden",
@@ -146,8 +146,19 @@ var/list/planet_positions = list(
 	"Pilot",
 	"Field Medic" // VOREStation Edit - Field Medic
 )
+*/
 
-
+var/list/frontierdefense_positions = list(
+	"NTFD Commander",
+	"NTFD Lieutenant Commander",
+	"NTFD Detective Constable",
+	"NTFD Ensign",
+	"NTFD Lieutenant",
+	"NTFD Pilot",
+	"NTFD Crewman",
+	"NTFD Field Medic"
+)
+// CHOMPEdit End
 var/list/nonhuman_positions = list(
 	"AI",
 	"Cyborg",
@@ -157,7 +168,7 @@ var/list/nonhuman_positions = list(
 var/list/whitelisted_positions = list(
 	"Site Manager",
 	"Head of Personnel",
-	"Head of Security",
+	"NTFD Commander",
 	"Chief Engineer",
 	"Research Director",
 	"Chief Medical Officer",

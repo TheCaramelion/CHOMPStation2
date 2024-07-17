@@ -1,6 +1,7 @@
 //////////////////////////////////
 //		Head of Security
 //////////////////////////////////
+/* CHOMPEdit - We've got Frontier Defense now
 /datum/job/hos
 	title = "Head of Security"
 	flag = HOS
@@ -137,3 +138,4 @@
 	title_blurb = "A Junior Officer is an inexperienced Security Officer. They likely have training, but not experience, and are frequently \
 					paired off with a more senior co-worker. Junior Officers may also be expected to take over the boring duties of other Officers \
 					including patrolling the station or maintaining specific posts."
+*/

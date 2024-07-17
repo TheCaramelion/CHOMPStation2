@@ -5,7 +5,7 @@
 	var/releaseWhen = 60
 	var/list/area/areas = list()		//List of areas to affect. Filled by start()
 
-	var/eventDept = "Security"			//Department name in announcement
+	var/eventDept = "NT Frontier Defense"			//Department name in announcement - CHOMPEdit
 	var/list/areaName = list("Brig")	//Names of areas mentioned in AI and Engineering announcements
 	var/list/areaType = list(/area/security/prison, /area/security/brig)	//Area types to include.
 	var/list/areaNotType = list()		//Area types to specifically exclude.

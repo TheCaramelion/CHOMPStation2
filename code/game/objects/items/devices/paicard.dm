@@ -8,13 +8,17 @@ var/global/list/radio_channels_by_freq = list(
 	num2text(MED_FREQ) = "Medical",
 	num2text(MED_I_FREQ)="Medical(I)",
 	num2text(BDCM_FREQ) ="Bodycam", // CHOMPEdit
-
-	num2text(SEC_FREQ) = "Security",
-	num2text(SEC_I_FREQ)="Security(I)",
+/*	CHOMPEdit Start
+	num2text(SEC_FREQ) = list(access_security),
+	num2text(SEC_I_FREQ)=list(access_security),
+*/
+	num2text(NTFD_FREQ) = list(access_security),
+	num2text(NTFD_I_FREQ)=list(access_security),
+// CHOMPEdit End
 	num2text(SCI_FREQ) = "Science",
 	num2text(SUP_FREQ) = "Supply",
 	num2text(SRV_FREQ) = "Service",
-	num2text(EXP_FREQ) = "Explorer" //CHOMP explo keep
+	// num2text(EXP_FREQ) = "Explorer" //CHOMP explo keep - Nu uh
 	)
 
 GLOBAL_LIST_BOILERPLATE(all_pai_cards, /obj/item/device/paicard)

@@ -495,8 +495,10 @@ var/message_delay = 0 // To make sure restarting the recentmessages list is kept
 					blackbox.msg_medical += blackbox_msg
 				if(ENG_FREQ)
 					blackbox.msg_engineering += blackbox_msg
+				/* CHOMPEdit
 				if(SEC_FREQ)
 					blackbox.msg_security += blackbox_msg
+				*/
 				if(DTH_FREQ)
 					blackbox.msg_deathsquad += blackbox_msg
 				if(SYND_FREQ)
@@ -507,8 +509,13 @@ var/message_delay = 0 // To make sure restarting the recentmessages list is kept
 					blackbox.msg_cargo += blackbox_msg
 				if(SRV_FREQ)
 					blackbox.msg_service += blackbox_msg
+				/* CHOMPEdit Start
 				if(EXP_FREQ)
 					blackbox.msg_explorer += blackbox_msg
+				*/
+				if(NTFD_FREQ)
+					blackbox.msg_ntfd += blackbox_msg
+				// CHOMPEdit End
 				else
 					blackbox.messages += blackbox_msg
 
@@ -683,8 +690,10 @@ var/message_delay = 0 // To make sure restarting the recentmessages list is kept
 					blackbox.msg_medical += blackbox_msg
 				if(ENG_FREQ)
 					blackbox.msg_engineering += blackbox_msg
+				/* CHOMPEdit
 				if(SEC_FREQ)
 					blackbox.msg_security += blackbox_msg
+				*/
 				if(DTH_FREQ)
 					blackbox.msg_deathsquad += blackbox_msg
 				if(SYND_FREQ)
@@ -695,6 +704,10 @@ var/message_delay = 0 // To make sure restarting the recentmessages list is kept
 					blackbox.msg_cargo += blackbox_msg
 				if(SRV_FREQ)
 					blackbox.msg_service += blackbox_msg
+				// CHOMPEdit Start
+				if(NTFD_FREQ)
+					blackbox.msg_ntfd += blackbox_msg
+				// CHOMPEdit End
 				else
 					blackbox.messages += blackbox_msg
 

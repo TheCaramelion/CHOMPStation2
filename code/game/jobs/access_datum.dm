@@ -14,25 +14,25 @@
 /datum/access/security
 	id = access_security
 	desc = "Security Equipment"
-	region = ACCESS_REGION_SECURITY
+	region = ACCESS_REGION_FRONTIERDEFENSE// CHOMPEdit - Frontier Defense // CHOMPEdit - Frontier Defense
 
 /var/const/access_brig = 2 // Brig timers and permabrig
 /datum/access/holding
 	id = access_brig
 	desc = "Holding Cells"
-	region = ACCESS_REGION_SECURITY
+	region = ACCESS_REGION_FRONTIERDEFENSE// CHOMPEdit - Frontier Defense // CHOMPEdit - Frontier Defense
 
 /var/const/access_armory = 3
 /datum/access/armory
 	id = access_armory
 	desc = "Armory"
-	region = ACCESS_REGION_SECURITY
+	region = ACCESS_REGION_FRONTIERDEFENSE// CHOMPEdit - Frontier Defense // CHOMPEdit - Frontier Defense
 
 /var/const/access_forensics_lockers = 4
 /datum/access/forensics_lockers
 	id = access_forensics_lockers
 	desc = "Forensics"
-	region = ACCESS_REGION_SECURITY
+	region = ACCESS_REGION_FRONTIERDEFENSE// CHOMPEdit - Frontier Defense // CHOMPEdit - Frontier Defense
 
 /var/const/access_medical = 5
 /datum/access/medical
@@ -344,7 +344,7 @@ var/const/access_explorer = 43 //CHOMP explo keep
 /datum/access/hos
 	id = access_hos
 	desc = "Head of Security"
-	region = ACCESS_REGION_SECURITY
+	region = ACCESS_REGION_FRONTIERDEFENSE// CHOMPEdit - Frontier Defense // CHOMPEdit - Frontier Defense
 
 /var/const/access_RC_announce = 59 //Request console announcements
 /datum/access/RC_announce
@@ -374,7 +374,7 @@ var/const/access_explorer = 43 //CHOMP explo keep
 /datum/access/sec_doors
 	id = access_sec_doors
 	desc = "Security"
-	region = ACCESS_REGION_SECURITY
+	region = ACCESS_REGION_FRONTIERDEFENSE// CHOMPEdit - Frontier Defense // CHOMPEdit - Frontier Defense
 
 /var/const/access_psychiatrist = 64 // Psychiatrist's office
 /datum/access/psychiatrist

@@ -19,9 +19,9 @@
 	alt_titles = list("Apprentice Engineer" = /datum/alt_title/intern_eng,
 					  "Medical Intern" = /datum/alt_title/intern_med,
 					  "Lab Assistant" = /datum/alt_title/intern_sci, //CHOMPEdit
-					  "Security Cadet" = /datum/alt_title/intern_sec,
+					  // "Security Cadet" = /datum/alt_title/intern_sec, // CHOMPEdit
 					  "Jr. Cargo Tech" = /datum/alt_title/intern_crg,
-					  "Jr. Explorer" = /datum/alt_title/intern_exp, //CHOMP Explo keep
+					 // "Jr. Explorer" = /datum/alt_title/intern_exp, //CHOMP Explo no keep
 					  "Server" = /datum/alt_title/server,
 					  "Assistant" = /datum/alt_title/assistant)
 	job_description = "An Intern does whatever is requested of them, often doing so in process of learning \
@@ -46,24 +46,26 @@
 	title_blurb = "A Lab Assistant attempts to provide whatever the Research department needs. They are not proper Scientists, and are \
 					often in training to become a Scientist. A Lab Assistant has no real authority."		     //CHOMPEdit
 	title_outfit = /decl/hierarchy/outfit/job/assistant/scientist
-
+/* CHOMPEdit - Frontier Defense
 /datum/alt_title/intern_sec
 	title = "Security Cadet"
 	title_blurb = "A Security Cadet attempts to provide whatever the Security department needs. They are not proper Officers, and are \
 					often in training to become an Officer. A Security Cadet has no real authority."
 	title_outfit = /decl/hierarchy/outfit/job/assistant/officer
-
+*/
 /datum/alt_title/intern_crg
 	title = "Jr. Cargo Tech"
 	title_blurb = "A Jr. Cargo Tech attempts to provide whatever the Cargo department needs. They are not proper Cargo Technicians, and are \
 					often in training to become a Cargo Technician. A Jr. Cargo Tech has no real authority."
 	title_outfit = /decl/hierarchy/outfit/job/assistant/cargo
  //CHOMP explo keep removed a wide comment field here
+/* CHOMPEdit - Frontier Defense
 /datum/alt_title/intern_exp
 	title = "Jr. Explorer"
 	title_blurb = "A Jr. Explorer attempts to provide whatever the Exploration department needs. They are not proper Explorers, and are \
 					often in training to become an Explorer. A Jr. Explorer has no real authority."
 	title_outfit = /decl/hierarchy/outfit/job/assistant/explorer
+*/
  //CHOMP explo keep removed the end of the wide comment field here
 /datum/alt_title/server
 	title = "Server"

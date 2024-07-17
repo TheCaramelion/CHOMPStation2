@@ -72,7 +72,7 @@
 	name = "station intercom (Security)"
 	icon_state = "secintercom"
 	light_color = "#ff0000"
-	frequency = SEC_I_FREQ
+	frequency = NTFD_I_FREQ // CHOMPEdit
 
 /obj/item/device/radio/intercom/entertainment
 	name = "entertainment intercom"
@@ -96,7 +96,7 @@
 	..()
 	internal_channels = list(
 		num2text(PUB_FREQ) = list(),
-		num2text(SEC_I_FREQ) = list(access_security)
+		num2text(NTFD_I_FREQ) = list(access_security) // CHOMPEdit
 	)
 
 /obj/item/device/radio/intercom/entertainment/New()

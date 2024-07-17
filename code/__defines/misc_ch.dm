@@ -1,10 +1,14 @@
 //Department defines
 #define DEPARTMENT_NONCREW      "Non crew"
+#define DEPARTMENT_FRONTIERDEFENSE "NT Frontier Defense"
 
 //Job defines
 #define JOB_OUTSIDER            "Outsider"
 #define JOB_ANOMALY			"Anomaly"
 #define JOB_VR	"VR Avatar"
+
+// PTO
+#define PTO_FRONTIERDEFENSE			"NT Frontier Defense"
 
 //Material defines
 #define MAT_CARPET				"red carpet"

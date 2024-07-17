@@ -8,7 +8,7 @@
 	whitelist_only = TRUE
 
 // Head of Security
-/datum/job/hos
+/datum/job/commander
 	whitelist_only = TRUE
 
 // Chief Engineer

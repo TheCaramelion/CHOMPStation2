@@ -73,7 +73,7 @@
 		/obj/item/weapon/cell/device/hyper = 50,
 		/obj/item/weapon/cell/hyper = 50,
 	)
-
+/*
 /datum/alt_title/intern_sec
 	mail_goodies = list(
 		/obj/item/weapon/reagent_containers/food/snacks/donut/plain = 200,
@@ -83,7 +83,7 @@
 		/obj/item/device/retail_scanner/security = 100,
 		/obj/item/taperoll/police = 100
 	)
-
+*/
 /datum/alt_title/intern_crg
 	mail_goodies = list(
 		/obj/item/weapon/wrapping_paper = 200,
@@ -94,14 +94,14 @@
 		/obj/item/weapon/pickaxe = 100,
 		/obj/item/stack/marker_beacon = 100,
 	)
-
+/*
 /datum/alt_title/intern_exp
 	mail_goodies = list(
 		/obj/item/weapon/storage/mre/menu2 = 800,
 		/obj/item/device/binoculars/spyglass = 150,
 		/obj/item/weapon/cell/device/hyper = 50,
 	)
-
+*/
 /datum/alt_title/server
 	mail_goodies = list(
 		/obj/item/weapon/tray = 200,
@@ -412,7 +412,7 @@
 
 // Exploration
 
-/datum/job/pathfinder
+/datum/job/lieutenant
 	mail_goodies = list(
 		/obj/item/device/binoculars/spyglass = 300,
 		/obj/item/device/cataloguer/advanced = 200,
@@ -423,7 +423,7 @@
 		/obj/item/weapon/cell/device/hyper = 100,
 		/obj/item/device/flashlight/slime = 50,
 	)
-	mail_color = "#274d0a"
+	mail_color = "#d88c1c"
 
 /datum/job/pilot
 	mail_goodies = list(
@@ -434,7 +434,7 @@
 		/obj/item/weapon/reagent_containers/hypospray/autoinjector/biginjector/toxin = 100,
 		/obj/item/weapon/cell/device/hyper = 50,
 	)
-	mail_color = "#274d0a"
+	mail_color = "#d88c1c"
 
 /datum/job/explorer
 	mail_goodies = list(
@@ -445,9 +445,9 @@
 		/obj/item/weapon/reagent_containers/hypospray/autoinjector/biginjector/toxin = 100,
 		/obj/item/weapon/cell/device/hyper = 50,
 	)
-	mail_color = "#274d0a"
+	mail_color = "#d88c1c"
 
-/datum/job/sar
+/datum/job/ntfd_sar
 	mail_goodies = list(
 		/obj/item/weapon/storage/mre/menu2 = 500,
 		/obj/item/weapon/storage/pill_bottle/antitox = 100,
@@ -465,7 +465,7 @@
 		/obj/item/weapon/reagent_containers/hypospray/autoinjector/biginjector/healing_nanites = 5,
 		/obj/item/weapon/reagent_containers/hypospray/autoinjector/bonemed = 5
 	)
-	mail_color = "#274d0a"
+	mail_color = "#d88c1c"
 
 // Medical
 /datum/job/cmo
@@ -652,7 +652,7 @@
 
 // Security
 
-/datum/job/hos
+/datum/job/commander
 	mail_goodies = list(
 		/obj/item/weapon/reagent_containers/food/snacks/donut/homer = 200,
 		/obj/item/clothing/mask/smokable/cigarette/cigar/havana = 165,
@@ -668,7 +668,7 @@
 	)
 	mail_color = COMMS_COLOR_COMMAND
 
-/datum/job/warden
+/datum/job/lieutenant_commander
 	mail_goodies = list(
 		/obj/item/weapon/reagent_containers/food/snacks/donut/homer = 250,
 		/obj/item/clothing/mask/smokable/cigarette/cigar/havana = 165,
@@ -680,9 +680,9 @@
 		/obj/item/ammo_magazine/m45 = 20,
 		/obj/item/ammo_magazine/m9mmt = 20,
 	)
-	mail_color = COMMS_COLOR_SECURITY
+	mail_color = "#d88c1c"
 
-/datum/job/detective
+/datum/job/ntfd_detective
 	mail_goodies = list(
 		/obj/item/weapon/storage/box/matches = 200,
 		/obj/item/weapon/storage/fancy/cigarettes = 100,
@@ -700,9 +700,9 @@
 		/obj/item/clothing/mask/smokable/cigarette/cigar/cohiba = 10,
 		/obj/item/clothing/mask/smokable/cigarette/cigar/havana = 10
 	)
-	mail_color = COMMS_COLOR_SECURITY
+	mail_color = "#d88c1c"
 
-/datum/job/officer
+/datum/job/ensign
 	mail_goodies = list(
 		/obj/item/weapon/reagent_containers/food/snacks/donut/olive = 175,
 		/obj/item/weapon/reagent_containers/food/snacks/donut/homer/jelly = 155,
@@ -717,4 +717,4 @@
 		/obj/item/ammo_magazine/m45/rubber = 25,
 		/obj/item/ammo_magazine/m45/flash = 25,
 	)
-	mail_color = COMMS_COLOR_SECURITY
+	mail_color = "#d88c1c"

@@ -114,17 +114,19 @@ var/const/BDCM_FREQ	= 1481 // CHOMPEdit
 
 // department channels
 var/const/PUB_FREQ = 1459
-var/const/SEC_FREQ = 1359
+// var/const/SEC_FREQ = 1359 - CHOMPAdd
 var/const/ENG_FREQ = 1357
 var/const/MED_FREQ = 1355
 var/const/SCI_FREQ = 1351
 var/const/SRV_FREQ = 1349
 var/const/SUP_FREQ = 1347
-var/const/EXP_FREQ = 1361
+// var/const/EXP_FREQ = 1361 - CHOMPAdd
+var/const/NTFD_FREQ = 1369 // CHOMPAdd
 
 // internal department channels
 var/const/MED_I_FREQ = 1485
-var/const/SEC_I_FREQ = 1475
+// var/const/SEC_I_FREQ = 1475 - CHOMPEdit
+var/const/NTFD_I_FREQ = 1475
 
 var/const/TALON_FREQ = 1363 //VOREStation Add
 var/const/CSN_FREQ = 1365 //VOREStation Add
@@ -136,7 +138,7 @@ var/list/radiochannels = list(
 	"Command"		= COMM_FREQ,
 	"Medical"		= MED_FREQ,
 	"Engineering"	= ENG_FREQ,
-	"Security" 		= SEC_FREQ,
+	// "Security" 		= SEC_FREQ, - CHOMPAdd
 	"Bodycam"		= BDCM_FREQ, // CHOMPEdit
 	"Response Team" = ERT_FREQ,
 	"Special Ops" 	= DTH_FREQ,
@@ -144,14 +146,16 @@ var/list/radiochannels = list(
 	"Raider"		= RAID_FREQ,
 	"Supply" 		= SUP_FREQ,
 	"Service" 		= SRV_FREQ,
-	"Explorer"		= EXP_FREQ, //CHOMP explo keep
+	// "Explorer"		= EXP_FREQ, //CHOMP explo keep
 	"AI Private"	= AI_FREQ,
 	"Entertainment" = ENT_FREQ,
 	"Medical(I)"	= MED_I_FREQ,
-	"Security(I)"	= SEC_I_FREQ,
+	// "Security(I)"	= SEC_I_FREQ, - CHOMPEdit
+	"NTFD(I)" = NTFD_I_FREQ, // CHOMPAdd
 	"Talon"			= TALON_FREQ, //VOREStation Add
 	"Casino" 		= CSN_FREQ,
-	"Outsider" 		= OUT_FREQ //CHOMPstation Add
+	"Outsider" 		= OUT_FREQ, //CHOMPstation Add
+	"Frontier Defense" = NTFD_FREQ
 )
 
 // Hey, if anyone ever needs to update tgui/packages/tgui/constants.js with new radio channels
@@ -196,7 +200,7 @@ var/list/CENT_FREQS = list(ERT_FREQ, DTH_FREQ)
 var/list/ANTAG_FREQS = list(SYND_FREQ, RAID_FREQ)
 
 //Department channels, arranged lexically
-var/list/DEPT_FREQS = list(AI_FREQ, BDCM_FREQ, COMM_FREQ, ENG_FREQ, ENT_FREQ, MED_FREQ, SEC_FREQ, SCI_FREQ, SRV_FREQ, SUP_FREQ) // CHOMPEdit
+var/list/DEPT_FREQS = list(AI_FREQ, BDCM_FREQ, COMM_FREQ, ENG_FREQ, ENT_FREQ, MED_FREQ, NTFD_FREQ, SCI_FREQ, SRV_FREQ, SUP_FREQ) // CHOMPEdit
 
 var/list/OFFMAP_FREQS = list(TALON_FREQ, CSN_FREQ, OUT_FREQ) //VOREStation Add CHOMPEdit: Added outsider
 
@@ -214,8 +218,8 @@ var/list/OFFMAP_FREQS = list(TALON_FREQ, CSN_FREQ, OUT_FREQ) //VOREStation Add C
 	if(frequency == AI_FREQ)
 		return "airadio"
 	// department radio formatting (poorly optimized, ugh)
-	if(frequency == SEC_FREQ)
-		return "secradio"
+	//if(frequency == SEC_FREQ) - CHOMPEdit
+	//	return "secradio"
 	if(frequency == BDCM_FREQ) // CHOMPEdit
 		return "bdcmradio"
 	if (frequency == ENG_FREQ)
@@ -228,16 +232,22 @@ var/list/OFFMAP_FREQS = list(TALON_FREQ, CSN_FREQ, OUT_FREQ) //VOREStation Add C
 		return "supradio"
 	if(frequency == SRV_FREQ) // service
 		return "srvradio"
+	/* CHOMPEdit Start
 	if(frequency == EXP_FREQ) // explorer
 		return "expradio"
+	*/ // CHOMPEdit End
 	if(frequency == ENT_FREQ) // entertainment
 		return "entradio"
 	if(frequency in DEPT_FREQS)
 		return "deptradio"
 	//VOREStation Add
-	if(frequency in OFFMAP_FREQS)
-		return "expradio"
+	// if(frequency in OFFMAP_FREQS)
+	//	return "expradio"
 	//VOREStation Add End
+	// CHOMPAdd
+	if(frequency in NTFD_FREQ)
+		return "ntfdradio"
+	// CHOMPAdd End
 	return "radio"
 
 /* filters */

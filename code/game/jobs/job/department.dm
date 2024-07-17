@@ -18,13 +18,13 @@
 	short_name = "Heads"
 	color = "#3333FF"
 	sorting_order = 10
-
+/* CHOMPEdit - Byebye Sec
 /datum/department/security
 	name = DEPARTMENT_SECURITY
 	short_name = "Sec"
 	color = "#8E0000"
 	sorting_order = 6
-
+*/
 /datum/department/engineering
 	name = DEPARTMENT_ENGINEERING
 	short_name = "Eng"

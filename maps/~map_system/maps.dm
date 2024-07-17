@@ -287,8 +287,13 @@ var/list/all_maps = list()
 		num2text(MED_FREQ)   = list(access_medical_equip),
 		num2text(MED_I_FREQ) = list(access_medical_equip),
 		num2text(BDCM_FREQ)  = list(access_security), // CHOMPEdit
-		num2text(SEC_FREQ)   = list(access_security),
-		num2text(SEC_I_FREQ) = list(access_security),
+		/*	CHOMPEdit Start
+		num2text(SEC_FREQ) = list(access_security),
+		num2text(SEC_I_FREQ)=list(access_security),
+		*/
+		num2text(NTFD_FREQ) = list(access_security),
+		num2text(NTFD_I_FREQ)=list(access_security),
+		// CHOMPEdit End
 		num2text(SCI_FREQ)   = list(access_tox,access_robotics,access_xenobiology),
 		num2text(SUP_FREQ)   = list(access_cargo),
 		num2text(SRV_FREQ)   = list(access_janitor, access_hydroponics),

@@ -75,9 +75,10 @@
 	interpreter.SetVar("$command",	COMM_FREQ)
 	interpreter.SetVar("$medical",	MED_FREQ)
 	interpreter.SetVar("$engineering",ENG_FREQ)
-	interpreter.SetVar("$security",	SEC_FREQ)
+	// interpreter.SetVar("$security",	SEC_FREQ) - CHOMPEdit
 	interpreter.SetVar("$supply",	SUP_FREQ)
-	interpreter.SetVar("$explorer", EXP_FREQ)
+	// interpreter.SetVar("$explorer", EXP_FREQ) - CHOMPEdit
+	interpreter.SetVar("$ntfd", NTFD_FREQ) // CHOMPAdd
 
 	// Signal data
 

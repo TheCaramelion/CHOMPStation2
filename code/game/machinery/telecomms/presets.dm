@@ -39,7 +39,7 @@
 	id = "Hub"
 	network = "tcommsat"
 	autolinkers = list("hub", "relay", "c_relay", "s_relay", "m_relay", "r_relay", "science", "medical",
-	"supply", "service", "common", "command", "engineering", "security", "unused", "hb_relay", "casino_relay",
+	"supply", "service", "common", "command", "engineering", "ntfd", "unused", "hb_relay", "casino_relay",
 	"receiverA", "broadcasterA") //VOREStation Edit - Added "hb_relay" || CHOMPStation Edit - Added "casino_relay"
 
 /obj/machinery/telecomms/hub/preset_cent
@@ -55,7 +55,7 @@
 	id = "Receiver A"
 	network = "tcommsat"
 	autolinkers = list("receiverA") // link to relay
-	freq_listening = list(AI_FREQ, SCI_FREQ, MED_FREQ, SUP_FREQ, SRV_FREQ, COMM_FREQ, ENG_FREQ, SEC_FREQ, BDCM_FREQ, ENT_FREQ) // CHOMPEdit
+	freq_listening = list(AI_FREQ, SCI_FREQ, MED_FREQ, SUP_FREQ, SRV_FREQ, COMM_FREQ, ENG_FREQ, NTFD_FREQ, BDCM_FREQ, ENT_FREQ) // CHOMPEdit
 
 
 	//Common and other radio frequencies for people to freely use
@@ -96,8 +96,8 @@
 /obj/machinery/telecomms/bus/preset_three
 	id = "Bus 3"
 	network = "tcommsat"
-	freq_listening = list(SEC_FREQ, COMM_FREQ)
-	autolinkers = list("processor3", "security", "command")
+	freq_listening = list(NTFD_FREQ, COMM_FREQ)	// CHOMPEdit
+	autolinkers = list("processor3", "ntfd", "command")	// CHOMPEdit
 
 /obj/machinery/telecomms/bus/preset_four
 	id = "Bus 4"
@@ -197,9 +197,11 @@
 	autolinkers = list("engineering")
 
 /obj/machinery/telecomms/server/presets/security
-	id = "Security Server"
-	freq_listening = list(SEC_FREQ)
-	autolinkers = list("security")
+	// CHOMPEdit Start
+	id = "NTFD Server"
+	freq_listening = list(NTFD_FREQ)
+	autolinkers = list("ntfd")
+	// CHOMPEdit End
 
 /obj/machinery/telecomms/server/presets/centcomm
 	id = "CentCom Server"

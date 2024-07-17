@@ -10,13 +10,17 @@ var/global/list/default_internal_channels = list(
 	num2text(MED_FREQ) = list(access_medical_equip),
 	num2text(MED_I_FREQ)=list(access_medical_equip),
 	num2text(BDCM_FREQ) =list(access_security), // CHOMPEdit
-
+/*	CHOMPEdit Start
 	num2text(SEC_FREQ) = list(access_security),
 	num2text(SEC_I_FREQ)=list(access_security),
+*/
+	num2text(NTFD_FREQ) = list(access_security),
+	num2text(NTFD_I_FREQ)=list(access_security),
+// CHOMPEdit End
 	num2text(SCI_FREQ) = list(access_tox, access_robotics, access_xenobiology),
 	num2text(SUP_FREQ) = list(access_cargo, access_mining_station),
 	num2text(SRV_FREQ) = list(access_janitor, access_library, access_hydroponics, access_bar, access_kitchen),
-	num2text(EXP_FREQ) = list(access_explorer, access_pilot) //CHOMP explo keep
+	// num2text(EXP_FREQ) = list(access_explorer, access_pilot) //CHOMP explo keep - Edit. No keep.
 )
 
 var/global/list/default_medbay_channels = list(

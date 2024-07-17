@@ -173,8 +173,10 @@ var/global/last_fax_role_request
 	switch(ping_dept.name)
 		if(DEPARTMENT_COMMAND)
 			ping_name = "Command"
-		if(DEPARTMENT_SECURITY)
+		/*
+		if(DEPARTMENT_SECURITY) - CHOMPEdit
 			ping_name = "Security"
+		*/
 		if(DEPARTMENT_ENGINEERING)
 			ping_name = "Engineering"
 		if(DEPARTMENT_MEDICAL)
@@ -185,8 +187,12 @@ var/global/last_fax_role_request
 			ping_name = "Supply"
 		if(DEPARTMENT_CIVILIAN)
 			ping_name = "Service"
-		if(DEPARTMENT_PLANET)
+		/*
+		if(DEPARTMENT_PLANET) - CHOMPEdit
 			ping_name = "Expedition"
+		*/
+		if(DEPARTMENT_FRONTIERDEFENSE)
+			ping_name = "NT Frontier Defense"
 		if(DEPARTMENT_SYNTHETIC)
 			ping_name = "Silicon"
 		//if(DEPARTMENT_TALON)

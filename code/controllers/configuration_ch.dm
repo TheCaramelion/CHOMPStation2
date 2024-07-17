@@ -19,13 +19,14 @@
 
 	//These are for the role request TGS discord bot. Role IDs to ping.
 	var/role_request_id_command
-	var/role_request_id_security
+	//var/role_request_id_security
+	var/role_request_id_ntfrontierdefense
 	var/role_request_id_engineering
 	var/role_request_id_medical
 	var/role_request_id_research
 	var/role_request_id_supply
 	var/role_request_id_service
-	var/role_request_id_expedition
+	//var/role_request_id_expedition
 	var/role_request_id_silicon
 
 	var/discord_faxes_autoprint = 0		//Only turn this on if you're not using the nodebot.
@@ -86,8 +87,6 @@
 				config.role_request_channel_tag = value
 			if ("role_request_id_command")
 				config.role_request_id_command = value
-			if ("role_request_id_security")
-				config.role_request_id_security = value
 			if ("role_request_id_engineering")
 				config.role_request_id_engineering = value
 			if ("role_request_id_medical")
@@ -98,10 +97,10 @@
 				config.role_request_id_supply = value
 			if ("role_request_id_service")
 				config.role_request_id_service = value
-			if ("role_request_id_expedition")
-				config.role_request_id_expedition = value
 			if ("role_request_id_silicon")
 				config.role_request_id_silicon = value
+			if("role_rquest_id_ntfrontierdefense")
+				config.role_request_id_ntfrontierdefense = value
 
 
 	var/list/ip_whitelist_lines = file2list("config/ip_whitelist.txt")

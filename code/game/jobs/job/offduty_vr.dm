@@ -81,7 +81,7 @@
 	job_description = "Off-duty crew has no responsibilities or authority and is just there to spend their well-deserved time off."
 	pto_type = PTO_SCIENCE
 	economic_modifier = 5
-
+/* CHOMPEdit Start - Frontier Defense
 /datum/job/offduty_security
 	title = "Off-duty Officer"
 	latejoin_only = TRUE
@@ -113,3 +113,21 @@
 	job_description = "Off-duty crew has no responsibilities or authority and is just there to spend their well-deserved time off."
 	pto_type = PTO_EXPLORATION
 	economic_modifier = 5
+*/
+
+/datum/job/offduty_frontierdefense
+	title = "Off-duty Frontier Defense"
+	latejoin_only = TRUE
+	timeoff_factor = -1
+	total_positions = -1
+	faction = "Station"
+	departments = list(DEPARTMENT_OFFDUTY)
+	supervisors = "nobody! Enjoy your time off"
+	selection_color = "#601C1C"
+	access = list(access_maint_tunnels)
+	minimal_access = list(access_maint_tunnels)
+	outfit_type = /decl/hierarchy/outfit/job/assistant/officer
+	job_description = "Off-duty crew has no responsibilities or authority and is just there to spend their well-deserved time off."
+	pto_type = PTO_FRONTIERDEFENSE
+	economic_modifier = 5
+// CHOMPEdit End

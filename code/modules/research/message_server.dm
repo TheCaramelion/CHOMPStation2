@@ -108,7 +108,7 @@ var/global/list/obj/machinery/message_server/message_servers = list()
 	//Feel free to move to Helpers.
 	var/newKey
 	newKey += pick("the", "if", "of", "as", "in", "a", "you", "from", "to", "an", "too", "little", "snow", "dead", "drunk", "rosebud", "duck", "al", "le")
-	newKey += pick("diamond", "beer", "mushroom", "assistant", "clown", "captain", "twinkie", "security", "nuke", "small", "big", "escape", "yellow", "gloves", "monkey", "engine", "nuclear", "ai")
+	newKey += pick("diamond", "beer", "mushroom", "assistant", "clown", "captain", "twinkie", "ntfd", "nuke", "small", "big", "escape", "yellow", "gloves", "monkey", "engine", "nuclear", "ai") // CHOMPEdit
 	newKey += pick("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
 	return newKey
 
@@ -275,13 +275,14 @@ var/obj/machinery/blackbox_recorder/blackbox
 	var/list/msg_command = list()
 	var/list/msg_medical = list()
 	var/list/msg_engineering = list()
-	var/list/msg_security = list()
+	// var/list/msg_security = list() - CHOMPEdit
 	var/list/msg_deathsquad = list()
 	var/list/msg_syndicate = list()
 	var/list/msg_raider = list()
 	var/list/msg_cargo = list()
 	var/list/msg_service = list()
-	var/list/msg_explorer = list()
+	// var/list/msg_explorer = list() - CHOMPEdit
+	var/list/msg_ntfd = list() // CHOMPAdd
 
 	var/list/datum/feedback_variable/feedback = new()
 
@@ -302,7 +303,8 @@ var/obj/machinery/blackbox_recorder/blackbox
 		BR.msg_command = msg_command
 		BR.msg_medical = msg_medical
 		BR.msg_engineering = msg_engineering
-		BR.msg_security = msg_security
+		// BR.msg_security = msg_security - CHOMPEdit
+		BR.msg_ntfd = msg_ntfd // CHOMPAdd
 		BR.msg_deathsquad = msg_deathsquad
 		BR.msg_syndicate = msg_syndicate
 		BR.msg_cargo = msg_cargo
@@ -343,7 +345,8 @@ var/obj/machinery/blackbox_recorder/blackbox
 	feedback_add_details("radio_usage","HEA-[msg_command.len]")
 	feedback_add_details("radio_usage","MED-[msg_medical.len]")
 	feedback_add_details("radio_usage","ENG-[msg_engineering.len]")
-	feedback_add_details("radio_usage","SEC-[msg_security.len]")
+	// feedback_add_details("radio_usage","SEC-[msg_security.len]") - CHOMPEdit
+	feedback_add_details("radio_usage", "NTFD-[msg_common.len]") // CHOMPAdd
 	feedback_add_details("radio_usage","DTH-[msg_deathsquad.len]")
 	feedback_add_details("radio_usage","SYN-[msg_syndicate.len]")
 	feedback_add_details("radio_usage","CAR-[msg_cargo.len]")
