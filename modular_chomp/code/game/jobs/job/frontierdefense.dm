@@ -30,7 +30,7 @@
 	ideal_age_by_species = list(SPECIES_HUMAN_VATBORN = 20)
 	banned_job_species = list(SPECIES_TESHARI, SPECIES_DIONA, SPECIES_PROMETHEAN, SPECIES_ZADDAT, "digital", SPECIES_UNATHI, "mechanical")
 
-	outfit_type = /decl/hierarchy/outfit/job/security/hos
+	outfit_type = /decl/hierarchy/outfit/job/frontierdefense/commander
 	job_description = "The NTFD Commander manages the NTFD Department, keeping the station safe and making sure the rules are followed. They are expected to \
 						keep the other Department Heads, and the rest of the crew, aware of developing situations that may be a threat. If necessary, the Commander may \
 						perform the duties of absent NTFD roles, such as distributing gear from the Armory."
@@ -63,7 +63,7 @@
 	disallow_jobhop = TRUE
 	banned_job_species = list(SPECIES_ZADDAT, SPECIES_PROMETHEAN, SPECIES_TESHARI, SPECIES_DIONA)
 
-	outfit_type = /decl/hierarchy/outfit/job/security/warden
+	outfit_type = /decl/hierarchy/outfit/job/frontierdefense/lieutenantcomm
 	job_description = "The NTFD Lieutenant Commander watches over the physical NTFD Department, making sure the Brig and Armoury are secure and in order at all times. They oversee \
 						prisoners that have been processed and brigged, and are responsible for their well being. The NTFD Lieutenant Commander is also in charge of distributing \
 						Armoury gear in a crisis, and retrieving it when the crisis has passed. In an emergency, the NTFD Lieutenant Commander may be called upon to direct the \
@@ -91,7 +91,7 @@
 	disallow_jobhop = TRUE
 	banned_job_species = list(SPECIES_ZADDAT, SPECIES_PROMETHEAN, SPECIES_DIONA)
 
-	outfit_type = /decl/hierarchy/outfit/job/security/detective
+	outfit_type = /decl/hierarchy/outfit/job/frontierdefense/detective
 	job_description = "A Detective works to help NTFD find criminals who have not properly been identified, through interviews and forensic work. \
 						For crimes only witnessed after the fact, or those with no survivors, they attempt to piece together what they can from pure evidence."
 	alt_titles = list()
@@ -114,7 +114,7 @@
 	disallow_jobhop = TRUE
 	banned_job_species = list(SPECIES_ZADDAT, SPECIES_TESHARI, SPECIES_DIONA)
 
-	outfit_type = /decl/hierarchy/outfit/job/security/officer
+	outfit_type = /decl/hierarchy/outfit/job/frontierdefense/ensign
 	job_description = "An Ensign is concerned with maintaining the safety and security of the station as a whole, dealing with external threats and \
 						apprehending criminals. An Ensign is responsible for the health, safety, and processing of any prisoner they arrest. \
 						No one is above the Law, not NTFD or Command."

@@ -93,3 +93,27 @@
 	icon_state = "sec_cypherkey"
 
 	channels = list("Outsider" = 1)
+
+/obj/item/device/radio/headset/heads/commander
+	name = "NTFD commander's headset"
+	desc = "The headset of the hardass who protects your worthless lives."
+	icon_state = "com_headset"
+	ks2type = /obj/item/device/encryptionkey/heads/commander
+
+/obj/item/device/radio/headset/heads/commander/alt
+	name = "NTFD commander's headset"
+	desc = "The headset of the hardass who protects your worthless lives."
+	icon_state = "com_headset_alt"
+	ks2type = /obj/item/device/encryptionkey/heads/commander
+
+/obj/item/device/radio/headset/headset_ntfd
+	name = "NT frontier defense headset"
+	desc = "This is used by your elite NT security force."
+	icon_state = "sec_headset"
+	ks2type = /obj/item/device/encryptionkey/frontierdefense
+
+/obj/item/device/radio/headset/headset_ntfd/alt
+	name = "NT frontier defense bowman headset"
+	desc = "This is used by your elite NT security force."
+	icon_state = "sec_headset_alt"
+	ks2type = /obj/item/device/encryptionkey/frontierdefense

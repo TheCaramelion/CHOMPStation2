@@ -1,4 +1,4 @@
-/obj/item/device/encryptionkey/commander
+/obj/item/device/encryptionkey/heads/commander
 	name = "commander's encryption key"
 	channels = list("Command" = 1, "NTFD" = 1)
 
