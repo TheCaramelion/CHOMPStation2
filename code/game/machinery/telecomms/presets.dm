@@ -40,7 +40,7 @@
 	network = "tcommsat"
 	autolinkers = list("hub", "relay", "c_relay", "s_relay", "m_relay", "r_relay", "science", "medical",
 	"supply", "service", "common", "command", "engineering", "ntfd", "unused", "hb_relay", "casino_relay",
-	"receiverA", "broadcasterA") //VOREStation Edit - Added "hb_relay" || CHOMPStation Edit - Added "casino_relay"
+	"receiverA", "broadcasterA") //VOREStation Edit - Added "hb_relay" || CHOMPStation Edit - Added "casino_relay" and NTFD
 
 /obj/machinery/telecomms/hub/preset_cent
 	id = "CentCom Hub"

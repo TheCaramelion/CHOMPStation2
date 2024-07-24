@@ -151,11 +151,11 @@ var/list/radiochannels = list(
 	"Entertainment" = ENT_FREQ,
 	"Medical(I)"	= MED_I_FREQ,
 	// "Security(I)"	= SEC_I_FREQ, - CHOMPEdit
-	"NTFD(I)" = NTFD_I_FREQ, // CHOMPAdd
 	"Talon"			= TALON_FREQ, //VOREStation Add
 	"Casino" 		= CSN_FREQ,
 	"Outsider" 		= OUT_FREQ, //CHOMPstation Add
-	"Frontier Defense" = NTFD_FREQ
+	"Frontier Defense" = NTFD_FREQ, //CHOMPAdd
+	"Frontier Defense(I)" = NTFD_I_FREQ // CHOMPAdd
 )
 
 // Hey, if anyone ever needs to update tgui/packages/tgui/constants.js with new radio channels

@@ -115,7 +115,7 @@ var/const/NETWORK_MAINT_DECK = "Maintenance Deck" // CHOMPEdit - Maintenance dec
 		//"belt_relay", // Chompstation edit - adds belt outpost to relays.	Temp Removal of Belt Relay TFF 15/2/20, Added Valley comn stuff 2/14/2023
 		//"sky_relay", // Sky islands removal due to lack of use
 		"science", "medical", "supply", "service", "common", "command", "engineering", "security", "unused",
-		"hb_relay", "receiverA", "broadcasterA"
+		"hb_relay", "receiverA", "broadcasterA", "ntfd"
 	) //CHOMPedit: Adds "exp_relay"
 
 /obj/machinery/telecomms/hub/preset/southerncross/centcomm
@@ -127,13 +127,13 @@ var/const/NETWORK_MAINT_DECK = "Maintenance Deck" // CHOMPEdit - Maintenance dec
 	)
 
 /obj/machinery/telecomms/receiver/preset_right/southerncross
-	freq_listening = list(AI_FREQ, SCI_FREQ, MED_FREQ, SUP_FREQ, SRV_FREQ, COMM_FREQ, ENG_FREQ, SEC_FREQ, ENT_FREQ, BDCM_FREQ, EXP_FREQ)
+	freq_listening = list(AI_FREQ, SCI_FREQ, MED_FREQ, NTFD_FREQ, SUP_FREQ, SRV_FREQ, COMM_FREQ, ENG_FREQ, ENT_FREQ, BDCM_FREQ, EXP_FREQ)
 
 /obj/machinery/telecomms/bus/preset_two/southerncross
-	freq_listening = list(SUP_FREQ, SRV_FREQ, EXP_FREQ)
+	freq_listening = list(SUP_FREQ, SRV_FREQ, NTFD_FREQ)
 
 /obj/machinery/telecomms/server/presets/service/southerncross
-	freq_listening = list(SRV_FREQ, EXP_FREQ)
+	freq_listening = list(SRV_FREQ, NTFD_FREQ)
 	autolinkers = list("service", "explorer")
 
 /datum/map/southern_cross/default_internal_channels()
@@ -147,10 +147,12 @@ var/const/NETWORK_MAINT_DECK = "Maintenance Deck" // CHOMPEdit - Maintenance dec
 		num2text(MED_FREQ) = list(access_medical_equip),
 		num2text(MED_I_FREQ)=list(access_medical_equip),
 		num2text(BDCM_FREQ) =list(access_security),
-		num2text(SEC_FREQ) = list(access_security),
-		num2text(SEC_I_FREQ)=list(access_security),
+		num2text(NTFD_FREQ) = list(access_security),
+		num2text(NTFD_I_FREQ) = list(access_security),
+		// num2text(SEC_FREQ) = list(access_security),
+		// num2text(SEC_I_FREQ)=list(access_security),
 		num2text(SCI_FREQ) = list(access_tox,access_robotics,access_xenobiology),
 		num2text(SUP_FREQ) = list(access_cargo),
 		num2text(SRV_FREQ) = list(access_janitor, access_hydroponics),
-		num2text(EXP_FREQ) = list(access_explorer)
+		// num2text(EXP_FREQ) = list(access_explorer)
 	)
