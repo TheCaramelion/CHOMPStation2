@@ -94,7 +94,7 @@
 /*
 	Miss Chance
 */
-
+/*
 /proc/check_zone(zone)
 	if(!zone)	return BP_TORSO
 	switch(zone)
@@ -103,7 +103,7 @@
 		if(O_MOUTH)
 			zone = BP_HEAD
 	return zone
-
+*/
 // Returns zone with a certain probability. If the probability fails, or no zone is specified, then a random body part is chosen.
 // Do not use this if someone is intentionally trying to hit a specific body part.
 // Use get_zone_with_miss_chance() for that.
@@ -371,14 +371,14 @@ var/list/intents = list(I_HELP,I_DISARM,I_GRAB,I_HURT)
 				hud_used.action_intent.icon_state = I_HURT
 			else
 				hud_used.action_intent.icon_state = I_HELP
-
+/*
 /proc/is_blind(A)
 	if(istype(A, /mob/living/carbon))
 		var/mob/living/carbon/C = A
 		if(C.sdisabilities & BLIND || C.blinded)
 			return 1
 	return 0
-
+*/
 /proc/mobs_in_area(var/area/A)
 	var/list/mobs = list()
 	for(var/M in mob_list)
@@ -700,3 +700,23 @@ var/global/image/backplane
 
 /mob/proc/can_feed()
 	return TRUE
+
+/proc/check_zone(zone)
+	if(!zone)
+		return BODY_ZONE_CHEST
+	switch(zone)
+		if(BODY_ZONE_PRECISE_EYES)
+			zone = BODY_ZONE_HEAD
+		if(BODY_ZONE_PRECISE_MOUTH)
+			zone = BODY_ZONE_HEAD
+		if(BODY_ZONE_PRECISE_L_HAND)
+			zone = BODY_ZONE_L_ARM
+		if(BODY_ZONE_PRECISE_R_HAND)
+			zone = BODY_ZONE_R_ARM
+		if(BODY_ZONE_PRECISE_L_FOOT)
+			zone = BODY_ZONE_L_LEG
+		if(BODY_ZONE_PRECISE_R_FOOT)
+			zone = BODY_ZONE_R_LEG
+		if(BODY_ZONE_PRECISE_GROIN)
+			zone = BODY_ZONE_CHEST
+	return zone

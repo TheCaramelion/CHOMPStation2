@@ -7,6 +7,8 @@ var/list/organ_cache = list()
 	drop_sound = 'sound/items/drop/flesh.ogg'
 	pickup_sound = 'sound/items/pickup/flesh.ogg'
 
+	var/zone = BODY_ZONE_CHEST
+
 	// Strings.
 	var/organ_tag = "organ"				// Unique identifier.
 	var/parent_organ = BP_TORSO			// Organ holding this object.

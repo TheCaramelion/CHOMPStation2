@@ -83,3 +83,7 @@
 	var/datum/inventory_panel/inventory_panel
 	var/last_resist_time = 0 // world.time of the most recent resist that wasn't on cooldown.
 	var/tiredness = 0					//For vore draining
+
+	var/list/status_effects
+
+	var/mob_respiration_type = RESPIRATION_OXYGEN

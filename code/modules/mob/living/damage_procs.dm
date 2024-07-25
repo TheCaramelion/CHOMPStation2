@@ -8,6 +8,7 @@
 	Returns
 	standard 0 if fail
 */
+/*
 /mob/living/proc/apply_damage(var/damage = 0,var/damagetype = BRUTE, var/def_zone = null, var/blocked = 0, var/soaked = 0, var/used_weapon = null, var/sharp = FALSE, var/edge = FALSE, var/obj/used_weapon = null)
 	if(Debug2)
 		to_world_log("## DEBUG: apply_damage() was called on [src], with [damage] damage, and an armor value of [blocked].")
@@ -123,7 +124,7 @@
 	flash_weak_pain()
 	updatehealth()
 	return 1
-
+*/
 
 /mob/living/proc/apply_damages(var/brute = 0, var/burn = 0, var/tox = 0, var/oxy = 0, var/clone = 0, var/halloss = 0, var/def_zone = null, var/blocked = 0)
 	if(blocked >= 100)
@@ -173,22 +174,157 @@
 	updatehealth()
 	return 1
 
-
-/mob/living/proc/apply_effects(var/stun = 0, var/weaken = 0, var/paralyze = 0, var/irradiate = 0, var/stutter = 0, var/eyeblur = 0, var/drowsy = 0, var/agony = 0, var/blocked = 0, var/ignite = 0, var/flammable = 0)
-	if(blocked >= 100)
+/**
+ * Applies damage to this mob.
+ *
+ * Sends [COMSIG_MOB_APPLY_DAMAGE]
+ *
+ * Arguuments:
+ * * damage - Amount of damage
+ * * damagetype - What type of damage to do. one of [BRUTE], [BURN], [TOX], [OXY], [STAMINA], [BRAIN].
+ * * def_zone - What body zone is being hit. Or a reference to what bodypart is being hit.
+ * * blocked - Percent modifier to damage. 100 = 100% less damage dealt, 50% = 50% less damage dealt.
+ * * forced - "Force" exactly the damage dealt. This means it skips damage modifier from blocked.
+ * * spread_damage - For carbons, spreads the damage across all bodyparts rather than just the targeted zone.
+ * * wound_bonus - Bonus modifier for wound chance.
+ * * bare_wound_bonus - Bonus modifier for wound chance on bare skin.
+ * * sharpness - Sharpness of the weapon.
+ * * attack_direction - Direction of the attack from the attacker to [src].
+ * * attacking_item - Item that is attacking [src].
+ *
+ * Returns the amount of damage dealt.
+ */
+/mob/living/proc/apply_damage(
+	damage = 0,
+	damagetype = BRUTE,
+	def_zone = null,
+	blocked = 0,
+	forced = FALSE,
+	spread_damage = FALSE,
+	wound_bonus = 0,
+	bare_wound_bonus = 0,
+	sharpness = NONE,
+	attack_direction = null,
+	attacking_item,
+)
+	SHOULD_CALL_PARENT(TRUE)
+	var/damage_amount = damage
+	if(!forced)
+		damage_amount *= ((100 - blocked) / 100)
+		damage_amount *= get_incoming_damage_modifier(damage_amount, damagetype, def_zone, sharpness, attack_direction, attacking_item)
+	if(damage_amount <= 0)
 		return 0
-	if(stun)		apply_effect(stun, STUN, blocked)
-	if(weaken)		apply_effect(weaken, WEAKEN, blocked)
-	if(paralyze)	apply_effect(paralyze, PARALYZE, blocked)
-	if(irradiate)	apply_effect(irradiate, IRRADIATE, blocked)
-	if(stutter)		apply_effect(stutter, STUTTER, blocked)
-	if(eyeblur)		apply_effect(eyeblur, EYE_BLUR, blocked)
-	if(drowsy)		apply_effect(drowsy, DROWSY, blocked)
-	if(agony)		apply_effect(agony, AGONY, blocked)
-	if(flammable)	adjust_fire_stacks(flammable)
-	if(ignite)
-		if(ignite >= 3)
-			add_modifier(/datum/modifier/fire/stack_managed/intense, 60 SECONDS)
-		else
-			add_modifier(/datum/modifier/fire/stack_managed, 45 * ignite SECONDS)
-	return 1
+
+	SEND_SIGNAL(src, COMSIG_MOB_APPLY_DAMAGE, damage_amount, damagetype, def_zone, blocked, wound_bonus, bare_wound_bonus, sharpness, attack_direction, attacking_item)
+
+	var/damage_dealt = 0
+	switch(damagetype)
+		if(BRUTE)
+			if(isbodypart(def_zone))
+				var/obj/item/organ/external/actual_hit = def_zone
+				var/delta = actual_hit.get_damage()
+				/*
+				if(actual_hit.receive_damage(
+					brute = damage_amount,
+					burn = 0,
+					forced = forced,
+					wound_bonus = wound_bonus,
+					bare_wound_bonus = bare_wound_bonus,
+					sharpness = sharpness,
+					attack_direction = attack_direction,
+					damage_source = attacking_item,
+				))
+				*/
+				damage_dealt = actual_hit.get_damage() - delta // Unfortunately bodypart receive_damage doesn't return damage dealt so we do it manually
+			else
+				damage_dealt = -1 * adjustBruteLoss(damage_amount, forced = forced)
+		if(BURN)
+			if(isbodypart(def_zone))
+				var/obj/item/organ/external/actual_hit = def_zone
+				var/delta = actual_hit.get_damage()
+				/*
+				if(actual_hit.receive_damage(
+					brute = 0,
+					burn = damage_amount,
+					forced = forced,
+					wound_bonus = wound_bonus,
+					bare_wound_bonus = bare_wound_bonus,
+					sharpness = sharpness,
+					attack_direction = attack_direction,
+					damage_source = attacking_item,
+				))
+				*/
+				damage_dealt = actual_hit.get_damage() - delta // See above
+			else
+				damage_dealt = -1 * adjustFireLoss(damage_amount, forced = forced)
+		if(TOX)
+			damage_dealt = -1 * adjustToxLoss(damage_amount, forced = forced)
+		if(OXY)
+			damage_dealt = -1 * adjustOxyLoss(damage_amount, forced = forced)
+
+	SEND_SIGNAL(src, COMSIG_MOB_AFTER_APPLY_DAMAGE, damage_dealt, damagetype, def_zone, blocked, wound_bonus, bare_wound_bonus, sharpness, attack_direction, attacking_item)
+	return damage_dealt
+
+/**
+ * Used in tandem with [/mob/living/proc/apply_damage] to calculate modifier applied into incoming damage
+ */
+/mob/living/proc/get_incoming_damage_modifier(
+	damage = 0,
+	damagetype = BRUTE,
+	def_zone = null,
+	sharpness = NONE,
+	attack_direction = null,
+	attacking_item,
+)
+	SHOULD_CALL_PARENT(TRUE)
+	SHOULD_BE_PURE(TRUE)
+
+	var/list/damage_mods = list()
+	SEND_SIGNAL(src, COMSIG_MOB_APPLY_DAMAGE_MODIFIERS, damage_mods, damage, damagetype, def_zone, sharpness, attack_direction, attacking_item)
+
+	var/final_mod = 1
+	for(var/new_mod in damage_mods)
+		final_mod *= new_mod
+	return final_mod
+
+
+/mob/living/proc/apply_effects(effect = 0, effecttype = EFFECT_STUN, blocked = 0)
+	var/hit_percent = (100-blocked)/100
+	if(!effect || (hit_percent <= 0))
+		return FALSE
+	switch(effecttype)
+		if(EFFECT_WEAKEN)
+			Weaken(effect * hit_percent)
+		if(EFFECT_STUN)
+			Stun(effect * hit_percent)
+		if(EFFECT_PARALYZE)
+			Paralyse(effect * hit_percent)
+
+	return TRUE
+
+/mob/living/proc/can_adjust_oxy_loss(amount, forced, required_byotype, required_respiration_type)
+	if(!forced)
+		if(status_flags & GODMODE)
+			return FALSE
+		if(required_respiration_type)
+			var/obj/item/organ/internal/lungs/affected_lungs = get_organ_by_type(/obj/item/organ/internal/lungs)
+			if(isnull(affected_lungs))
+				if(!(mob_respiration_type & required_respiration_type))
+					return FALSE
+			else
+				if(!(affected_lungs.respiration_type & required_respiration_type))
+					return FALSE
+	if(SEND_SIGNAL(src, COMSIG_LIVING_ADJUST_OXY_DAMAGE, OXY, amount, forced) & COMPONENT_IGNORE_CHANGE)
+		return FALSE
+	return TRUE
+
+/mob/living/proc/adjustOxyLoss(amount, updating_health = TRUE, forced = FALSE, required_byotype = ALL, required_respiration_type = ALL)
+	if(!can_adjust_oxy_loss(amount, forced, required_byotype, required_respiration_type))
+		return 0
+	. = oxyloss
+	oxyloss = clamp((oxyloss + amount), 0, maxHealth * 2)
+	. -= oxyloss
+	if(!.)
+		return FALSE
+	if(updating_health)
+		updatehealth()

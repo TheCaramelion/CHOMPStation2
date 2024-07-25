@@ -5,6 +5,8 @@
 	organ_tag = O_LUNGS
 	parent_organ = BP_TORSO
 
+	var/respiration_type = RESPIRATION_OXYGEN
+
 /obj/item/organ/internal/lungs/process()
 	..()
 

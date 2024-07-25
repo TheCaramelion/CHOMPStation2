@@ -1,4 +1,5 @@
 //CHOMPAdd Start
+/* Moving this to _global_vars/traits/_traits.dm
 /*
 Remember to update _globalvars/traits.dm if you're adding/removing/renaming traits.
 */
@@ -214,3 +215,4 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 
 #define ORGANICS	1
 #define SYNTHETICS	2
+*/

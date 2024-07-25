@@ -1,9 +1,27 @@
-GLOBAL_LIST_INIT(bitfields, list(
-	"datum_flags" = list(
+GLOBAL_LIST_INIT(bitfields, generate_bitfields())
+
+/// Specifies a bitfield for smarter debugging
+/datum/bitfield
+	/// The variable name that contains the bitfield
+	var/variable
+
+	/// An associative list of the readable flag and its true value
+	var/list/flags
+
+/// Turns /datum/bitfield subtypes into a list for use in debugging
+/proc/generate_bitfields()
+	var/list/bitfields = list()
+	for (var/_bitfield in subtypesof(/datum/bitfield))
+		var/datum/bitfield/bitfield = new _bitfield
+		bitfields[bitfield.variable] = bitfield.flags
+	return bitfields
+
+DEFINE_BITFIELD(datum_flags, list(
 		"DF_VAR_EDITED" = DF_VAR_EDITED,
 		"DF_ISPROCESSING" = DF_ISPROCESSING
-	),
-	"appearance_flags" = list(
+))
+
+DEFINE_BITFIELD(appearance_flags, list(
 		"KEEP_APART" 		= KEEP_APART,
 		"KEEP_TOGETHER"		= KEEP_TOGETHER,
 		"LONG_GLIDE"		= LONG_GLIDE,
@@ -16,8 +34,9 @@ GLOBAL_LIST_INIT(bitfields, list(
 		"TILE_BOUND"		= TILE_BOUND,
 		"PASS_MOUSE"		= PASS_MOUSE,
 		"TILE_MOVER"		= TILE_MOVER
-	),
-	"vis_flags" = list(
+))
+
+DEFINE_BITFIELD(vis_flags, list(
 		"VIS_HIDE"					= VIS_HIDE,
 		"VIS_INHERIT_DIR"			= VIS_INHERIT_DIR,
 		"VIS_INHERIT_ICON"			= VIS_INHERIT_ICON,
@@ -26,8 +45,9 @@ GLOBAL_LIST_INIT(bitfields, list(
 		"VIS_INHERIT_LAYER"			= VIS_INHERIT_LAYER,
 		"VIS_INHERIT_PLANE"			= VIS_INHERIT_PLANE,
 		"VIS_UNDERLAY"				= VIS_UNDERLAY,
-	),
-	"sight" = list(
+))
+
+DEFINE_BITFIELD(sight, list(
 		"BLIND"			= BLIND,
 		"SEE_BLACKNESS"	= SEE_BLACKNESS,
 		"SEE_INFRA"		= SEE_INFRA,
@@ -37,5 +57,10 @@ GLOBAL_LIST_INIT(bitfields, list(
 		"SEE_SELF"		= SEE_SELF,
 		"SEE_THRU"		= SEE_THRU,
 		"SEE_TURFS"		= SEE_TURFS,
-	),
+))
+
+DEFINE_BITFIELD(mob_respiration_type, list(
+	"RESPIRATION_OXYGEN" = RESPIRATION_OXYGEN,
+	"RESPIRATION_N2" = RESPIRATION_N2,
+	"RESPIRATION_PHORON" = RESPIRATION_PHORON,
 ))

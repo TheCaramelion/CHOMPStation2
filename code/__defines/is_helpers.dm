@@ -67,3 +67,5 @@
 
 #define istaurtail(A)	istype(A, /datum/sprite_accessory/tail/taur)
 #define islongtail(A)	istype(A, /datum/sprite_accessory/tail/longtail)
+
+#define isbodypart(A) (istype(A, /obj/item/organ/external))

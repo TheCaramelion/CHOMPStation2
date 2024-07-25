@@ -252,7 +252,7 @@
 
 /mob/living/proc/getOxyLoss()
 	return oxyloss
-
+/*
 /mob/living/proc/adjustOxyLoss(var/amount)
 	if(status_flags & GODMODE)	return 0	//godmode
 
@@ -273,7 +273,7 @@
 
 	oxyloss = min(max(oxyloss + amount, 0),(getMaxHealth()*2))
 	updatehealth()
-
+*/
 /mob/living/proc/setOxyLoss(var/amount)
 	if(status_flags & GODMODE)	return 0	//godmode
 	oxyloss = amount

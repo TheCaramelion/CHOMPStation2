@@ -1,7 +1,9 @@
 // /mob/var/stat things.
-#define CONSCIOUS   0
-#define UNCONSCIOUS 1
-#define DEAD        2
+#define CONSCIOUS 0
+#define WEAKENED 1
+#define STUNNED 2
+#define UNCONSCIOUS 3
+#define DEAD 4
 
 // Bitflags defining which status effects could be or are inflicted on a mob.
 #define CANSTUN     0x1
@@ -456,3 +458,7 @@
 #define VISIBLE_GENDER_FORCE_PLURAL 1		// Used by get_visible_gender to return PLURAL
 #define VISIBLE_GENDER_FORCE_IDENTIFYING 2	// Used by get_visible_gender to return the mob's identifying gender
 #define VISIBLE_GENDER_FORCE_BIOLOGICAL 3	// Used by get_visible_gender to return the mob's biological gender
+
+#define RESPIRATION_OXYGEN (1 << 0)
+#define RESPIRATION_N2 (1 << 1)
+#define RESPIRATION_PHORON (1 << 2)

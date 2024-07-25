@@ -175,10 +175,10 @@
 	if(!buckled)
 		return UNBUCKLED
 	return restrained() ? FULLY_BUCKLED : PARTIALLY_BUCKLED
-
+/*
 /mob/proc/is_blind()
 	return ((sdisabilities & BLIND) || blinded || incapacitated(INCAPACITATION_KNOCKOUT))
-
+*/
 /mob/proc/is_deaf()
 	return ((sdisabilities & DEAF) || ear_deaf || incapacitated(INCAPACITATION_KNOCKOUT))
 
@@ -1398,3 +1398,9 @@ GLOBAL_LIST_EMPTY_TYPED(living_players_by_zlevel, /list)
 /mob/proc/grab_ghost(force)
 	if(mind)
 		return mind.grab_ghost(force = force)
+
+/mob/proc/update_stat()
+	return
+
+/mob/proc/update_health_hud()
+	return
