@@ -18,6 +18,7 @@
 	var/human_prey_swallow_time = 100		// Time in deciseconds to swallow /mob/living/carbon/human
 	var/nonhuman_prey_swallow_time = 30		// Time in deciseconds to swallow anything else
 	var/nutrition_percent = 100				// Nutritional percentage per tick in digestion mode
+	var/digest_max = 36						// CHOMPEdit; maximum total damage across all types
 	var/digest_brute = 0.5					// Brute damage per tick in digestion mode
 	var/digest_burn = 0.5					// Burn damage per tick in digestion mode
 	var/digest_oxy = 0						// Oxy damage per tick in digestion mode
@@ -68,12 +69,14 @@
 	var/autotransferchance = 0 				// % Chance of prey being autotransferred to transfer location
 	var/autotransferwait = 10 				// Time between trying to transfer.
 	var/autotransferlocation				// Place to send them
+	var/autotransferextralocation = list()	// List of extra places this could go //CHOMPAdd
 	var/autotransfer_whitelist = 0			// Flags for what can be transferred to the primary location //CHOMPAdd
 	var/autotransfer_blacklist = 2			// Flags for what can not be transferred to the primary location, defaults to Absorbed //CHOMPAdd
 	var/autotransfer_whitelist_items = 0	// Flags for what can be transferred to the primary location //CHOMPAdd
 	var/autotransfer_blacklist_items = 0	// Flags for what can not be transferred to the primary location //CHOMPAdd
 	var/autotransferchance_secondary = 0 	// % Chance of prey being autotransferred to secondary transfer location //CHOMPAdd
 	var/autotransferlocation_secondary		// Second place to send them //CHOMPAdd
+	var/autotransferextralocation_secondary = list()	// List of extra places the secondary transfer could go //CHOMPAdd
 	var/autotransfer_secondary_whitelist = 0// Flags for what can be transferred to the secondary location //CHOMPAdd
 	var/autotransfer_secondary_blacklist = 2// Flags for what can not be transferred to the secondary location, defaults to Absorbed //CHOMPAdd
 	var/autotransfer_secondary_whitelist_items = 0// Flags for what can be transferred to the secondary location //CHOMPAdd
@@ -445,8 +448,10 @@
 	"autotransferchance",
 	"autotransferwait",
 	"autotransferlocation",
+	"autotransferextralocation",
 	"autotransfer_enabled",
 	"autotransferchance_secondary",
+	"autotransferextralocation_secondary",
 	"autotransferlocation_secondary",
 	"autotransfer_secondary_whitelist",
 	"autotransfer_secondary_blacklist",
@@ -470,7 +475,8 @@
 	"entrance_logs",
 	"noise_freq",
 	"private_struggle",
-	"item_digest_logs", //CHOMP end of variables from CHOMP
+	"item_digest_logs",
+	"digest_max", //CHOMP end of variables from CHOMP
 	"egg_type",
 	"save_digest_mode",
 	"eating_privacy_local",
@@ -520,10 +526,10 @@
 		return
 	thing.enter_belly(src) // Atom movable proc, does nothing by default. Overridden in children for special behavior.
 	if(owner && istype(owner.loc,/turf/simulated) && !cycle_sloshed && reagents.total_volume > 0)
-		var/turf/simulated/T = owner.loc
-		var/S = pick(T.base_vorefootstep_sounds["human"]) //ChompEDIT
+		// var/turf/simulated/T = owner.loc // CHOMPEdit
+		var/S = pick(GLOB.slosh) //ChompEDIT
 		if(S)
-			playsound(T, S, sound_volume * (reagents.total_volume / 100), FALSE, frequency = noise_freq, preference = /datum/client_preference/digestion_noises) //CHOMPEdit
+			playsound(owner.loc, S, sound_volume * (reagents.total_volume / 100), FALSE, frequency = noise_freq, preference = /datum/client_preference/digestion_noises) //CHOMPEdit
 			cycle_sloshed = TRUE
 	thing.belly_cycles = 0 //reset cycle count
 	if(istype(thing, /mob/observer)) //Ports CHOMPStation PR#3072
@@ -1517,6 +1523,24 @@
 
 	return
 
+//CHOMPEdit Start - new procs for handling digestion damage as a total rather than per-type
+// Returns the current total digestion damage per tick of a belly.
+/obj/belly/proc/get_total_digestion_damage()
+	return (digest_brute + digest_burn + digest_oxy + digest_tox + digest_clone)
+
+// Returns the remaining 'budget' of digestion damage between the current and the maximum.
+/obj/belly/proc/get_unused_digestion_damage()
+	return max(digest_max - get_total_digestion_damage(), 0)
+
+/obj/belly/proc/set_zero_digestion_damage()
+	digest_brute = 0
+	digest_burn = 0
+	digest_oxy = 0
+	digest_tox = 0
+	digest_clone = 0
+	return
+// CHOMPEdit End
+
 // Handle the death of a mob via digestion.
 // Called from the process_Life() methods of bellies that digest prey.
 // Default implementation calls M.death() and removes from internal contents.
@@ -1597,17 +1621,20 @@
 	if(isrobot(M))
 		var/mob/living/silicon/robot/R = M
 		if(R.mmi && R.mind && R.mmi.brainmob)
-			R.mmi.loc = src
-			items_preserved += R.mmi
-			var/obj/item/weapon/robot_module/MB = locate() in R.contents
-			if(MB)
-				R.mmi.brainmob.languages = MB.original_languages
+			if((R.soulcatcher_pref_flags & SOULCATCHER_ALLOW_CAPTURE) && owner.soulgem && owner.soulgem.flag_check(SOULGEM_ACTIVE | NIF_SC_CATCHING_OTHERS, TRUE))
+				owner.soulgem.catch_mob(R, R.name)
 			else
-				R.mmi.brainmob.languages = R.languages
-			R.mmi.brainmob.remove_language("Robot Talk")
-			hasMMI = R.mmi
-			M.mind.transfer_to(hasMMI.brainmob)
-			R.mmi = null
+				R.mmi.loc = src
+				items_preserved += R.mmi
+				var/obj/item/weapon/robot_module/MB = locate() in R.contents
+				if(MB)
+					R.mmi.brainmob.languages = MB.original_languages
+				else
+					R.mmi.brainmob.languages = R.languages
+				R.mmi.brainmob.remove_language("Robot Talk")
+				hasMMI = R.mmi
+				M.mind.transfer_to(hasMMI.brainmob)
+				R.mmi = null
 		else if(!R.shell) // Shells don't have brainmobs in their MMIs.
 			to_chat(R, "<span class='danger'>Oops! Something went very wrong, your MMI was unable to receive your mind. You have been ghosted. Please make a bug report so we can fix this bug.</span>")
 		if(R.shell) // Let the standard procedure for shells handle this.
@@ -2308,14 +2335,14 @@
 	var/dest_belly_name
 	if(autotransferlocation_secondary && prob(autotransferchance_secondary))
 		if(ismob(prey) && autotransfer_filter(prey, autotransfer_secondary_whitelist, autotransfer_secondary_blacklist))
-			dest_belly_name = autotransferlocation_secondary
+			dest_belly_name = pick(autotransferextralocation_secondary + autotransferlocation_secondary)
 		if(isitem(prey) && autotransfer_filter(prey, autotransfer_secondary_whitelist_items, autotransfer_secondary_blacklist_items))
-			dest_belly_name = autotransferlocation_secondary
+			dest_belly_name = pick(autotransferextralocation_secondary + autotransferlocation_secondary)
 	if(autotransferlocation && prob(autotransferchance))
 		if(ismob(prey) && autotransfer_filter(prey, autotransfer_whitelist, autotransfer_blacklist))
-			dest_belly_name = autotransferlocation
+			dest_belly_name = pick(autotransferextralocation + autotransferlocation)
 		if(isitem(prey) && autotransfer_filter(prey, autotransfer_whitelist_items, autotransfer_blacklist_items))
-			dest_belly_name = autotransferlocation
+			dest_belly_name = pick(autotransferextralocation + autotransferlocation)
 	if(!dest_belly_name) // Didn't transfer, so wait before retrying
 		prey.belly_cycles = 0
 		return
@@ -2592,7 +2619,8 @@
 	dupe.is_feedable = is_feedable
 	dupe.entrance_logs = entrance_logs
 	dupe.noise_freq = noise_freq
-	dupe.item_digest_logs = item_digest_logs //CHOMP end of variables from CHOMP
+	dupe.item_digest_logs = item_digest_logs
+	dupe.digest_max = digest_max //CHOMP end of variables from CHOMP
 
 	dupe.belly_fullscreen = belly_fullscreen
 	dupe.disable_hud = disable_hud
