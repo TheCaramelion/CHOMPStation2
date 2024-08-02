@@ -12,3 +12,10 @@
 				if(istype(H.held_mob, /mob/living))
 					living += H.held_mob
 	return living
+
+/proc/get_player_minds()
+	var/list/minds = list()
+	for(var/mob/living/carbon/human/target in player_list)
+		if(target.mind)
+			minds += target.mind
+	return minds

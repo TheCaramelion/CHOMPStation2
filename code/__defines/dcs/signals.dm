@@ -30,7 +30,7 @@
 #define COMSIG_SUN_MOVED "sun_moved"
 
 //////////////////////////////////////////////////////////////////
-
+/* CHOMPEdit - Moved to signals_ch/signals_datum.dm
 // /datum signals
 /// when a component is added to a datum: (/datum/component)
 #define COMSIG_COMPONENT_ADDED "component_added"
@@ -43,6 +43,7 @@
 /// generic topic handler (usr, href_list)
 #define COMSIG_TOPIC "handle_topic"
 /// from datum tgui_act (usr, action)
+*/
 #define COMSIG_UI_ACT "COMSIG_UI_ACT"
 /// from datum tgui_fallback (payload)
 #define COMSIG_UI_FALLBACK "COMSIG_UI_FALLBACK"
