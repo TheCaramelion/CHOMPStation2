@@ -169,6 +169,7 @@
 	//Announce to host and other minds
 	notify_holder("New mind loaded: [brainmob.name]")
 	show_vore_fx(brainmob, TRUE)
+	brainmob.copy_from_prefs_vr(bellies = FALSE)
 	return TRUE
 
 // Allows to adjust the interior of the soulcatcher
@@ -225,7 +226,8 @@
 /obj/soulgem/proc/toggle_setting(var/flag)
 	setting_flags ^= flag
 	if(flag & SOULGEM_SHOW_VORE_SFX)
-		soulgem_vfx(TRUE)
+		soulgem_show_vfx(TRUE)
+		soulgem_vfx()
 	if(flag & NIF_SC_BACKUPS)
 		soulgem_backup()
 	if(flag & NIF_SC_ALLOW_EARS)
@@ -292,26 +294,22 @@
 		return
 	if(!linked_belly)
 		linked_belly = belly
-		RegisterSignal(linked_belly, COMSIG_BELLY_UPDATE_VORE_FX, PROC_REF(soulgem_vfx))
+		RegisterSignal(linked_belly, COMSIG_BELLY_UPDATE_VORE_FX, PROC_REF(soulgem_show_vfx))
 		return
 	if(belly != linked_belly)
 		if(!skip_unreg)
 			UnregisterSignal(linked_belly, COMSIG_BELLY_UPDATE_VORE_FX)
 		linked_belly = belly
-		RegisterSignal(linked_belly, COMSIG_BELLY_UPDATE_VORE_FX, PROC_REF(soulgem_vfx))
+		RegisterSignal(linked_belly, COMSIG_BELLY_UPDATE_VORE_FX, PROC_REF(soulgem_show_vfx))
 
 // Handles the vore fx updates for the captured souls
-/obj/soulgem/proc/soulgem_vfx(var/update, var/severity = 0)
+/obj/soulgem/proc/soulgem_show_vfx(var/update, var/severity = 0)
 	if(linked_belly)
 		for(var/mob/living/L in brainmobs)
 			if(flag_check(SOULGEM_SHOW_VORE_SFX))
 				show_vore_fx(L, update, severity)
 			else
 				clear_vore_fx(L)
-		if(flag_check(SOULGEM_SHOW_VORE_SFX))
-			notify_holder("Interior simulation enabled.")
-		else
-			notify_holder("Interior simulation disabled.")
 
 // Function to show the vore fx overlay
 /obj/soulgem/proc/show_vore_fx(var/mob/living/L, var/update, var/severity = 0)
@@ -326,6 +324,13 @@
 	M.clear_fullscreen("belly")
 	if(M.hud_used && !M.hud_used.hud_shown)
 		M.toggle_hud_vis(TRUE)
+
+// VFX toggling
+/obj/soulgem/proc/soulgem_vfx()
+	if(flag_check(SOULGEM_SHOW_VORE_SFX))
+		notify_holder("Interior simulation enabled.")
+	else
+		notify_holder("Interior simulation disabled.")
 
 // Takeover section
 
@@ -366,7 +371,7 @@
 
 // Funtion to test if the owner's body has been taken over
 /obj/soulgem/proc/is_taken_over()
-	return (own_mind && owner.mind != own_mind)
+	return (own_mind && owner.mind && owner.mind != own_mind)
 
 // Transfer section to transfer captured souls
 
@@ -388,7 +393,7 @@
 		if(is_type_in_list(H.get_right_hand(), valid_trasfer_objects))
 			valid_objects += H.get_right_hand()
 	for(var/obj/item/I in range(0, get_turf(owner)))
-		if(is_type_in_list(I))
+		if(is_type_in_list(I, valid_trasfer_objects))
 			valid_objects += I
 	for(var/mob/M in range(1, get_turf(owner)))
 		if(M == owner)
@@ -410,18 +415,15 @@
 	if(!valid_objects || !valid_objects.len)
 		return
 	var/obj/target = tgui_input_list(owner, "Select where you want to store the mind into.", "Mind Transfer Target", valid_objects)
+	transfer_mob_selector(selected_soul, target)
+
+// Transfer selector proc
+/obj/soulgem/proc/transfer_mob_selector(var/mob/M, var/obj/target)
+	if(!M || !target) return
 	if(istype(target, /obj/soulgem))
-		var/obj/soulgem/gem = target
-		if(!gem.owner)
-			return
-		if((tgui_alert(gem.owner, "Do you want to allow [owner] to transfer [selected_soul] to your soulcatcher?", "Allow Transfer", list("No", "Yes")) == "Yes"))
-			if(!in_range(gem.owner, owner))
-				return
-			if(!(gem.owner.soulcatcher_pref_flags & SOULCATCHER_ALLOW_TRANSFER))
-				return
-			transfer_mob_soulcatcher(selected_soul, gem)
+		transfer_mob_soulcatcher(M, target)
 		return
-	transfer_mob(selected_soul, target)
+	transfer_mob(M, target)
 
 // Transfers a captured soul to a valid object (sleevemate, mmi)
 /obj/soulgem/proc/transfer_mob(var/mob/M, var/obj/target)
@@ -432,17 +434,21 @@
 		if(!mate.stored_mind)
 			to_chat(owner, span_notice("You scan yourself to transfer the soul into the [target]!"))
 			to_chat(M, span_notice("[transfer_message]"))
+			if(M.mind == own_mind)
+				own_mind = null
 			mate.get_mind(M)
 	else if(istype(target, /obj/item/device/mmi))
 		var/obj/item/device/mmi/mm = target
-		if(!mm.brainmob)
+		if(!mm.brainmob || !mm.brainmob.mind)
+			if(M.mind == own_mind)
+				own_mind = null
 			to_chat(owner, span_notice("You transfer the soul into the [target]!"))
 			to_chat(M, span_notice("[transfer_message]"))
 			mm.transfer_identity(M)
+			if(!mm.brainmob.mind && M.mind)
+				M.mind.transfer_to(mm.brainmob)
 	else
 		return
-	if(M.mind == own_mind)
-		own_mind = null
 	brainmobs -= M
 	if(M == selected_soul)
 		update_selected_soul()
@@ -452,6 +458,13 @@
 /obj/soulgem/proc/transfer_mob_soulcatcher(var/mob/living/carbon/brain/caught_soul/vore/M, var/obj/soulgem/gem)
 	if(is_taken_over()) return
 	if(!istype(M) || !gem) return
+	if(!gem.owner) return
+	if((tgui_alert(gem.owner, "Do you want to allow [owner] to transfer [selected_soul] to your soulcatcher?", "Allow Transfer", list("No", "Yes")) != "Yes"))
+		return
+	if(!in_range(gem.owner, owner))
+		return
+	if(!(gem.owner.soulcatcher_pref_flags & SOULCATCHER_ALLOW_TRANSFER))
+		return
 	if(M.mind == own_mind)
 		own_mind = null
 	brainmobs -= M

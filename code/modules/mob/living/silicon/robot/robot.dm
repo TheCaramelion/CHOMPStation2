@@ -928,7 +928,7 @@
 					if(is_vore_predator(H) && H.devourable && src.feeding && src.devourable)
 						var/switchy = tgui_alert(H, "Do you wish to eat [src] or feed yourself to them?", "Feed or Eat",list("Nevermind!", "Eat","Feed"))
 						switch(switchy)
-							if("Nevermind!")
+							if("Nevermind!", null)
 								return
 							if("Eat")
 								feed_grabbed_to_self(H, src)
@@ -988,8 +988,8 @@
 		return
 
 	cut_overlays()
-	if(typing) //CHOMPAdd, needed as we don't have priority overlays anymore
-		add_overlay(typing_indicator, TRUE) //CHOMPAdd, needed as we don't have priority overlays anymore
+	add_overlay(active_thinking_indicator)
+	add_overlay(active_typing_indicator)
 	handle_status_indicators() //CHOMPAdd, needed as we don't have priority overlays anymore
 
 	icon			= sprite_datum.sprite_icon

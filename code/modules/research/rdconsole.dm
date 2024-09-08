@@ -147,6 +147,15 @@ won't update every console in existence) but it's more of a hassle to do. Also, 
 	SStgui.update_uis(src)
 	return
 
+/obj/machinery/computer/rdconsole/dismantle()
+	if(linked_destroy)
+		linked_destroy.linked_console = null
+	if(linked_lathe)
+		linked_lathe.linked_console = null
+	if(linked_imprinter)
+		linked_imprinter.linked_console = null
+	..()
+
 /obj/machinery/computer/rdconsole/emp_act(var/remaining_charges, var/mob/user)
 	if(!emagged)
 		playsound(src, 'sound/effects/sparks4.ogg', 75, 1)
@@ -191,3 +200,32 @@ won't update every console in existence) but it's more of a hassle to do. Also, 
 /obj/machinery/computer/rdconsole/core
 	name = "Core R&D Console"
 	id = 1
+
+// CHOMPAdd Start - Departmental lathes
+
+/obj/machinery/computer/rdconsole/engineering
+	name = "Engineering Protolathe Console"
+	id = 3
+	req_access = list(access_engine)
+
+/obj/machinery/computer/rdconsole/medical
+	name = "Medical Protolathe Console"
+	id = 4
+	req_access = list(access_medical)
+
+/obj/machinery/computer/rdconsole/cargo
+	name = "Cargo Protolathe Console"
+	id = 5
+	req_access = list(access_cargo)
+
+/obj/machinery/computer/rdconsole/service
+	name = "Service Protolathe Console"
+	id = 6
+	req_access = list(access_bar, access_janitor, access_library)
+
+/obj/machinery/computer/rdconsole/security
+	name = "Security Protolathe Console"
+	id = 7
+	req_access = list(access_security)
+
+// CHOMPEnd

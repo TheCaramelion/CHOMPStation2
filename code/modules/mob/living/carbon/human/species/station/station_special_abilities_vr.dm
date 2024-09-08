@@ -1274,6 +1274,8 @@
 		return
 
 	var/choice = tgui_alert(src, "Do you wish to change the color of your appendage, use it, or change its functionality?", "Selection List", list("Use it", "Color", "Functionality"))
+	if(!choice)
+		return
 
 	if(choice == "Color") //Easy way to set color so we don't bloat up the menu with even more buttons.
 		var/new_color = input(usr, "Choose a color to set your appendage to!", "", appendage_color) as color|null
@@ -1282,6 +1284,8 @@
 
 	if(choice == "Functionality") //Easy way to set color so we don't bloat up the menu with even more buttons.
 		var/choice2 = tgui_alert(usr, "Choose if you want to be pulled to the target or pull them to you!", "Functionality Setting", list("Pull target to self", "Pull self to target"))
+		if(!choice2)
+			return
 		if(choice2 == "Pull target to self")
 			appendage_alt_setting = 0
 		else
@@ -1561,6 +1565,9 @@
 
 	var/choice = tgui_alert(src, "Do you wish to inject somebody, or adjust settings?", "Selection List", choices)
 
+	if(!choice)
+		return
+
 	if(choice == "Change reagent")
 		var/reagent_choice = tgui_input_list(usr, "Choose which reagent to inject!", "Select reagent", trait_injection_reagents)
 		if(reagent_choice)
@@ -1568,7 +1575,7 @@
 		to_chat(src, "<span class='notice'>You prepare to inject [trait_injection_amount] units of [trait_injection_selected ? "[trait_injection_selected]" : "...nothing. Select a reagent before trying to inject anything."]</span>")
 		return
 	if(choice == "Change amount")
-		var/amount_choice = tgui_input_number(usr, "How much of the reagent do you want to inject? (Up to 5 units) (Can select 0 for a bite that doesn't inject venom!)", "How much?", trait_injection_amount, 5, 0)
+		var/amount_choice = tgui_input_number(usr, "How much of the reagent do you want to inject? (Up to 5 units) (Can select 0 for a bite that doesn't inject venom!)", "How much?", trait_injection_amount, 5, 0, round_value = FALSE)
 		if(amount_choice >= 0)
 			trait_injection_amount = amount_choice
 		to_chat(src, "<span class='notice'>You prepare to inject [trait_injection_amount] units of [trait_injection_selected ? "[trait_injection_selected]" : "...nothing. Select a reagent before trying to inject anything."]</span>")
