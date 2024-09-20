@@ -588,7 +588,10 @@
 
 	health -= force
 	if(force > 5 && prob(45))
-		spark_system.start()
+		// CHOMPEdit Start
+		if(spark_system)
+			spark_system.start()
+		// CHOMPEdit End
 	if(health <= 0)
 		die()	//the death process :(
 
