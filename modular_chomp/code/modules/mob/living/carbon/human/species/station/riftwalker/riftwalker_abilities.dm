@@ -10,19 +10,19 @@
 	var/datum/species/riftwalker/RIFT = species
 
 	if(!istype(RIFT))
-		to_chat(src, "<span class='warning'>Only a riftwalker can use that!</span>")
+		to_chat(src, SPAN_WARNING("Only a riftwalker can use that!"))
 		return FALSE
 
 	if(cloaked)
-		to_chat(src, "<span class='warning'>We can't do this while cloaked!</span>")
+		to_chat(src, SPAN_WARNING("We can't do this while cloaked!"))
 		return FALSE
 
 	if(RIFT.state & RW_WEAKENED)
-		to_chat(src, "<span class='warning'>A strange substance is keeping us here!</span>")
+		to_chat(src, SPAN_WARNING("A strange substance is keeping us here!"))
 		return FALSE
 
 	if(RIFT.state & RW_PETRIFIED)
-		to_chat(src, "<span class='warning'>We can't do that in this state!</span>")
+		to_chat(src, SPAN_WARNING("We can't do that in this state"))
 		return FALSE
 
 	return TRUE
@@ -38,7 +38,7 @@
 		riftwalker_adjust_blood(quantity)
 		return FALSE
 	else
-		to_chat(src, "<span class='warning'>We don't have enough power to do this</span>")
+		to_chat(src, SPAN_WARNING("We don't have enough power to do this"))
 		return TRUE
 
 /mob/living/carbon/human/proc/riftwalker_adjust_blood(var/amount)
@@ -81,7 +81,7 @@
 		return
 
 	if(world.time - RIFT.sacrifice < 90 SECONDS)
-		to_chat(src,SPAN_WARNING("You can't make a sacrifice so soon! You need to wait [round(((RIFT.sacrifice+90 SECONDS)-world.time)/10)] second\s!"))
+		to_chat(src, SPAN_WARNING("You can't make a sacrifice so soon! You need to wait [round(((RIFT.sacrifice+90 SECONDS)-world.time)/10)] second\s!"))
 		return
 
 	if(do_after(src, 5 SECONDS, target = src, max_distance = 2))
