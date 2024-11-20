@@ -4774,6 +4774,7 @@
 #include "modular_chomp\code\datums\elements\footstep.dm"
 #include "modular_chomp\code\datums\elements\footstep_override.dm"
 #include "modular_chomp\code\datums\elements\slosh.dm"
+#include "modular_chomp\code\datums\elements\waddling.dm"
 #include "modular_chomp\code\datums\outfits\jobs\cargo.dm"
 #include "modular_chomp\code\datums\outfits\jobs\command.dm"
 #include "modular_chomp\code\datums\outfits\jobs\noncrew.dm"
