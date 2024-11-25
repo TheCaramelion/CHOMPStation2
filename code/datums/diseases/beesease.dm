@@ -17,7 +17,7 @@
 	switch(stage)
 		if(2)
 			if(prob(2))
-				to_chat(affected_mob, span_notice("You tastey hone in your mouth."))
+				to_chat(affected_mob, span_notice("You taste honey in your mouth."))
 		if(3)
 			if(prob(10))
 				to_chat(affected_mob, span_notice("Your stomach rumbles"))
