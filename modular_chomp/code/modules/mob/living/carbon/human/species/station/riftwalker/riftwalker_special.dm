@@ -57,7 +57,7 @@
 	var/mob/living/chosen_one = tgui_input_list(usr, "Choose a victim", "Sacrifice", sacrifices)
 
 	if(!chosen_one)
-		to_chat(src, SPAN_WARNING("There is no living beings nearby"))
+		to_chat(src, span_warning("There is no living beings nearby"))
 		return
 	else
 		statue.Beam(chosen_one, icon_state = "blood", time = 30 SECONDS, maxdistance=3)
@@ -153,16 +153,20 @@
 /mob/living/carbon/human/proc/riftwalker_cripple()
 	var/datum/species/riftwalker/RIFT = species
 
-	to_chat(src, SPAN_WARNING("Your true name has been found; Your powers are temporarily limited by this."))
+	to_chat(src, span_warning("Your true name has been found; Your powers are temporarily limited by this."))
 	if(ability_flags & AB_PHASE_SHIFTED)
 		riftwalker_phase_in(src.loc)
 	if(cloaked)
 		uncloak()
 	RIFT.state |= RW_NAME_REVEALED
 
-	spawn(5 MINUTES)
-		to_chat(src, SPAN_NOTICE("Our strength recovers..."))
-		RIFT.state &= ~RW_NAME_REVEALED
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/mob/living/carbon/human, riftwalker_recover)), 5 MINUTES)
+
+/mob/living/carbon/human/proc/riftwalker_recover()
+	var/datum/species/riftwalker/RIFT = species
+
+	to_chat(src, span_notice("Our strength recovers..."))
+	RIFT.state &= ~RW_NAME_REVEALED
 
 // Many things breaks Rift cloaks
 

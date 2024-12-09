@@ -22,7 +22,7 @@
 	icon_state = "cult_spell_base"
 	background_base_state = "cult"
 
-/obj/screen/movable/ability_master/proc/add_riftwalker_ability(var/object_given, var/verb_given, var/name_given, var/ability_icon_given, var/arguments)
+/obj/screen/movable/ability_master/proc/add_riftwalker_ability(object_given, verb_given, name_given, ability_icon_given, arguments)
 	if(!object_given)
 		message_admins("ERROR: add_riftwalker_ability() was not given an object in its arguments.")
 	if(!verb_given)

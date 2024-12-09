@@ -10,19 +10,19 @@
 	var/datum/species/riftwalker/RIFT = species
 
 	if(!istype(RIFT))
-		to_chat(src, SPAN_WARNING("Only a riftwalker can use that!"))
+		to_chat(src, span_warning("Only a riftwalker can use that!"))
 		return FALSE
 
 	if(cloaked)
-		to_chat(src, SPAN_WARNING("We can't do this while cloaked!"))
+		to_chat(src, span_warning("We can't do this while cloaked!"))
 		return FALSE
 
 	if(RIFT.state & RW_WEAKENED)
-		to_chat(src, SPAN_WARNING("A strange substance is keeping us here!"))
+		to_chat(src, span_warning("A strange substance is keeping us here!"))
 		return FALSE
 
 	if(RIFT.state & RW_PETRIFIED)
-		to_chat(src, SPAN_WARNING("We can't do that in this state"))
+		to_chat(src, span_warning("We can't do that in this state"))
 		return FALSE
 
 	return TRUE
@@ -38,7 +38,7 @@
 		riftwalker_adjust_blood(quantity)
 		return FALSE
 	else
-		to_chat(src, SPAN_WARNING("We don't have enough power to do this"))
+		to_chat(src, span_warning("We don't have enough power to do this"))
 		return TRUE
 
 /mob/living/carbon/human/proc/riftwalker_adjust_blood(var/amount)
@@ -64,7 +64,7 @@
 	set desc = "Sacrifice the livig to gain power"
 	set category = "Abilities.Riftwalker"
 
-	var/obj/item/weapon/grab/G = src.get_active_hand()
+	var/obj/item/grab/G = src.get_active_hand()
 	var/datum/species/riftwalker/RIFT = species
 	var/blood_gained = 50
 
@@ -72,16 +72,16 @@
 		return
 
 	if(!istype(G) && !istype(G, /mob/living/))
-		to_chat(src, SPAN_WARNING("You must be grabbing a creature in your active hand to affect them."))
+		to_chat(src, span_warning("You must be grabbing a creature in your active hand to affect them."))
 		return
 	var/mob/living/T = G.affecting
 
 	if(G.state != GRAB_NECK)
-		to_chat(src, SPAN_WARNING("You must have a tighter grip to affect this creature."))
+		to_chat(src, span_warning("You must have a tighter grip to affect this creature."))
 		return
 
 	if(world.time - RIFT.sacrifice < 90 SECONDS)
-		to_chat(src, SPAN_WARNING("You can't make a sacrifice so soon! You need to wait [round(((RIFT.sacrifice+90 SECONDS)-world.time)/10)] second\s!"))
+		to_chat(src, span_warning("You can't make a sacrifice so soon! You need to wait [round(((RIFT.sacrifice+90 SECONDS)-world.time)/10)] second\s!"))
 		return
 
 	if(do_after(src, 5 SECONDS, target = src, max_distance = 2))
@@ -119,7 +119,7 @@
 	set category = "Abilities.Riftwalker"
 
 	if((get_area(src).flags & PHASE_SHIELDED))
-		to_chat(src, SPAN_WARNING("This area is preventing you from phasing!"))
+		to_chat(src, span_warning("This area is preventing you from phasing!"))
 		return FALSE
 
 	if(ability_flags & AB_PHASE_SHIFTING)
@@ -131,11 +131,11 @@
 		return FALSE
 
 	else if(RIFT.state & RW_BLOODCRAWLING)
-		to_chat(src, SPAN_WARNING("You are already trying to phase!"))
+		to_chat(src, span_warning("You are already trying to phase!"))
 		return FALSE
 
 	if(RIFT.state & RW_NAME_REVEALED)
-		to_chat(src, SPAN_WARNING("Revealing our true name has left us weak... We need time to recover."))
+		to_chat(src, span_warning("Revealing our true name has left us weak... We need time to recover."))
 		return FALSE
 
 	riftwalker_bloodjaunt_out(src.loc)
@@ -273,10 +273,10 @@
 	var/ability_cost = 50
 	var/turf/T = get_turf(src)
 	if(!T)
-		to_chat(src, SPAN_WARNING("You can't use that here!"))
+		to_chat(src, span_warning("You can't use that here!"))
 		return FALSE
 	if((get_area(src).flags & PHASE_SHIELDED))
-		to_chat(src, SPAN_WARNING("This area is preventing you from phasing!"))
+		to_chat(src, span_warning("This area is preventing you from phasing!"))
 		return FALSE
 
 	if(ability_flags & AB_PHASE_SHIFTING)
@@ -287,27 +287,27 @@
 	if(!riftwalker_ability_check())
 		return FALSE
 	else if(RIFT.state & RW_BLOODCRAWLING)
-		to_chat(src, SPAN_WARNING("You are already trying to phase!"))
+		to_chat(src, span_warning("You are already trying to phase!"))
 		return FALSE
 
 	else if(riftwalker_get_blood() < ability_cost && !(ability_flags & AB_PHASE_SHIFTED))
-		to_chat(src, SPAN_WARNING("Not enough blood for that ability!"))
+		to_chat(src, span_warning("Not enough blood for that ability!"))
 		return FALSE
 
 	else if(locate(/obj/effect/decal/cleanable/blood/oil) in src.loc || locate(/obj/effect/decal/cleanable/blood/gibs/robot) in src.loc)
-		to_chat(src, SPAN_WARNING("You need blood to shift between realities!"))
+		to_chat(src, span_warning("You need blood to shift between realities!"))
 		return FALSE
 
 	else if(!(locate(/obj/effect/decal/cleanable/blood) in src.loc))
-		to_chat(src, SPAN_WARNING("You need blood to shift between realities!"))
+		to_chat(src, span_warning("You need blood to shift between realities!"))
 		return FALSE
 
 	if(RIFT.state & RW_NAME_REVEALED)
-		to_chat(src, SPAN_WARNING("Revealing our true name has left us weak... We need time to recover."))
+		to_chat(src, span_warning("Revealing our true name has left us weak... We need time to recover."))
 		return FALSE
 
 	if(!T.CanPass(src, T) || loc != T)
-		to_chat(src, SPAN_WARNING("You can't use that here!"))
+		to_chat(src, span_warning("You can't use that here!"))
 		return FALSE
 
 	if(!(ability_flags & AB_PHASE_SHIFTED))
@@ -458,11 +458,11 @@
 		return
 
 	if(ability_flags & AB_PHASE_SHIFTED)
-		to_chat(src, SPAN_WARNING("You must be in the physical world to create blood!"))
+		to_chat(src, span_warning("You must be in the physical world to create blood!"))
 		return FALSE
 
 	if(world.time - RIFT.blood_spawn < 150 SECONDS)
-		to_chat(src, SPAN_WARNING("You can't create blood so soon! You need to wait [round(((RIFT.blood_spawn+150 SECONDS)-world.time)/10)] second\s!"))
+		to_chat(src, span_warning("You can't create blood so soon! You need to wait [round(((RIFT.blood_spawn+150 SECONDS)-world.time)/10)] second\s!"))
 		return FALSE
 
 	if(rift_consume_blood(-10))
@@ -481,22 +481,22 @@
 	set category = "Abilities.Riftwalker"
 	set desc = "Shrink/Grow someone nearby using redspace power"
 
-	var/obj/item/weapon/grab/G = src.get_active_hand()
+	var/obj/item/grab/G = src.get_active_hand()
 	var/datum/species/riftwalker/RIFT = species
 
 	if(!(riftwalker_ability_check()))
 		return
 
 	if(!istype(G))
-		to_chat(src, SPAN_WARNING("You must be grabbing a creature in your active hand to affect them."))
+		to_chat(src, span_warning("You must be grabbing a creature in your active hand to affect them."))
 		return
 	var/mob/living/carbon/human/T = G.affecting
 	if(!istype(T))
-		to_chat(src, SPAN_WARNING("\The [T] is not able to be affected."))
+		to_chat(src, span_warning("\The [T] is not able to be affected."))
 		return
 
 	if(G.state != GRAB_NECK)
-		to_chat(src, SPAN_WARNING("You must have a tighter grip to affect this creature."))
+		to_chat(src, span_warning("You must have a tighter grip to affect this creature."))
 		return
 
 	if(!checkClickCooldown() || incapacitated(INCAPACITATION_ALL))
@@ -505,7 +505,7 @@
 	playsound(src.loc, 'sound/effects/EMPulse.ogg', 50, 1)
 
 	T.resize(RIFT.prey_size)
-	visible_message(SPAN_WARNING("[src] shrinks [T]!"), SPAN_NOTICE("You shrink [T]."))
+	visible_message(span_warning("[src] shrinks [T]!"), span_notice("You shrink [T]."))
 
 /mob/living/carbon/human/proc/choose_prey_size()
 	set name = "Choose Prey Size"
@@ -521,7 +521,7 @@
 	RIFT.prey_size = clamp((size_select/100), RESIZE_MINIMUM_DORMS, RESIZE_MAXIMUM_DORMS)
 	balloon_alert(usr, "Prey size set to [size_select]")
 	if(RIFT.prey_size < RESIZE_MINIMUM || RIFT.prey_size > RESIZE_MAXIMUM)
-		to_chat(usr, SPAN_NOTICE("Note: Resizing limited to 25-200% automatically while outside dormatory areas."))
+		to_chat(usr, span_notice("Note: Resizing limited to 25-200% automatically while outside dormatory areas."))
 
 // Demon Bite
 
@@ -530,23 +530,23 @@
 	set category = "Abilities.Riftwalker"
 	set desc = "Inject poison into your grabbed prey."
 
-	var/obj/item/weapon/grab/G = src.get_active_hand()
+	var/obj/item/grab/G = src.get_active_hand()
 	var/datum/species/riftwalker/RIFT = species
 
 	if(!(riftwalker_ability_check()))
 		return
 
 	if(!istype(G))
-		to_chat(src, SPAN_WARNING("You must be grabbing a creature in your active hand to affect them."))
+		to_chat(src, span_warning("You must be grabbing a creature in your active hand to affect them."))
 		return
 	var/mob/living/carbon/human/T = G.affecting
 
 	if(!istype(T) || T.isSynthetic())
-		to_chat(src, SPAN_WARNING("\The [T] is not able to be bitten."))
+		to_chat(src, span_warning("\The [T] is not able to be bitten."))
 		return
 
 	if(G.state != GRAB_NECK)
-		to_chat(src, SPAN_WARNING("You must have a tighter grip to affect this creature."))
+		to_chat(src, span_warning("You must have a tighter grip to affect this creature."))
 		return
 
 	if(!checkClickCooldown() || incapacitated(INCAPACITATION_ALL))
@@ -557,7 +557,7 @@
 
 	if(do_after(usr, 1.5 SECONDS, target = usr))
 		T.bloodstr.add_reagent(RIFT.poison, RIFT.poison_per_bite)
-		visible_message(SPAN_WARNING("[src] bites [T]!"), SPAN_NOTICE("You bite [T]."))
+		visible_message(span_warning("[src] bites [T]!"), span_notice("You bite [T]."))
 
 /mob/living/carbon/human/proc/choose_poison()
 	set name = "Choose Poison"
@@ -632,7 +632,7 @@
 		return
 
 	if(ability_flags & AB_PHASE_SHIFTED)
-		to_chat(src, SPAN_WARNING("You can't use that while phase shifted!"))
+		to_chat(src, span_warning("You can't use that while phase shifted!"))
 		return FALSE
 
 	if(rift_consume_blood(-50))
@@ -660,7 +660,7 @@
 	var/datum/species/riftwalker/RIFT = species
 
 	if(isemptylist(RIFT.mirrors))
-		to_chat(src, SPAN_WARNING("We don't have any mirrors to talk throught</span>"))
+		to_chat(src, span_warning("We don't have any mirrors to talk throught</span>"))
 
 	var/message = tgui_input_text(src, "Speak through our mirrors", "Echo Talk")
 
@@ -688,10 +688,10 @@
 	var/datum/species/riftwalker/RIFT = species
 
 	if(ability_flags & AB_PHASE_SHIFTED)
-		to_chat(src, SPAN_WARNING("You can't use that while phase shifted!"))
+		to_chat(src, span_warning("You can't use that while phase shifted!"))
 		return FALSE
 	else if(RIFT.state & RW_BLOODGATE)
-		to_chat(src, SPAN_WARNING("You have already made a portal to redspace"))
+		to_chat(src, span_warning("You have already made a portal to redspace"))
 
 	if(rift_consume_blood(-100))
 		return
@@ -707,12 +707,12 @@
 
 	switch(status)
 		if(SHELTER_DEPLOY_BAD_AREA)
-			to_chat(src, SPAN_WARNING("A portal to redspace won't work on this area"))
+			to_chat(src, span_warning("A portal to redspace won't work on this area"))
 
 		if(SHELTER_DEPLOY_BAD_TURFS, SHELTER_DEPLOY_ANCHORED_OBJECTS)
 			var/width = template.width
 			var/height = template.height
-			to_chat(src, SPAN_WARNING("There is not enough open area for a tunnel to redspace to form! You need to clear a [width]x[height] area!"))
+			to_chat(src, span_warning("There is not enough open area for a tunnel to redspace to form! You need to clear a [width]x[height] area!"))
 
 	if(status != SHELTER_DEPLOY_ALLOWED)
 		return FALSE
@@ -723,9 +723,9 @@
 	smoke.set_up(10, 0, T)
 	smoke.start()
 
-	src.visible_message(SPAN_NOTICE("[src] begins condensating the nearby corruption around themselves."))
+	src.visible_message(span_notice("[src] begins condensating the nearby corruption around themselves."))
 	if(do_after(src, 600))
-		src.visible_message(SPAN_NOTICE("[src] finishes condensating the nearby corruption around themselves, creating a portal."))
+		src.visible_message(span_notice("[src] finishes condensating the nearby corruption around themselves, creating a portal."))
 
 		log_and_message_admins("[key_name_admin(src)] created a portal to redspace at [get_area(T)]")
 		template.annihilate_plants(deploy_location)
@@ -749,22 +749,22 @@
 	set category = "Abilities.Riftwalker"
 	set desc = "Posses your prey's body"
 
-	var/obj/item/weapon/grab/G = src.get_active_hand()
+	var/obj/item/grab/G = src.get_active_hand()
 
 	if(!(riftwalker_ability_check()))
 		return
 
 	if(!istype(G))
-		to_chat(src, SPAN_WARNING("You must be grabbing a creature in your active hand to affect them."))
+		to_chat(src, span_warning("You must be grabbing a creature in your active hand to affect them."))
 		return
 	var/mob/living/carbon/human/M = G.affecting
 
 	if(M.stat == DEAD)
-		to_chat(src, SPAN_WARNING("\The [M]'s blood doesn't flow, we can't posses this creature."))
+		to_chat(src, span_warning("\The [M]'s blood doesn't flow, we can't posses this creature."))
 		return
 
 	if(M.isSynthetic())
-		to_chat(src, SPAN_WARNING("\The [M] is a bloodless creature. We can't posses them."))
+		to_chat(src, span_warning("\The [M] is a bloodless creature. We can't posses them."))
 		return
 
 	if(tgui_alert(src, "You selected [M] to attempt to posses. Are you sure?", "Posses Prey",list("No","Yes")) != "Yes")
@@ -775,11 +775,11 @@
 
 	if(M.ckey)
 		if(tgui_alert(M, "\The [src] has elected to posses you. Is this something you will allow to happen?", "Allow Possesing",list("No","Yes")) != "Yes")
-			to_chat(src, SPAN_WARNING("\The [M] has declined your possessing attempt."))
+			to_chat(src, span_warning("\The [M] has declined your possessing attempt."))
 			return
 
 		if(tgui_alert(M, "Are you sure? This might be difficult to come back from.", "Allow Possesing",list("No","Yes")) != "Yes")
-			to_chat(src, SPAN_WARNING("\The [M] has declined your possessing attempt."))
+			to_chat(src, span_warning("\The [M] has declined your possessing attempt."))
 			return
 
 	var/mob/living/dominated_brain/db = new /mob/living/dominated_brain(M, src, M.name, M)

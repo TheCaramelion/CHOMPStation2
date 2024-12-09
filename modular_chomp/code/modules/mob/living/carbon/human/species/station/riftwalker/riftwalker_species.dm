@@ -268,7 +268,7 @@
 		if(istype(H.loc, /obj/belly))
 			var/obj/belly/belly = H.loc
 			add_attack_logs(belly.owner, H, "Digested in [lowertext(belly.name)]")
-			to_chat(belly.owner, SPAN_NOTICE("You feel that [H] suddenly hardens, then crumble down to dust within your [belly.name]"))
+			to_chat(belly.owner, span_notice("You feel that [H] suddenly hardens, then crumble down to dust within your [belly.name]"))
 			H.forceMove(pick(floors))
 			if(H.ability_flags & AB_PHASE_SHIFTED)
 				H.riftwalker_phase_in()
@@ -287,20 +287,15 @@
 			dust.color = "#E62013"
 			dust.name = "bloodstone dust"
 
-			spawn(5 MINUTES)
-				state &= ~RW_RSRECOVERY
-				to_chat(H, SPAN_NOTICE("You feel your power gathered once again..."))
+			addtimer(CALLBACK(H, TYPE_PROC_REF(/mob/living/carbon/human, riftwalker_recover)), 5 MINUTES)
 		else
 
-			spawn(1 SECOND)
-				H.forceMove(pick(floors))
-				if(H.ability_flags & AB_PHASE_SHIFTED)
-					H.riftwalker_phase_out()
-				H.invisibility = initial(H.invisibility)
+			H.forceMove(pick(floors))
+			if(H.ability_flags & AB_PHASE_SHIFTED)
+				H.riftwalker_phase_out()
+			H.invisibility = initial(H.invisibility)
 
-			spawn(15 MINUTES)
-				state &= ~RW_RSRECOVERY
-				to_chat(H, SPAN_NOTICE("You feel your power gathered once again..."))
+			addtimer(CALLBACK(H, TYPE_PROC_REF(/mob/living/carbon/human, riftwalker_recover)), 5 MINUTES)
 		H.add_modifier(/datum/modifier/redspace_recovery, 1 MINUTE)
 
 	if(real_body)
@@ -308,7 +303,7 @@
 		var/mob/living/carbon/human/new_body = new /mob/living/carbon/human(H)
 		var/client/user_client = H.client
 
-		to_chat(H, SPAN_NOTICE("With your old vessel destroyed, you start to gather the needed energy to burst back to your original form..."))
+		to_chat(H, span_notice("With your old vessel destroyed, you start to gather the needed energy to burst back to your original form..."))
 
 		user_client.prefs.copy_to(new_body)
 		if(src.real_body.dna)
