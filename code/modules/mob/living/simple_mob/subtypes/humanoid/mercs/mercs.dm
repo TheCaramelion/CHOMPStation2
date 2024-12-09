@@ -90,13 +90,22 @@
 	threaten_delay = 30 SECONDS // Mercs will give you 30 seconds to leave or get shot.
 	use_astar = TRUE //CHOMPEdit
 
+/datum/ai_holder/simple_mob/merc/guard_limit
+	guard_limit = TRUE
+
 /datum/ai_holder/simple_mob/merc/ranged
 	pointblank = TRUE		// They get close? Just shoot 'em!
 	firing_lanes = TRUE		// But not your buddies!
 	conserve_ammo = TRUE	// And don't go wasting bullets!
 
+/datum/ai_holder/simple_mob/merc/ranged/guard_limit
+	guard_limit = TRUE
+
 /datum/ai_holder/simple_mob/merc/ranged/sniper
 	vision_range = 14	// We're a person with a long-ranged gun.
+
+/datum/ai_holder/simple_mob/merc/ranged/sniper/guard_limit
+	guard_limit = TRUE
 
 /datum/ai_holder/simple_mob/merc/ranged/sniper/max_range(atom/movable/AM)
 	return holder.ICheckRangedAttack(AM) ? 14 : 1
@@ -125,20 +134,20 @@
 /mob/living/simple_mob/humanoid/merc/melee/sword/attackby(var/obj/item/O as obj, var/mob/user as mob)
 	if(O.force)
 		if(prob(20))
-			visible_message("<span class='danger'>\The [src] blocks \the [O] with its shield!</span>")
+			visible_message(span_danger("\The [src] blocks \the [O] with its shield!"))
 			if(user)
 				ai_holder.react_to_attack(user)
 			return
 		else
 			..()
 	else
-		to_chat(user, "<span class='warning'>This weapon is ineffective, it does no damage.</span>")
-		visible_message("<span class='warning'>\The [user] gently taps [src] with \the [O].</span>")
+		to_chat(user, span_warning("This weapon is ineffective, it does no damage."))
+		visible_message(span_warning("\The [user] gently taps [src] with \the [O]."))
 
 /mob/living/simple_mob/humanoid/merc/melee/sword/bullet_act(var/obj/item/projectile/Proj)
 	if(!Proj)	return
 	if(prob(35))
-		visible_message(span_red("<B>[src] blocks [Proj] with its shield!</B>"))
+		visible_message(span_bolddanger("[src] blocks [Proj] with its shield!"))
 		if(Proj.firer)
 			ai_holder.react_to_attack(Proj.firer)
 		return
@@ -335,7 +344,7 @@
 	*/
 	if(ranged_cooldown_time) //If you have a non-zero number in a mob's variables, this pattern begins.
 		if(ranged_cooldown <= world.time) //Further down, a timer keeps adding to the ranged_cooldown variable automatically.
-			visible_message("<span class='danger'><b>\The [src]</b> fires at \the [A]!</span>") //Leave notice of shooting.
+			visible_message(span_danger(span_bold("\The [src]") + " fires at \the [A]!")) //Leave notice of shooting.
 			shoot(A) //Perform the shoot action
 			if(casingtype) //If the mob is designated to leave casings...
 				new casingtype(loc) //... leave the casing.
@@ -343,7 +352,7 @@
 		return TRUE	//End these commands here.
 	// CHOMPAddition End
 
-	visible_message("<span class='danger'><b>\The [src]</b> fires at \the [orig_targ]!</span>")
+	visible_message(span_danger(span_bold("\The [src]") + " fires at \the [orig_targ]!"))
 	shoot(A)
 	if(casingtype)
 		new casingtype(loc)
@@ -448,3 +457,42 @@
 		/obj/item/grenade/spawnergrenade/manhacks/mercenary = 50,
 		/obj/item/grenade/spawnergrenade/manhacks/mercenary = 30
 		)
+
+
+////////////////////////////////
+//		Stealth Mission Mercs
+////////////////////////////////
+
+// Most likely to drop a broken weapon matching them, if it's a gun.
+/mob/living/simple_mob/humanoid/merc/melee/poi/guard_limit
+	ai_holder_type = /datum/ai_holder/simple_mob/merc/guard_limit
+
+/mob/living/simple_mob/humanoid/merc/melee/sword/poi/guard_limit
+	ai_holder_type = /datum/ai_holder/simple_mob/merc/guard_limit
+
+/mob/living/simple_mob/humanoid/merc/ranged/poi/guard_limit
+	ai_holder_type = /datum/ai_holder/simple_mob/merc/ranged/guard_limit
+
+/mob/living/simple_mob/humanoid/merc/ranged/smg/poi/guard_limit
+	ai_holder_type = /datum/ai_holder/simple_mob/merc/ranged/guard_limit
+
+/mob/living/simple_mob/humanoid/merc/ranged/laser/poi/guard_limit
+	ai_holder_type = /datum/ai_holder/simple_mob/merc/ranged/guard_limit
+
+/mob/living/simple_mob/humanoid/merc/ranged/ionrifle/poi/guard_limit
+	ai_holder_type = /datum/ai_holder/simple_mob/merc/ranged/guard_limit
+
+/mob/living/simple_mob/humanoid/merc/ranged/grenadier/poi/guard_limit
+	ai_holder_type = /datum/ai_holder/simple_mob/merc/ranged/guard_limit
+
+/mob/living/simple_mob/humanoid/merc/ranged/rifle/poi/guard_limit
+	ai_holder_type = /datum/ai_holder/simple_mob/merc/ranged/guard_limit
+
+/mob/living/simple_mob/humanoid/merc/ranged/rifle/mag/poi/guard_limit
+	ai_holder_type = /datum/ai_holder/simple_mob/merc/ranged/guard_limit
+
+/mob/living/simple_mob/humanoid/merc/ranged/technician/poi/guard_limit
+	ai_holder_type = /datum/ai_holder/simple_mob/merc/ranged/guard_limit
+
+/mob/living/simple_mob/humanoid/merc/ranged/sniper/guard_limit
+	ai_holder_type = /datum/ai_holder/simple_mob/merc/ranged/sniper/guard_limit

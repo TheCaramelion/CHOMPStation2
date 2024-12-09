@@ -31,7 +31,7 @@
 				organ_tag = O_AUG_L_FOREARM
 				parent_organ = BP_L_ARM
 				target_slot = slot_l_hand
-		to_chat(user, "<span class='notice'>You swap \the [src]'s servos to install neatly into \the lower [parent_organ] mount.</span>")
+		to_chat(user, span_notice("You swap \the [src]'s servos to install neatly into \the lower [parent_organ] mount."))
 		return
 
 	. = ..()
@@ -62,6 +62,10 @@
 	icon_state = "augment_box"
 
 	w_class = ITEMSIZE_SMALL
+	// Needs to be redefined here, or the switch statement beneath with no default case can never change target limb... Also prevents putting it in your shoulder when it's a hand implant.
+	organ_tag = O_AUG_R_HAND
+	parent_organ = BP_R_HAND
+	target_slot = slot_r_hand
 
 	integrated_object_type = /obj/item/portable_scanner
 
@@ -76,7 +80,7 @@
 				organ_tag = O_AUG_L_HAND
 				parent_organ = BP_L_HAND
 				target_slot = slot_l_hand
-		to_chat(user, "<span class='notice'>You swap \the [src]'s servos to install neatly into \the upper [parent_organ] mount.</span>")
+		to_chat(user, span_notice("You swap \the [src]'s servos to install neatly into \the upper [parent_organ] mount."))
 		return
 
 	. = ..()
@@ -120,7 +124,7 @@
 				organ_tag = O_AUG_L_UPPERARM
 				parent_organ = BP_L_ARM
 				target_slot = slot_l_hand
-		to_chat(user, "<span class='notice'>You swap \the [src]'s servos to install neatly into \the upper [parent_organ] mount.</span>")
+		to_chat(user, span_notice("You swap \the [src]'s servos to install neatly into \the upper [parent_organ] mount."))
 		return
 
 	. = ..()

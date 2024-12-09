@@ -15,6 +15,7 @@ export type Data = {
     maximum_size: number;
     resize_cost: number;
   };
+  vore_words: Record<string, string[]>;
 };
 
 export type hostMob = {
@@ -24,12 +25,12 @@ export type hostMob = {
 
 export type insideData = {
   absorbed: BooleanLike;
-  belly_name: string;
-  belly_mode: string;
-  desc: string;
-  pred: string;
-  ref: string;
-  contents: contentData[];
+  belly_name?: string;
+  belly_mode?: string;
+  desc?: string;
+  pred?: string;
+  ref?: string;
+  contents?: contentData[];
 };
 
 export type contentData = {

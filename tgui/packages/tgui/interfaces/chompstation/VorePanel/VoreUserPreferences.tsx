@@ -1,7 +1,7 @@
 import { BooleanLike } from 'common/react';
+import { useBackend } from 'tgui/backend';
+import { Button, Divider, Flex, Section } from 'tgui/components';
 
-import { useBackend } from '../../../backend';
-import { Box, Button, Divider, Flex, Section } from '../../../components';
 import { digestModeToColor } from './constants';
 import { localPrefs, prefData, selectedData } from './types';
 import { VoreUserPreferencesAesthetic } from './VoreUserPreferencesTabs/VoreUserPreferencesAesthetic';
@@ -13,7 +13,7 @@ import { VoreUserPreferencesSpontaneous } from './VoreUserPreferencesTabs/VoreUs
 
 export const VoreUserPreferences = (props: {
   prefs: prefData;
-  selected: selectedData;
+  selected: selectedData | null;
   show_pictures: BooleanLike;
   icon_overflow: BooleanLike;
 }) => {
@@ -704,7 +704,7 @@ export const VoreUserPreferences = (props: {
   };
 
   return (
-    <Box nowrap>
+    <Section scrollable fill>
       <VoreUserPreferencesMechanical
         show_pictures={show_pictures}
         icon_overflow={icon_overflow}
@@ -754,6 +754,6 @@ export const VoreUserPreferences = (props: {
           </Flex.Item>
         </Flex>
       </Section>
-    </Box>
+    </Section>
   );
 };

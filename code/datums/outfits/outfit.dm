@@ -52,6 +52,10 @@ var/list/outfits_decls_by_type_
 
 	var/id_pda_assignment
 
+	var/headset = /obj/item/radio/headset
+	var/headset_alt = /obj/item/radio/headset/alt
+	var/headset_earbud = /obj/item/radio/headset/earbud
+
 	var/backpack = /obj/item/storage/backpack
 	var/satchel_one  = /obj/item/storage/backpack/satchel/norm
 	var/satchel_two  = /obj/item/storage/backpack/satchel
@@ -72,7 +76,11 @@ var/list/outfits_decls_by_type_
 	dd_insertObjectList(outfits_decls_, src)
 
 /decl/hierarchy/outfit/proc/pre_equip(mob/living/carbon/human/H)
-	if(flags & OUTFIT_HAS_BACKPACK)
+	switch(H.headset)
+		if(1) l_ear = headset
+		if(2) l_ear = headset_alt
+		if(3) l_ear = headset_earbud
+	if(flags && OUTFIT_HAS_BACKPACK)
 		switch(H.backbag)
 			if(2) back = backpack
 			if(3) back = satchel_one
@@ -185,7 +193,7 @@ var/list/outfits_decls_by_type_
 		pda.ownjob = assignment
 		pda.ownrank = rank
 		pda.name = "PDA-[H.real_name] ([assignment])"
-		if(H.client.prefs.ringtone) // if null we use the job default
+		if(H.client?.prefs.ringtone) // if null we use the job default
 			pda.ttone = H.client.prefs.ringtone
 		return pda
 

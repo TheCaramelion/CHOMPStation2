@@ -155,7 +155,7 @@
 
 /mob/living/bot/cleanbot/explode()
 	on = 0
-	visible_message("<span class='danger'>[src] blows apart!</span>")
+	visible_message(span_danger("[src] blows apart!"))
 	var/turf/Tsec = get_turf(src)
 
 	new /obj/item/reagent_containers/glass/bucket(Tsec)
@@ -202,8 +202,8 @@
 /mob/living/bot/cleanbot/tgui_act(action, list/params, datum/tgui/ui, datum/tgui_state/state)
 	if(..())
 		return TRUE
-	usr.set_machine(src)
-	add_fingerprint(usr)
+	ui.user.set_machine(src)
+	add_fingerprint(ui.user)
 	switch(action)
 		if("start")
 			if(on)
@@ -223,18 +223,18 @@
 			. = TRUE
 		if("wet_floors")
 			wet_floors = !wet_floors
-			to_chat(usr, "<span class='notice'>You twiddle the screw.</span>")
+			to_chat(ui.user, span_notice("You twiddle the screw."))
 			. = TRUE
 		if("spray_blood")
 			spray_blood = !spray_blood
-			to_chat(usr, "<span class='notice'>You press the weird button.</span>")
+			to_chat(ui.user, span_notice("You press the weird button."))
 			. = TRUE
 
 /mob/living/bot/cleanbot/emag_act(var/remaining_uses, var/mob/user)
 	. = ..()
 	if(!wet_floors || !spray_blood)
 		if(user)
-			to_chat(user, "<span class='notice'>The [src] buzzes and beeps.</span>")
+			to_chat(user, span_notice("The [src] buzzes and beeps."))
 			playsound(src, 'sound/machines/buzzbeep.ogg', 50, 0)
 		spray_blood = 1
 		wet_floors = 1
@@ -265,7 +265,7 @@
 		var/turf/T = get_turf(loc)
 		var/mob/living/bot/cleanbot/A = new /mob/living/bot/cleanbot(T)
 		A.name = created_name
-		to_chat(user, "<span class='notice'>You add the robot arm to the bucket and sensor assembly. Beep boop!</span>")
+		to_chat(user, span_notice("You add the robot arm to the bucket and sensor assembly. Beep boop!"))
 		user.drop_from_inventory(src)
 		qdel(src)
 
@@ -273,6 +273,6 @@
 		var/t = sanitizeSafe(tgui_input_text(user, "Enter new robot name", name, created_name, MAX_NAME_LEN), MAX_NAME_LEN)
 		if(!t)
 			return
-		if(!in_range(src, usr) && src.loc != usr)
+		if(!in_range(src, user) && src.loc != user)
 			return
 		created_name = t

@@ -112,10 +112,10 @@
 
 	return data
 
-/obj/item/pipe_dispenser/tgui_act(action, params)
+/obj/item/pipe_dispenser/tgui_act(action, params, datum/tgui/ui)
 	if(..())
 		return TRUE
-	if(!usr.canmove || usr.stat || usr.restrained() || !in_range(loc, usr))
+	if(!ui.user.canmove || ui.user.stat || ui.user.restrained() || !in_range(loc, ui.user))
 		return TRUE
 	var/playeffect = TRUE
 	switch(action)
@@ -178,7 +178,7 @@
 
 	. = TRUE
 	if((mode & DESTROY_MODE) && can_destroy_pipe)
-		to_chat(user, "<span class='notice'>You start destroying a pipe...</span>")
+		to_chat(user, span_notice("You start destroying a pipe..."))
 		playsound(src, 'sound/machines/click.ogg', 50, 1)
 		if(do_after(user, 2, target = A))
 			activate()
@@ -190,7 +190,7 @@
 			var/obj/machinery/atmospherics/pipe/P = A
 			playsound(src, 'sound/machines/click.ogg', 50, 1)
 			P.change_color(pipe_colors[paint_color])
-			user.visible_message("<span class='notice'>[user] paints \the [P] [paint_color].</span>", "<span class='notice'>You paint \the [P] [paint_color].</span>")
+			user.visible_message(span_notice("[user] paints \the [P] [paint_color]."), span_notice("You paint \the [P] [paint_color]."))
 			return
 
 	if(mode & BUILD_MODE) //Making pipes
@@ -200,7 +200,7 @@
 					return ..()
 				playsound(src, 'sound/machines/click.ogg', 50, 1)
 				if(istype(recipe, /datum/pipe_recipe/meter))
-					to_chat(user, "<span class='notice'>You start building a meter...</span>")
+					to_chat(user, span_notice("You start building a meter..."))
 					if(do_after(user, 2, target = A))
 						activate()
 						var/obj/item/pipe_meter/PM = new /obj/item/pipe_meter(get_turf(A))
@@ -209,7 +209,7 @@
 							do_wrench(PM, user)
 				else if(istype(recipe, /datum/pipe_recipe/pipe))
 					var/datum/pipe_recipe/pipe/R = recipe
-					to_chat(user, "<span class='notice'>You start building a pipe...</span>")
+					to_chat(user, span_notice("You start building a pipe..."))
 					if(do_after(user, 2, target = A))
 						activate()
 						var/obj/machinery/atmospherics/path = R.pipe_type
@@ -217,7 +217,7 @@
 						var/obj/item/pipe/P = new pipe_item_type(get_turf(A), path, queued_p_dir)
 
 						P.update()
-						P.add_fingerprint(usr)
+						P.add_fingerprint(user)
 						if(R.paintable)
 							P.color = pipe_colors[paint_color]
 						P.setPipingLayer(queued_piping_layer)
@@ -234,21 +234,21 @@
 					return ..()
 				A = get_turf(A)
 				if(istype(A, /turf/unsimulated))
-					to_chat(user, "<span class='warning'>[src]'s error light flickers; there's something in the way!</span>")
+					to_chat(user, span_warning("[src]'s error light flickers; there's something in the way!"))
 					return
-				to_chat(user, "<span class='notice'>You start building a disposals pipe...</span>")
+				to_chat(user, span_notice("You start building a disposals pipe..."))
 				playsound(src, 'sound/machines/click.ogg', 50, 1)
 				if(do_after(user, 4, target = A))
 					var/obj/structure/disposalconstruct/C = new(A, R.pipe_type, queued_p_dir, queued_p_flipped, R.subtype)
 
 					if(!C.can_place())
-						to_chat(user, "<span class='warning'>There's not enough room to build that here!</span>")
+						to_chat(user, span_warning("There's not enough room to build that here!"))
 						qdel(C)
 						return
 
 					activate()
 
-					C.add_fingerprint(usr)
+					C.add_fingerprint(user)
 					C.update_icon()
 					if(mode & WRENCH_MODE)
 						do_wrench(C, user)

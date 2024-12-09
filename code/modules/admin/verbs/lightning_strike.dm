@@ -1,7 +1,7 @@
 /client/proc/admin_lightning_strike()
 	set name = "Lightning Strike"
 	set desc = "Causes lightning to strike on your tile. This can be made to hurt things on or nearby it severely."
-	set category = "Fun.Do Not" //CHOMPEdit
+	set category = "Fun.Do Not"
 
 	if(!check_rights(R_FUN))
 		return
@@ -94,7 +94,7 @@
 				var/mob/living/carbon/C = L
 				C.ear_deaf += 10
 				C.deaf_loop.start() // CHOMPStation Add: Ear Ringing/Deafness
-			to_chat(L, span("danger", "Lightning struck nearby, and the thunderclap is deafening!"))
+			to_chat(L, span_danger("Lightning struck nearby, and the thunderclap is deafening!"))
 
 #undef LIGHTNING_REDIRECT_RANGE
 #undef LIGHTNING_ZAP_RANGE

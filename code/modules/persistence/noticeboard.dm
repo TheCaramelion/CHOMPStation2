@@ -62,7 +62,7 @@
 
 /obj/structure/noticeboard/attackby(obj/item/I, mob/user)
 	if(I.has_tool_quality(TOOL_SCREWDRIVER))
-		var/choice = tgui_input_list(usr, "Which direction do you wish to place the noticeboard?", "Noticeboard Offset", list("North", "South", "East", "West", "No Offset"))
+		var/choice = tgui_input_list(user, "Which direction do you wish to place the noticeboard?", "Noticeboard Offset", list("North", "South", "East", "West", "No Offset"))
 		if(choice && Adjacent(user) && I.loc == user && !user.incapacitated())
 			playsound(loc, 'sound/items/Screwdriver.ogg', 50, 1)
 			switch(choice)
@@ -82,23 +82,23 @@
 					return
 		return
 	else if(I.has_tool_quality(TOOL_WRENCH))
-		visible_message("<span class='warning'>[user] begins dismantling [src].</span>")
+		visible_message(span_warning("[user] begins dismantling [src]."))
 		playsound(loc, 'sound/items/Ratchet.ogg', 50, 1)
 		if(do_after(user, 50, src))
-			visible_message("<span class='danger'>[user] has dismantled [src]!</span>")
+			visible_message(span_danger("[user] has dismantled [src]!"))
 			dismantle()
 		return
 	else if(istype(I, /obj/item/paper) || istype(I, /obj/item/photo))
 		if(jobban_isbanned(user, JOB_GRAFFITI))
-			to_chat(user, "<span class='warning'>You are banned from leaving persistent information across rounds.</span>")
+			to_chat(user, span_warning("You are banned from leaving persistent information across rounds."))
 		else
 			if(LAZYLEN(notices) < max_notices && user.unEquip(I, src))
 				add_fingerprint(user)
 				add_paper(I)
-				to_chat(user, "<span class='notice'>You pin [I] to [src].</span>")
+				to_chat(user, span_notice("You pin [I] to [src]."))
 				SSpersistence.track_value(I, /datum/persistent/paper)
 			else
-				to_chat(user, "<span class='warning'>You hesitate, certain [I] will not be seen among the many others already attached to \the [src].</span>")
+				to_chat(user, span_warning("You hesitate, certain [I] will not be seen among the many others already attached to \the [src]."))
 		return
 	return ..()
 
@@ -133,7 +133,7 @@
 	data["notices"] = tgui_notices
 	return data
 
-/obj/structure/noticeboard/tgui_act(action, params)
+/obj/structure/noticeboard/tgui_act(action, params, datum/tgui/ui)
 	if(..())
 		return TRUE
 
@@ -141,38 +141,38 @@
 		if("read")
 			var/obj/item/paper/P = locate(params["ref"])
 			if(P && P.loc == src)
-				P.show_content(usr)
+				P.show_content(ui.user)
 			. = TRUE
 
 		if("look")
 			var/obj/item/photo/P = locate(params["ref"])
 			if(P && P.loc == src)
-				P.show(usr)
+				P.show(ui.user)
 			. = TRUE
 
 		if("remove")
-			if(!in_range(src, usr))
+			if(!in_range(src, ui.user))
 				return FALSE
 			var/obj/item/I = locate(params["ref"])
 			remove_paper(I)
 			if(istype(I))
-				usr.put_in_hands(I)
-			add_fingerprint(usr)
+				ui.user.put_in_hands(I)
+			add_fingerprint(ui.user)
 			. = TRUE
 
 		if("write")
-			if(!in_range(src, usr))
+			if(!in_range(src, ui.user))
 				return FALSE
 			var/obj/item/P = locate(params["ref"])
 			if((P && P.loc == src)) //if the paper's on the board
-				var/mob/living/M = usr
+				var/mob/living/M = ui.user
 				if(istype(M))
 					var/obj/item/pen/E = M.get_type_in_hands(/obj/item/pen)
 					if(E)
 						add_fingerprint(M)
-						P.attackby(E, usr)
+						P.attackby(E, ui.user)
 					else
-						to_chat(M, "<span class='notice'>You'll need something to write with!</span>")
+						to_chat(M, span_notice("You'll need something to write with!"))
 						. = TRUE
 
 /obj/structure/noticeboard/anomaly

@@ -9,7 +9,7 @@
 // Taur sprites are now a subtype of tail since they are mutually exclusive anyway.
 
 /datum/sprite_accessory/tail/taur
-	name = "You should not see this..."
+	name = DEVELOPER_WARNING_NAME
 	icon = 'icons/mob/vore/taurs_vr.dmi'
 	do_colouration = 1 // Yes color, using tail color
 	color_blend_mode = ICON_MULTIPLY  // The sprites for taurs are designed for ICON_MULTIPLY
@@ -617,7 +617,7 @@
 	name = "Drake (Taur)"
 	icon_state = "drake_s"
 	extra_overlay = "drake_markings"
-///	suit_sprites = 'icons/mob/taursuits_drake_vr.dmi'	///Chomp edit
+///	suit_sprites = 'icons/mob/taursuits_drake_vr.dmi'
 	suit_sprites = 'icons/mob/taursuits_drake_ch.dmi'
 	icon_sprite_tag = "drake"
 	can_loaf = TRUE

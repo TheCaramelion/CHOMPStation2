@@ -56,7 +56,7 @@
 // Vorestation edit start
 
 /mob/living/carbon/brain/verb/backup_ping()
-	set category = "IC.Game" //CHOMPEdit
+	set category = "IC.Game"
 	set name = "Notify Transcore"
 	set desc = "Your body is gone. Notify robotics to be resleeved!"
 	var/datum/transcore_db/db = SStranscore.db_by_mind_name(mind.name)
@@ -67,16 +67,16 @@
 				record.dead_state = MR_DEAD				//Such as if you got scanned but didn't take an implant. It's a little funky, but I mean, you got scanned
 				db.notify(record)						//So you probably will want to let someone know if you die.
 				record.last_notification = world.time
-				to_chat(src, "<span class='notice'>New notification has been sent.</span>")
+				to_chat(src, span_notice("New notification has been sent."))
 			else
-				to_chat(src, "<span class='warning'>Your backup is not past-due yet.</span>")
+				to_chat(src, span_warning("Your backup is not past-due yet."))
 		else if((world.time - record.last_notification) < 5 MINUTES)
-			to_chat(src, "<span class='warning'>Too little time has passed since your last notification.</span>")
+			to_chat(src, span_warning("Too little time has passed since your last notification."))
 		else
 			db.notify(record)
 			record.last_notification = world.time
-			to_chat(src, "<span class='notice'>New notification has been sent.</span>")
+			to_chat(src, span_notice("New notification has been sent."))
 	else
-		to_chat(src,"<span class='warning'>No backup record could be found, sorry.</span>")
+		to_chat(src,span_warning("No backup record could be found, sorry."))
 
 // VS edit ends

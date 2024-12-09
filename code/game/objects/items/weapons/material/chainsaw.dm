@@ -29,7 +29,7 @@
 /obj/item/chainsaw/proc/turnOn(mob/user as mob)
 	if(on) return
 
-	visible_message("You start pulling the string on \the [src].", "[usr] starts pulling the string on the [src].")
+	visible_message("You start pulling the string on \the [src].", "[user] starts pulling the string on the [src].")
 
 	if(max_fuel <= 0)
 		if(do_after(user, 15))
@@ -38,7 +38,7 @@
 			to_chat(user, "You fumble with the string.")
 	else
 		if(do_after(user, 15))
-			visible_message("You start \the [src] up with a loud grinding!", "[usr] starts \the [src] up with a loud grinding!")
+			visible_message("You start \the [src] up with a loud grinding!", "[user] starts \the [src] up with a loud grinding!")
 			attack_verb = list("shredded", "ripped", "torn")
 			playsound(src, 'sound/weapons/chainsaw_startup.ogg',40,1)
 			force = active_force
@@ -87,16 +87,16 @@
 		else if(istype(A,/obj/machinery/portable_atmospherics/hydroponics))
 			var/obj/machinery/portable_atmospherics/hydroponics/Hyd = A
 			if(Hyd.seed && !Hyd.dead)
-				to_chat(user, "<span class='notice'>You shred the plant.</span>")
+				to_chat(user, span_notice("You shred the plant."))
 				Hyd.die()
 	if (istype(A, /obj/structure/reagent_dispensers/fueltank) && get_dist(src,A) <= 1)
-		to_chat(user, "<span class='notice'>You begin filling the tank on the chainsaw.</span>")
-		if(do_after(usr, 15))
+		to_chat(user, span_notice("You begin filling the tank on the chainsaw."))
+		if(do_after(user, 15))
 			A.reagents.trans_to_obj(src, max_fuel)
 			playsound(src, 'sound/effects/refill.ogg', 50, 1, -6)
-			to_chat(user, "<span class='notice'>Chainsaw succesfully refueled.</span>")
+			to_chat(user, span_notice("Chainsaw succesfully refueled."))
 		else
-			to_chat(user, "<span class='notice'>Don't move while you're refilling the chainsaw.</span>")
+			to_chat(user, span_notice("Don't move while you're refilling the chainsaw."))
 
 /obj/item/chainsaw/process()
 	if(!on) return
@@ -115,7 +115,7 @@
 /obj/item/chainsaw/examine(mob/user)
 	. = ..()
 	if(max_fuel && get_dist(user, src) == 0)
-		. += "<span class = 'notice'>The [src] feels like it contains roughtly [get_fuel()] units of fuel left.</span>"
+		. += span_notice("The [src] feels like it contains roughtly [get_fuel()] units of fuel left.")
 
 /obj/item/chainsaw/update_icon()
 	if(on)

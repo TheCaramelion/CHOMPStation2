@@ -20,7 +20,7 @@
 	set category = "Object"
 
 	if(show_above_suit == -1)
-		to_chat(usr, "<span class='notice'>\The [src] cannot be worn above your suit!</span>")
+		to_chat(usr, span_notice("\The [src] cannot be worn above your suit!"))
 		return
 	show_above_suit = !show_above_suit
 	update_icon()
@@ -250,7 +250,6 @@
 		/obj/item/cell/device,
 		/obj/item/extinguisher/mini,
 		/obj/item/ammo_casing/macrobattery, // CHOMPedit: Macrobatteries for the Curabitur can fit into medbelts.
-		/obj/item/antibody_scanner, // VOREstation edit start
 		/obj/item/sleevemate,
 		/obj/item/mass_spectrometer,
 		/obj/item/surgical,

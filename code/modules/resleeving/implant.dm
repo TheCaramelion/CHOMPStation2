@@ -7,8 +7,7 @@
 /obj/item/implant/backup
 	name = "backup implant"
 	desc = "A mindstate backup implant that occasionally stores a copy of one's mind on a central server for backup purposes."
-	catalogue_data = list(/datum/category_item/catalogue/information/organization/vey_med,
-						/datum/category_item/catalogue/technology/resleeving)
+	catalogue_data = list(/datum/category_item/catalogue/technology/resleeving)
 	icon = 'icons/vore/custom_items_vr.dmi'
 	icon_state = "backup_implant"
 	known_implant = TRUE
@@ -23,7 +22,7 @@
 <b>Implant Specifications:</b><BR>
 <b>Name:</b> [using_map.company_name] Employee Backup Implant<BR>
 <b>Life:</b> ~8 hours.<BR>
-<b>Important Notes:</b> Due to the sensitive nature of the implant, it is programmed to dissolve into harmless bio-material after 24 hours, to prevent unforseen issues with poorly maintained implants<BR>
+<b>Important Notes:</b> Implant is life-limited due to licensing restrictions. Dissolves into harmless biomaterial after around ~8 hours, the typical work shift.<BR>
 <HR>
 <b>Implant Details:</b><BR>
 <b>Function:</b> Contains a small swarm of nanobots that perform neuron scanning to create mind-backups.<BR>
@@ -54,8 +53,7 @@
 /obj/item/backup_implanter
 	name = "backup implanter"
 	desc = "After discovering that Nanotrasen was just re-using the same implanters over and over again on organics, leading to cross-contamination, Vey-Medical designed this self-cleaning model. Holds four backup implants at a time."
-	catalogue_data = list(/datum/category_item/catalogue/information/organization/vey_med,
-						/datum/category_item/catalogue/technology/resleeving)
+	catalogue_data = list(/datum/category_item/catalogue/technology/resleeving)
 	icon = 'icons/obj/device_alt.dmi'
 	icon_state = "bimplant"
 	item_state = "syringe_0"
@@ -85,14 +83,14 @@
 		return
 
 	if(imps.len)
-		to_chat(user, "<span class='notice'>You eject a backup implant.</span>")
+		to_chat(user, span_notice("You eject a backup implant."))
 		var/obj/item/implant/backup/imp = imps[imps.len]
 		imp.forceMove(get_turf(user))
 		imps -= imp
 		user.put_in_any_hand_if_possible(imp)
 		update()
 	else
-		to_chat(user, "<span class='warning'>\The [src] is empty.</span>")
+		to_chat(user, span_warning("\The [src] is empty."))
 
 	return
 
@@ -104,15 +102,15 @@
 			W.germ_level = 0
 			W.forceMove(src)
 			update()
-			to_chat(user, "<span class='notice'>You load \the [W] into \the [src].</span>")
+			to_chat(user, span_notice("You load \the [W] into \the [src]."))
 		else
-			to_chat(user, "<span class='warning'>\The [src] is already full!</span>")
+			to_chat(user, span_warning("\The [src] is already full!"))
 
 /obj/item/backup_implanter/attack(mob/M as mob, mob/user as mob)
 	if (!istype(M, /mob/living/carbon))
 		return
 	if (user && imps.len)
-		M.visible_message("<span class='notice'>[user] is injecting a backup implant into [M].</span>")
+		M.visible_message(span_notice("[user] is injecting a backup implant into [M]."))
 
 		user.setClickCooldown(DEFAULT_QUICK_COOLDOWN)
 		user.do_attack_animation(M)
@@ -120,7 +118,7 @@
 		var/turf/T1 = get_turf(M)
 		if (T1 && ((M == user) || do_after(user, 5 SECONDS, M)))
 			if(user && M && (get_turf(M) == T1) && src && src.imps.len)
-				M.visible_message("<span class='notice'>[M] has been backup implanted by [user].</span>")
+				M.visible_message(span_notice("[M] has been backup implanted by [user]."))
 
 				var/obj/item/implant/backup/imp = imps[imps.len]
 				if(imp.handle_implant(M,user.zone_sel.selecting))
@@ -156,6 +154,6 @@
 
 /*
 /obj/item/implant/backup/full
-	name = "khi backup implant"
-	desc = "A normal KHI wireless cortical stack with neutrino and QE transmission for constant-stream consciousness upload."
+	name = "backup implant"
+	desc = "A normal wireless cortical stack with neutrino and QE transmission for constant-stream consciousness upload."
 */

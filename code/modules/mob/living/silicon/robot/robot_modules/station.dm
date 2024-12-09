@@ -74,7 +74,7 @@ var/global/list/robot_modules = list(
 		R.radio.recalculateChannels()
 
 	R.set_default_module_icon()
-	R.choose_icon(SSrobot_sprites.get_module_sprites_len(R.modtype, R) + 1)
+	R.pick_module()
 	if(!R.client)
 		R.icon_selected = FALSE			// It wasnt a player selecting icon? Let them do it later!
 
@@ -94,7 +94,7 @@ var/global/list/robot_modules = list(
 
 	if(R.radio)
 		R.radio.recalculateChannels()
-	R.choose_icon(0)
+	R.set_default_module_icon()
 
 	R.scrubbing = FALSE
 
@@ -168,10 +168,10 @@ var/global/list/robot_modules = list(
 	added_networks.Cut()
 
 /obj/item/robot_module/proc/add_subsystems(var/mob/living/silicon/robot/R)
-	add_verb(R,subsystems) //CHOMPEdit TGPanel
+	add_verb(R, subsystems)
 
 /obj/item/robot_module/proc/remove_subsystems(var/mob/living/silicon/robot/R)
-	remove_verb(R,subsystems)  //CHOMPEdit
+	remove_verb(R, subsystems)
 
 /obj/item/robot_module/proc/apply_status_flags(var/mob/living/silicon/robot/R)
 	if(!can_be_pushed)
@@ -218,8 +218,8 @@ var/global/list/robot_modules = list(
 	src.modules += new /obj/item/boop_module(src)
 	src.modules += new /obj/item/flash/robot(src)
 	src.modules += new /obj/item/extinguisher(src)
-	src.modules += new /obj/item/gripper/scene(src) //CHOMPEdit - Give all borgs a scene gripper
 	src.modules += new /obj/item/tool/crowbar/cyborg(src)
+	src.modules += new /obj/item/gripper/scene(src)
 
 /obj/item/robot_module/robot/standard
 	name = "standard robot module"

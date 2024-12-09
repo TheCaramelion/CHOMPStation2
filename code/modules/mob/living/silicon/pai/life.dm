@@ -19,11 +19,11 @@
 	if(card.projector != PP_FUNCTIONAL && card.emitter != PP_FUNCTIONAL)
 		if(loc != card)
 			close_up()
-			to_chat(src, "<span class ='warning'>ERROR: System malfunction. Service required!</span>")
+			to_chat(src, span_warning("ERROR: System malfunction. Service required!"))
 	else if(card.projector  != PP_FUNCTIONAL|| card.emitter != PP_FUNCTIONAL)
 		if(prob(5))
 			close_up()
-			to_chat(src, "<span class ='warning'>ERROR: System malfunction. Service recommended!</span>")
+			to_chat(src, span_warning("ERROR: System malfunction. Service recommended!"))
 
 	handle_regular_hud_updates()
 	handle_vision()
@@ -34,6 +34,7 @@
 			to_chat(src, span_green("Communication circuit reinitialized. Speech and messaging functionality restored."))
 
 	handle_statuses()
+	handle_sleeping()
 
 	if(health <= 0)
 		card.death_damage()

@@ -4,6 +4,7 @@
 	desc = "A modified power cell sitting in a highly conductive chassis."
 	origin_tech = list(TECH_POWER = 2)
 	icon_state = "modded"
+	charge = 10000
 	maxcharge = 10000
 	matter = list(MAT_STEEL = 1000, MAT_GLASS = 80, MAT_SILVER = 100)
 	self_recharge = TRUE
@@ -66,7 +67,7 @@
 	var/obj/item/plastique/C4 = locate() in get_turf(src)
 
 	if(C4)
-		C4.visible_message("<span class='danger'>The current fries \the [C4]!</span>")
+		C4.visible_message(span_danger("The current fries \the [C4]!"))
 
 		if(prob(10))
 			C4.explode(get_turf(src))

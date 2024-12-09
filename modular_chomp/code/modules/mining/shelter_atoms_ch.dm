@@ -145,6 +145,13 @@
 
 /area/survivalpod/superpose/XenoBotanySetup
 
+/area/survivalpod/superpose/secondlifebar
+	flags = AREA_ALLOW_LARGE_SIZE
+
+/area/survivalpod/superpose/secondlifebar/dorms
+	icon_state = "toilet"
+	flags = AREA_ALLOW_LARGE_SIZE | AREA_SOUNDPROOF
+
 /obj/item/survivalcapsule/superpose
 	name = "superposed surfluid shelter capsule"
 	desc = "A proprietary hyperstructure of many three-dimensional spaces superposed around a supermatter nano crystal; right-click to reset the pod. There's a license for use printed on the bottom."

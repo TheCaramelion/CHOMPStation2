@@ -139,7 +139,7 @@
 	if(respite_activating)
 		return TRUE
 	var/area/current_area = get_area(H)
-	if((H.ability_flags & AB_DARK_RESPITE) || H.has_modifier_of_type(/datum/modifier/dark_respite) || current_area.limit_dark_respite)
+	if((H.ability_flags & AB_DARK_RESPITE) || H.has_modifier_of_type(/datum/modifier/dark_respite) || current_area.flag_check(AREA_LIMIT_DARK_RESPITE))
 		return
 	var/list/floors = list()
 	for(var/turf/unsimulated/floor/dark/floor in get_area_turfs(/area/shadekin))
@@ -289,7 +289,7 @@
 		H.ability_master = new /obj/screen/movable/ability_master/shadekin(H)
 	for(var/datum/power/shadekin/P in shadekin_ability_datums)
 		if(!(P.verbpath in H.verbs))
-			add_verb(H,P.verbpath)  //CHOMPEdit
+			add_verb(H, P.verbpath)
 			H.ability_master.add_shadekin_ability(
 					object_given = H,
 					verb_given = P.verbpath,

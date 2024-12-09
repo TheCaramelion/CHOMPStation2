@@ -92,7 +92,7 @@
 			var/atom/toplevelholder = target
 			while(!istype(toplevelholder.loc, /turf))
 				toplevelholder = toplevelholder.loc
-			toplevelholder.visible_message("<span class='filter_notice'>[span_red("[icon2html(toplevelholder, viewers(toplevelholder))] [toplevelholder] [display_msg]")]</span>")
+			toplevelholder.visible_message(span_filter_notice("[span_red("[icon2html(toplevelholder, viewers(toplevelholder))] [toplevelholder] [display_msg]")]"))
 
 /datum/artifact_effect/proc/DoEffectTouch(var/mob/user)
 /datum/artifact_effect/proc/DoEffectAura(var/atom/holder)
@@ -159,7 +159,7 @@
 	if(!istype(H))
 		return 1
 	var/area/A = get_area(H)
-	if(A.forbid_events)
+	if(A.flag_check(AREA_FORBID_EVENTS))
 		return 0
 	var/protected = 0
 

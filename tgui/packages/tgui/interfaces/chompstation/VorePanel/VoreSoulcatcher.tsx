@@ -1,4 +1,4 @@
-import { useBackend } from '../../../backend';
+import { useBackend } from 'tgui/backend';
 import {
   Box,
   Button,
@@ -6,7 +6,8 @@ import {
   LabeledList,
   Section,
   Stack,
-} from '../../../components';
+} from 'tgui-core/components';
+
 import { abilities, bellyData, DropdownEntry, soulcatcherData } from './types';
 import { VoreAbilities } from './VoreAbilities';
 import { CatchSettings } from './VoreSoulcatcherSettings/CatchSettings';
@@ -28,7 +29,7 @@ export const VoreSoulcatcher = (props: {
   });
 
   return (
-    <>
+    <Section scrollable fill>
       {soulcatcher && (
         <VoreSoulcatcherSection
           soulcatcher={soulcatcher}
@@ -36,7 +37,7 @@ export const VoreSoulcatcher = (props: {
         />
       )}
       <VoreAbilities abilities={abilities} />
-    </>
+    </Section>
   );
 };
 

@@ -137,6 +137,16 @@
 	reagents.add_reagent("spidertoxin",6)
 	reagents.remove_reagent("pacid",6)
 
+/obj/item/reagent_containers/food/snacks/rawturkey
+	name = "raw turkey"
+	desc = "Naked and hollow."
+	icon_state = "rawturkey"
+	bitesize = 2.5
+
+/obj/item/reagent_containers/food/snacks/rawturkey/Initialize()
+	. = ..()
+	reagents.add_reagent("protein", 10)
+
 /obj/item/reagent_containers/food/snacks/meat/fox
 	name = "foxmeat"
 	desc = "The fox doesn't say a goddamn thing, now."
@@ -191,8 +201,8 @@
 		new to_spawn(get_turf(src))
 
 		if(prob(20))
-			user.visible_message("<span class='alien'>Something oozes out of \the [src] as it is cut.</span>")
+			user.visible_message(span_alien("Something oozes out of \the [src] as it is cut."))
 
-		to_chat(user, "<span class='alien'>You cut the tissue holding the chunks together.</span>")
+		to_chat(user, span_alien("You cut the tissue holding the chunks together."))
 
 	..()

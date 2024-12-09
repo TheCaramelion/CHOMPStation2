@@ -88,12 +88,12 @@
 
 /mob/living/simple_mob/vore/sect_drone/Login()
 	. = ..()
-	add_verb(src,/mob/living/simple_mob/vore/sect_drone/proc/set_abdomen_color) //CHOMPEdit TGPanel
+	add_verb(src,  /mob/living/simple_mob/vore/sect_drone/proc/set_abdomen_color)
 
 /mob/living/simple_mob/vore/sect_drone/proc/set_abdomen_color()
 	set name = "Set Glow Color"
 	set desc = "Customize your eyes and abdomen glow color."
-	set category = "Abilities.Sect Drone" //CHOMPEdit
+	set category = "Abilities.Sect Drone"
 
 	var/new_color = input(src, "Please select color.", "Glow Color", custom_eye_color) as color|null
 	if(new_color)

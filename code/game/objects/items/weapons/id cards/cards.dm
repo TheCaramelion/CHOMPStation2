@@ -118,7 +118,7 @@
 	// Vorestation Edit: End of Edit
 
 	if(uses<1)
-		user.visible_message("<span class='warning'>\The [src] fizzles and sparks - it seems it's been used once too often, and is now spent.</span>")
+		user.visible_message(span_warning("\The [src] fizzles and sparks - it seems it's been used once too often, and is now spent."))
 		user.drop_item()
 		var/obj/item/card/emag_broken/junk = new(user.loc)
 		junk.add_fingerprint(user)
@@ -130,11 +130,11 @@
 	if(istype(O, /obj/item/stack/telecrystal))
 		var/obj/item/stack/telecrystal/T = O
 		if(T.get_amount() < 1)
-			to_chat(usr, "<span class='notice'>You are not adding enough telecrystals to fuel \the [src].</span>")
+			to_chat(user, span_notice("You are not adding enough telecrystals to fuel \the [src]."))
 			return
 		uses += T.get_amount()*0.5 //Gives 5 uses per 10 TC
 		uses = CEILING(uses, 1) //Ensures no decimal uses nonsense, rounds up to be nice
-		to_chat(usr, "<span class='notice'>You add \the [O] to \the [src]. Increasing the uses of \the [src] to [uses].</span>")
+		to_chat(user, span_notice("You add \the [O] to \the [src]. Increasing the uses of \the [src] to [uses]."))
 		qdel(O)
 
 
@@ -158,7 +158,7 @@
 	// Vorestation Edit: End of Edit
 
 	if(uses<1)
-		user.visible_message("<span class='warning'>\The [src] fizzles and sparks - it seems it's been used once too often, and is now spent.</span>")
+		user.visible_message(span_warning("\The [src] fizzles and sparks - it seems it's been used once too often, and is now spent."))
 		burnt_out = TRUE
 
 	return 1
@@ -201,13 +201,13 @@
 	if(I)
 		icon = I
 
-/obj/item/card_fluff/attack_self()
+/obj/item/card_fluff/attack_self(mob/user)
 
-	var/choice = tgui_input_list(usr, "What element would you like to customize?", "Customize Card", list("Band","Stamp","Reset"))
+	var/choice = tgui_input_list(user, "What element would you like to customize?", "Customize Card", list("Band","Stamp","Reset"))
 	if(!choice) return
 
 	if(choice == "Band")
-		var/bandchoice = tgui_input_list(usr, "Select colour", "Band colour", list("red","orange","green","dark green","medical blue","dark blue","purple","tan","pink","gold","white","black"))
+		var/bandchoice = tgui_input_list(user, "Select colour", "Band colour", list("red","orange","green","dark green","medical blue","dark blue","purple","tan","pink","gold","white","black"))
 		if(!bandchoice) return
 
 		if(bandchoice == "red")
@@ -238,7 +238,7 @@
 		update_icon()
 		return
 	else if(choice == "Stamp")
-		var/stampchoice = tgui_input_list(usr, "Select image", "Stamp image", list("ship","cross","big ears","shield","circle-cross","target","smile","frown","peace","exclamation"))
+		var/stampchoice = tgui_input_list(user, "Select image", "Stamp image", list("ship","cross","big ears","shield","circle-cross","target","smile","frown","peace","exclamation"))
 		if(!stampchoice) return
 
 		if(stampchoice == "ship")

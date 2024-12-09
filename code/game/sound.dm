@@ -26,7 +26,7 @@
 		if(!T)
 			continue
 		var/area/A = T.loc
-		if((A.soundproofed || area_source.soundproofed) && (A != area_source))
+		if((A.flag_check(AREA_SOUNDPROOF) || area_source.flag_check(AREA_SOUNDPROOF)) && (A != area_source))
 			continue
 		//var/distance = get_dist(T, turf_source) Save get_dist for later because it's more expensive
 
@@ -146,7 +146,7 @@
 	if(prefs?.read_preference(/datum/preference/toggle/play_lobby_music))
 		var/datum/track/T = pick(SSmedia_tracks.lobby_tracks)
 		media.push_music(T.url, world.time, 0.85)
-		to_chat(src,"<span class='notice'>Lobby music: <b>[T.title]</b> by <b>[T.artist]</b>.</span>")
+		to_chat(src,span_notice("Lobby music: <b>[T.title]</b> by <b>[T.artist]</b>."))
 
 /proc/get_sfx(soundin)
 	if(istext(soundin))

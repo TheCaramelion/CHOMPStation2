@@ -71,7 +71,7 @@
 		spark_system.set_up(5, 0, user.loc)
 		spark_system.start()
 		playsound(src, "sparks", 50, 1)
-		user.visible_message("<span class='danger'>[user] is abruptly flung somewhere else in response to the damage!</span>")
+		user.visible_message(span_danger("[user] is abruptly flung somewhere else in response to the damage!"))
 		do_teleport(user, locate(telex,teley,telez), local = 0, bohsafe = 1)
 		tele_threshold = initial(tele_threshold)
 	return TRUE
@@ -99,3 +99,24 @@
 	desc = "A headset with combined medical and security functionality."
 	icon_state = "med_headset"
 	ks2type = /obj/item/encryptionkey/headset_medsec
+
+/obj/item/radio/headset/headset_medsci
+	name = "medical research radio headset"
+	desc = "A headset with combined medical and science functionality."
+	icon_state = "med_headset"
+	ks2type = /obj/item/encryptionkey/headset_medsci
+
+/obj/item/radio/headset/volunteer
+	name = "volunteer's headset"
+	desc = "A headset used by volunteers to expedition teams, has access to the exploration channel."
+	icon_state = "pilot_headset"
+	adhoc_fallback = TRUE
+	ks2type = /obj/item/encryptionkey/explorer
+
+/obj/item/radio/headset/explorer
+	name = "explorer's headset"
+	desc = "Headset used by explorers for exploring. Access to the explorer channel."
+
+/obj/item/radio/headset/alt/explorer
+	name = "explorer's bowman headset"
+	desc = "Bowman headset used by explorers for exploring. Access to the explorer channel."

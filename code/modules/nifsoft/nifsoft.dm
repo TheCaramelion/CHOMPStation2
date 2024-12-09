@@ -209,14 +209,14 @@
 	var/mob/living/carbon/human/Hu = user
 
 	if(!Ht.nif || Ht.nif.stat != NIF_WORKING)
-		to_chat(user,"<span class='warning'>Either they don't have a NIF, or the uploader can't connect.</span>")
+		to_chat(user,span_warning("Either they don't have a NIF, or the uploader can't connect."))
 		return
 
 	var/extra = extra_params()
 	if(A == user)
-		to_chat(user,"<span class='notice'>You upload [src] into your NIF.</span>")
+		to_chat(user,span_notice("You upload [src] into your NIF."))
 	else
-		Ht.visible_message("<span class='warning'>[Hu] begins uploading [src] into [Ht]!</span>","<span class='danger'>[Hu] is uploading [src] into you!</span>")
+		Ht.visible_message(span_warning("[Hu] begins uploading [src] into [Ht]!"),span_danger("[Hu] is uploading [src] into you!"))
 
 	icon_state = "[initial(icon_state)]-animate"	//makes it play the item animation upon using on a valid target
 	update_icon()
@@ -262,7 +262,7 @@
 	if(!ishuman(A))
 		return
 	if(!laws)
-		to_chat(user,"<span class='warning'>You haven't set any laws yet. Use the disk in-hand first.</span>")
+		to_chat(user,span_warning("You haven't set any laws yet. Use the disk in-hand first."))
 		return
 	..(A,user,flag,params)
 
@@ -270,7 +270,7 @@
 	var/newlaws = tgui_input_text(user, "Please Input Laws", "Compliance Laws", laws, multiline = TRUE, prevent_enter = TRUE)
 	newlaws = sanitize(newlaws,2048)
 	if(newlaws)
-		to_chat(user,"<span class='filter_notice'>You set the laws to: <br><span class='notice'>[newlaws]</span></span>")
+		to_chat(user,span_filter_notice("You set the laws to: <br>" + span_notice("[newlaws]")))
 		laws = newlaws
 
 /obj/item/disk/nifsoft/compliance/extra_params()
@@ -381,6 +381,35 @@
 	..()
 	for(var/i = 0 to 7)
 		new /obj/item/disk/nifsoft/mining(src)
+
+// Pilot Disk //
+/obj/item/disk/nifsoft/pilot
+	name = "NIFSoft Uploader - Pilot"
+	desc = "Contains free NIFSofts useful for pilot members.\n\
+	It has a small label: \n\
+	\"Portable NIFSoft Installation Media. \n\
+	Align ocular port with eye socket and depress red plunger.\""
+	icon = 'icons/obj/nanomods_vr.dmi'
+	icon_state = "pilot"
+	stored_organic = /datum/nifsoft/package/pilot
+	stored_synthetic = /datum/nifsoft/package/pilot_synth
+
+/datum/nifsoft/package/pilot
+	software = list(/datum/nifsoft/spare_breath)
+
+/datum/nifsoft/package/pilot_synth
+	software = list(/datum/nifsoft/pressure,/datum/nifsoft/heatsinks)
+
+/obj/item/storage/box/nifsofts_pilot
+	name = "pilot nifsoft uploaders"
+	desc = "A box of free nifsofts for pilot employees."
+	icon = 'icons/obj/boxes_vr.dmi'
+	icon_state = "nifsoft_kit_pilot"
+
+/obj/item/storage/box/nifsofts_pilot/New()
+	..()
+	for(var/i = 0 to 7)
+		new /obj/item/disk/nifsoft/pilot(src)
 
 // Mass Alteration Disk //
 /obj/item/disk/nifsoft/sizechange

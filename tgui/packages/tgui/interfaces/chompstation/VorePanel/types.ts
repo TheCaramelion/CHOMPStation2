@@ -7,10 +7,11 @@ export type Data = {
   inside: insideData;
   host_mobtype: hostMob;
   our_bellies: bellyData[];
-  selected: selectedData;
+  selected: selectedData | null;
   prefs: prefData;
   soulcatcher: soulcatcherData | null;
   abilities: abilities;
+  vore_words: Record<string, string[]>;
 };
 
 export type abilities = {
@@ -28,15 +29,15 @@ export type hostMob = {
 
 export type insideData = {
   absorbed: BooleanLike;
-  belly_name: string;
-  belly_mode: string;
-  desc: string;
-  pred: string;
-  ref: string;
-  liq_lvl: number;
-  liq_reagent_type: string;
-  liuq_name: string;
-  contents: contentData[];
+  belly_name?: string;
+  belly_mode?: string;
+  desc?: string;
+  pred?: string;
+  ref?: string;
+  liq_lvl?: number;
+  liq_reagent_type?: string;
+  liuq_name?: string;
+  contents?: contentData[];
 };
 
 export type contentData = {
@@ -177,6 +178,7 @@ export type interactData = {
   transferlocation_secondary: string;
   absorbchance: number;
   digestchance: number;
+  belchchance: number;
 };
 
 export type autotransferData = {

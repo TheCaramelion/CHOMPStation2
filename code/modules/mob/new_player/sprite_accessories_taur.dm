@@ -28,7 +28,7 @@
 
 /datum/riding/taur/force_dismount(mob/M)
 	. = ..()
-	ridden.visible_message("<span class='notice'>[M] stops riding [ridden]!</span>")
+	ridden.visible_message(span_notice("[M] stops riding [ridden]!"))
 
 //Hoooo boy.
 /datum/riding/taur/get_offsets(pass_index) // list(dir = x, y, layer)
@@ -68,7 +68,7 @@
 	if(M in buckled_mobs)
 		return FALSE
 //	if(M.size_multiplier > size_multiplier * 1.2)
-//		to_chat(M,"<span class='warning'>This isn't a pony show! You need to be bigger for them to ride.</span>")
+//		to_chat(M,span_warning("This isn't a pony show! You need to be bigger for them to ride."))
 //		return FALSE
 	if(M.loc != src.loc)
 		if(M.Adjacent(src))
@@ -77,7 +77,7 @@
 	var/mob/living/carbon/human/H = M
 
 	if(istaurtail(H.tail_style))
-		to_chat(src,"<span class='warning'>Too many legs. TOO MANY LEGS!!</span>")
+		to_chat(src,span_warning("Too many legs. TOO MANY LEGS!!"))
 		return FALSE
 
 	. = ..()
@@ -90,7 +90,7 @@
 
 /mob/living/carbon/human/proc/taur_mount(var/mob/living/M in living_mobs(1))
 	set name = "Taur Mount/Dismount"
-	set category = "Abilities.General" //CHOMPEdit
+	set category = "Abilities.General"
 	set desc = "Let people ride on you."
 
 	if(LAZYLEN(buckled_mobs))
@@ -103,7 +103,7 @@
 	if(!can_buckle || !istype(M) || !M.Adjacent(src) || M.buckled)
 		return
 	if(buckle_mob(M))
-		visible_message("<span class='notice'>[M] starts riding [name]!</span>")
+		visible_message(span_notice("[M] starts riding [name]!"))
 
 /mob/living/carbon/human/attack_hand(mob/user as mob)
 	if(LAZYLEN(buckled_mobs) && riding_datum) //CHOMPEdit
@@ -128,7 +128,7 @@
 // Taur sprites are now a subtype of tail since they are mutually exclusive anyway.
 
 /datum/sprite_accessory/tail/taur
-	name = "You should not see this..."
+	name = DEVELOPER_WARNING_NAME
 	icon = 'icons/mob/human_races/sprite_accessories/taurs.dmi'
 	do_colouration = 1 // Yes color, using tail color
 	color_blend_mode = ICON_MULTIPLY  // The sprites for taurs are designed for ICON_MULTIPLY

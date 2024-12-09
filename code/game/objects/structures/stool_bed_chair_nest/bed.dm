@@ -21,6 +21,7 @@
 	var/datum/material/padding_material
 	var/base_icon = "bed"
 	var/applies_material_colour = 1
+	var/flippable = TRUE
 
 /obj/structure/bed/New(var/newloc, var/new_material, var/new_padding_material)
 	..(newloc)
@@ -136,23 +137,23 @@
 		W.pixel_x = 10 //make sure they reach the pillow
 		W.pixel_y = -6
 		if(istype(W, /obj/item/disk))
-			user.visible_message("<span class='notice'>[src] sleeps soundly. Sleep tight, disky.</span>")
+			user.visible_message(span_notice("[src] sleeps soundly. Sleep tight, disky."))
 
 	else if(istype(W, /obj/item/grab))
 		var/obj/item/grab/G = W
 		var/mob/living/affecting = G.affecting
 		if(has_buckled_mobs()) //Handles trying to buckle someone else to a chair when someone else is on it
-			to_chat(user, "<span class='notice'>\The [src] already has someone buckled to it.</span>")
+			to_chat(user, span_notice("\The [src] already has someone buckled to it."))
 			return
-		user.visible_message("<span class='notice'>[user] attempts to buckle [affecting] into \the [src]!</span>")
+		user.visible_message(span_notice("[user] attempts to buckle [affecting] into \the [src]!"))
 		if(do_after(user, 20, G.affecting))
 			affecting.loc = loc
 			spawn(0)
 				if(buckle_mob(affecting))
 					affecting.visible_message(\
-						"<span class='danger'>[affecting.name] is buckled to [src] by [user.name]!</span>",\
-						"<span class='danger'>You are buckled to [src] by [user.name]!</span>",\
-						"<span class='notice'>You hear metal clanking.</span>")
+						span_danger("[affecting.name] is buckled to [src] by [user.name]!"),\
+						span_danger("You are buckled to [src] by [user.name]!"),\
+						span_notice("You hear metal clanking."))
 			qdel(W)
 	else
 		..()
@@ -171,6 +172,30 @@
 	material.place_sheet(get_turf(src), 1)
 	if(padding_material)
 		padding_material.place_sheet(get_turf(src), 1)
+
+/obj/structure/bed/verb/turn_around()
+	set name = "Turn Around"
+	set category = "Object"
+	set src in oview(1)
+
+	if(!flippable)
+		to_chat(usr,span_notice("\The [src] can't face the other direction."))
+		return
+
+	if(!usr || !isturf(usr.loc))
+		return
+	if(usr.stat || usr.restrained())
+		return
+	if(ismouse(usr) || (isobserver(usr) && !CONFIG_GET(flag/ghost_interaction)))
+		return
+	if(dir == 2)
+		src.set_dir(1)
+	else if(dir == 1)
+		src.set_dir(2)
+	else if(dir == 4)
+		src.set_dir(8)
+	else if(dir == 8)
+		src.set_dir(4)
 
 /obj/structure/bed/psych
 	name = "psychiatrist's couch"
@@ -212,6 +237,7 @@
 	surgery_odds = 50 //VOREStation Edit
 	var/bedtype = /obj/structure/bed/roller
 	var/rollertype = /obj/item/roller
+	flippable = FALSE
 
 /obj/structure/bed/roller/adv
 	name = "advanced roller bed"
@@ -261,7 +287,7 @@
 	if(istype(W,/obj/item/roller_holder))
 		var/obj/item/roller_holder/RH = W
 		if(!RH.held)
-			to_chat(user, "<span class='notice'>You collect the roller bed.</span>")
+			to_chat(user, span_notice("You collect the roller bed."))
 			src.loc = RH
 			RH.held = src
 			return
@@ -290,10 +316,10 @@
 /obj/item/roller_holder/attack_self(mob/user as mob)
 
 	if(!held)
-		to_chat(user, "<span class='notice'>The rack is empty.</span>")
+		to_chat(user, span_notice("The rack is empty."))
 		return
 
-	to_chat(user, "<span class='notice'>You deploy the roller bed.</span>")
+	to_chat(user, span_notice("You deploy the roller bed."))
 	var/obj/structure/bed/roller/R = new held.bedtype(user.loc)
 	R.add_fingerprint(user)
 	qdel(held)
@@ -352,6 +378,7 @@
 	catalogue_data = list(/datum/category_item/catalogue/anomalous/precursor_a/alien_bed)
 	icon = 'icons/obj/abductor.dmi'
 	icon_state = "bed"
+	flippable = FALSE
 
 /obj/structure/bed/alien/update_icon()
 	return // Doesn't care about material or anything else.
@@ -383,10 +410,10 @@
 
 		if(do_after(user, 20 * W.toolspeed))
 			if(!src) return
-			to_chat(user, "<span class='notice'>You [anchored? "un" : ""]secured \the [src]!</span>")
+			to_chat(user, span_notice("You [anchored? "un" : ""]secured \the [src]!"))
 			anchored = !anchored
 		return
 
 	if(!anchored)
-		to_chat(user,"<span class='notice'> The bed isn't secured.</span>")
+		to_chat(user,span_notice(" The bed isn't secured."))
 		return

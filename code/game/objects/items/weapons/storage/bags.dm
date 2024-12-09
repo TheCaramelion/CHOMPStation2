@@ -138,10 +138,10 @@
 
 /obj/item/storage/bag/ore/attackby(obj/item/W as obj, mob/user as mob)
 	if(current_capacity >= max_storage_space)
-		to_chat(user, "<span class='notice'>\the [src] is too full to possibly fit anything else inside of it.</span>")
+		to_chat(user, span_notice("\the [src] is too full to possibly fit anything else inside of it."))
 		return
 
-	if (istype(W, /obj/item/ore))
+	if (istype(W, /obj/item/ore) && !istype(W, /obj/item/ore/slag))
 		var/obj/item/ore/ore = W
 		stored_ore[ore.material]++
 		current_capacity++
@@ -178,6 +178,8 @@
 		if(current_pickup >= max_pickup)
 			max_pickup_reached = 1
 			break
+		if(istype(O, /obj/item/ore/slag))
+			continue
 		var/obj/item/ore/ore = O
 		stored_ore[ore.material]++
 		current_capacity++
@@ -186,13 +188,13 @@
 		success = 1
 	if(!silent) //Let's do a single check and then do more instead of a bunch at once.
 		if(success && !failure && !max_pickup_reached) //Picked stuff up, did not reach capacity, did not reach max_pickup.
-			to_chat(user, "<span class='notice'>You put everything in [src].</span>")
+			to_chat(user, span_notice("You put everything in [src]."))
 		else if(success && failure) //Picked stuff up to capacity.
-			to_chat(user, "<span class='notice'>You fill the [src].</span>")
+			to_chat(user, span_notice("You fill the [src]."))
 		else if(success && max_pickup_reached) //Picked stuff up to the max_pickup
-			to_chat(user, "<span class='notice'>You fill the [src] with as much as you can grab in one go.</span>")
+			to_chat(user, span_notice("You fill the [src] with as much as you can grab in one go."))
 		else //Failed. The bag is full.
-			to_chat(user, "<span class='notice'>You fail to pick anything up with \the [src].</span>")
+			to_chat(user, span_notice("You fail to pick anything up with \the [src]."))
 	if(istype(user.pulling, /obj/structure/ore_box)) //Bit of a crappy way to do this, as it doubles spam for the user, but it works. //Then let me fix it. ~CL.
 		var/obj/structure/ore_box/OB = user.pulling
 		for(var/ore in stored_ore)
@@ -236,11 +238,11 @@
 	if(istype(user, /mob/living))
 		add_fingerprint(user)
 
-	. += "<span class='notice'>It holds:</span>"
+	. += span_notice("It holds:")
 	var/has_ore = 0
 	for(var/ore in stored_ore)
 		if(stored_ore[ore] > 0)
-			. += "<span class='notice'>- [stored_ore[ore]] [ore]</span>"
+			. += span_notice("- [stored_ore[ore]] [ore]")
 			has_ore = 1
 	if(!has_ore)
 		. += "Nothing."
@@ -295,7 +297,7 @@
 		current += S.get_amount()
 	if(capacity == current)//If it's full, you're done
 		if(!stop_messages)
-			to_chat(usr, "<span class='warning'>The snatcher is full.</span>")
+			to_chat(usr, span_warning("The snatcher is full."))
 		return 0
 	return 1
 
@@ -426,7 +428,7 @@
 	desc = "A bag for storing pills, patches, and bottles."
 	max_storage_space = 200
 	w_class = ITEMSIZE_LARGE
-	slowdown = 3
+	slowdown = 1 //you probably shouldn't be running with chemicals
 	can_hold = list(/obj/item/reagent_containers/pill,/obj/item/reagent_containers/glass/beaker,/obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/hypospray/autoinjector/) // CHOMPEdit - Adds autoinjectors to the bag
 
 // -----------------------------
@@ -453,7 +455,7 @@
 	max_storage_space = ITEMSIZE_COST_SMALL * 12
 	max_w_class = ITEMSIZE_NORMAL
 	w_class = ITEMSIZE_SMALL
-	can_hold = list(/obj/item/reagent_containers/glass/beaker/vial/,/obj/item/virusdish/)
+	can_hold = list(/obj/item/reagent_containers/glass/beaker/vial/)
 
 // -----------------------------
 //           Food Bag
