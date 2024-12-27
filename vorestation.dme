@@ -4980,6 +4980,7 @@
 #include "modular_chomp\code\modules\mob\living\carbon\human\species\station\protean\protean_rig_tgui.dm"
 #include "modular_chomp\code\modules\mob\living\carbon\human\species\station\protean\protean_species.dm"
 #include "modular_chomp\code\modules\mob\living\carbon\human\species\station\riftwalker\riftwalker_abilities.dm"
+#include "modular_chomp\code\modules\mob\living\carbon\human\species\station\riftwalker\riftwalker_actions.dm"
 #include "modular_chomp\code\modules\mob\living\carbon\human\species\station\riftwalker\riftwalker_attacks.dm"
 #include "modular_chomp\code\modules\mob\living\carbon\human\species\station\riftwalker\riftwalker_hud.dm"
 #include "modular_chomp\code\modules\mob\living\carbon\human\species\station\riftwalker\riftwalker_special.dm"

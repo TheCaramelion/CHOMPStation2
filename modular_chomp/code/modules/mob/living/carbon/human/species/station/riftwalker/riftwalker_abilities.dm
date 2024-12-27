@@ -27,7 +27,6 @@
 
 	return TRUE
 
-
 /mob/living/carbon/human/proc/rift_consume_blood(var/quantity)
 	var/datum/species/riftwalker/RIFT = species
 
@@ -52,7 +51,7 @@
 	return TRUE
 
 // Sacrifice
-
+/*
 /datum/power/riftwalker/sacrifice
 	name = "Sacrifice"
 	desc = "Sacrifice the living to gain power"
@@ -87,7 +86,7 @@
 	if(do_after(src, 5 SECONDS, target = src, max_distance = 2))
 		riftwalker_adjust_blood(blood_gained)
 		T.gib()
-
+*/
 // Visual stuff
 /obj/effect/temp_visual/riftwalker
 	randomdir = FALSE
@@ -581,7 +580,7 @@
 	RIFT.poison = poisons[poison_choice]
 
 // Temporal Cloak
-
+/*
 /datum/power/riftwalker/temporal_cloak
 	name = "Temporal Cloak (20)"
 	desc = "Become temporarily cloaked"
@@ -613,7 +612,7 @@
 	else
 		if(!rift_consume_blood(-20))
 			cloak()
-
+*/
 // Echo Image
 /datum/power/riftwalker/echo_image
 	name = "Echo Image (50)"

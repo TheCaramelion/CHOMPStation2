@@ -101,10 +101,8 @@
 		)
 
 	var/list/riftwalker_abilities = list(
-		/datum/power/riftwalker/sacrifice,
 		/datum/power/riftwalker/bloodjaunt,
 		/datum/power/riftwalker/bloodcrawl,
-		/datum/power/riftwalker/temporal_cloak,
 		/datum/power/riftwalker/echo_image,
 		/datum/power/riftwalker/bloodgate,
 		/datum/power/riftwalker/possesion)
@@ -116,7 +114,6 @@
 	var/prey_size = 1
 	var/poison = "mindbreaker"
 	var/poison_per_bite = 3
-	var/shift_time = 30 SECONDS
 
 	var/list/mob/living/carbon/human/mirrors = list()
 	var/mob/living/carbon/human/real_body = null
@@ -147,7 +144,23 @@
 
 /datum/species/riftwalker/add_inherent_verbs(var/mob/living/carbon/human/H)
 	..()
-	add_riftwalker_abilities(H)
+	// add_riftwalker_abilities(H)
+
+	add_verb(H,/mob/living/carbon/human/proc/echo_talk)
+
+	var/datum/action/innate/riftwalker/sacrifice/sacrifice = new()
+	var/datum/action/innate/riftwalker/bloodburst/bloodburst = new()
+	var/datum/action/innate/riftwalker/temporal_cloak/cloak = new()
+	var/datum/action/innate/riftwalker/bloodcrawl/bloodcrawl = new()
+	var/datum/action/innate/riftwalker/bloodcrawl/bloodjaunt/jaunt = new()
+	var/datum/action/innate/riftwalker/echo_image/echo = new()
+
+	sacrifice.Grant(H)
+	bloodburst.Grant(H)
+	cloak.Grant(H)
+	bloodcrawl.Grant(H)
+	jaunt.Grant(H)
+	echo.Grant(H)
 
 /datum/species/riftwalker/proc/add_riftwalker_abilities(var/mob/living/carbon/human/H)
 	if(!H.ability_master || !istype(H.ability_master, /obj/screen/movable/ability_master/riftwalker))
@@ -163,7 +176,6 @@
 				ability_icon_given = P.ability_icon_state,
 				arguments = list()
 			)
-	add_verb(H,/mob/living/carbon/human/proc/blood_burst)
 	add_verb(H,/mob/living/carbon/human/proc/sizechange)
 	add_verb(H,/mob/living/carbon/human/proc/choose_prey_size)
 	add_verb(H,/mob/living/carbon/human/proc/choose_poison)
@@ -177,7 +189,6 @@
 	for(var/datum/power/riftwalker/P in riftwalker_ability_datums)
 		if(P.verbpath in H.verbs)
 			remove_verb(H, P.verbpath)
-	remove_verb(H,/mob/living/carbon/human/proc/blood_burst)
 	remove_verb(H,/mob/living/carbon/human/proc/sizechange)
 	remove_verb(H,/mob/living/carbon/human/proc/choose_prey_size)
 	remove_verb(H,/mob/living/carbon/human/proc/choose_poison)
@@ -358,3 +369,7 @@
 						W.damage = max(W.damage - 3, 0)
 						if(W.damage <= 0)
 							O.wounds -= W
+
+/datum/species/riftwalker/proc/adjust_blood(amount)
+	blood_resource = clamp(blood_resource+amount, blood_min, blood_max)
+	return TRUE
