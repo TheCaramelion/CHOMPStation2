@@ -824,27 +824,27 @@
 	var/datum/species/riftwalker/RIFT = species
 
 	var/mob/living/dominated_brain/db
-	var/mob/living/carbon/human/new_body = new /mob/living/carbon/human(src.loc)
+	var/mob/living/carbon/human/new_body = new /mob/living/carbon/human(loc)
 
 	for(var/I in contents)
 		if(istype(I, /mob/living/dominated_brain))
 			db = I
 
-	src.client.prefs.copy_to(new_body)
+	client.prefs.copy_to(new_body)
 	if(RIFT.real_body.dna)
 		RIFT.real_body.dna.ResetUIFrom(RIFT.real_body)
 		RIFT.real_body.sync_organ_dna()
 
-	RIFT.remove_riftwalker_abilities(src)
+	RIFT.remove_riftwalker_abilities()
 
 	species = RIFT.species_holder
 
-	src.mind.transfer_to(new_body)
+	mind.transfer_to(new_body)
 
 	if(db)
-		db.mind.transfer_to(src)
+		db.mind.transfer_to()
 	else
-		log_admin("[key_name_admin(RIFT.real_body)] released [key_name_admin(src)], but there was no mind to place back.")
+		log_admin("[key_name_admin(RIFT.real_body)] released [key_name_admin()], but there was no mind to place back.")
 
 	qdel(RIFT.real_body)
 	qdel(db)

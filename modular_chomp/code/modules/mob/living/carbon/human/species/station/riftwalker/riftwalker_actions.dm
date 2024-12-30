@@ -309,3 +309,112 @@
 
 	RIFT.mirrors -= mirror
 	mirror.Destroy()
+
+/datum/action/innate/riftwalker/possession
+	name = "Possession"
+
+/datum/action/innate/riftwalker/possession/Activate()
+	var/mob/living/carbon/human/H = owner
+
+	if(!IsAvailable())
+		return
+
+	var/obj/item/grab/G = H.get_active_hand()
+
+	if(!istype(G))
+		to_chat(H, span_warning("You must be grabbing a creature in your active hand to affect them."))
+		return
+
+	var/mob/living/carbon/human/T = G.affecting
+
+	if(T.stat == DEAD)
+		to_chat(H, span_warning("You cannot possess a dead creature."))
+		return
+
+	if(T.isSynthetic())
+		to_chat(H, span_warning("You cannot possess a synthetic creature."))
+		return
+
+	if(tgui_alert(H, "You selected to possess [T]. Are you sure you want to proceed?", "Posses Prey", list("No", "Yes")) != "Yes")
+		return
+
+	log_admin("[key_name_admin(H)] offered posses on [T] ([T.ckey]).")
+	to_chat(H, span_warning("Attempting to posses [T]'s body..."))
+
+	if(T.ckey)
+		if(tgui_alert(T, "[H] has elected to posses you. Is this something you are okay with?", "Possession Alert", list("No", "Yes")) != "Yes")
+			to_chat(H, span_warning("[T] declined your possessing attempt."))
+			return
+
+		if(tgui_alert(T, "Are you sure? This might be difficult to come back from.", "Possession Alert", list("No", "Yes")) != "Yes")
+			to_chat(H, span_warning("[T] declined your possessing attempt."))
+			return
+
+	var/mob/living/dominated_brain/db = new /mob/living/dominated_brain(T, H, T.name, T)
+	var/datum/mind/user_mind = H.mind
+	var/datum/mind/victim_mind = T.mind
+	var/datum/species/old_species = T.species
+
+	remove_verb(db, /mob/living/dominated_brain/proc/resist_control)
+
+	db.ckey = db.prey_ckey
+
+	log_admin("[db] ([db.ckey]) has agreed to [T]'s possesion, and no longer occupies their original body.")
+
+	var/datum/species/riftwalker/RIFT = H.species
+	var/datum/species/riftwalker/new_rift = RIFT.produceCopy(T.dna.species_traits, T)
+
+	new_rift.hud = old_species.hud
+	new_rift.hud_type = old_species.hud_type
+
+	new_rift.species_holder = old_species
+	new_rift.name = old_species.name
+	new_rift.add_riftwalker_abilities(T)
+	new_rift.blood_resource = RIFT.blood_resource
+
+	add_verb(T, /mob/living/carbon/human/proc/riftwalker_release)
+
+	if(new_rift.real_body)
+		new_rift.real_body = RIFT.real_body
+		qdel(RIFT.real_body)
+	else
+		new_rift.real_body = new /mob/living/carbon/human
+
+	H.gib()
+	if(victim_mind)
+		victim_mind.transfer_to(db)
+	user_mind.transfer_to(T)
+
+/datum/action/innate/riftwalker/release_posses
+	name = "Release vessel"
+
+/datum/action/innate/riftwalker/release_posses/Activate()
+
+	var/mob/living/carbon/human/H = owner
+	var/datum/species/riftwalker/RIFT = H.species
+
+	var/mob/living/dominated_brain/db
+	var/mob/living/carbon/human/new_body = new /mob/living/carbon/human(H.loc)
+
+	for(var/I in H.contents)
+		if(istype(I, /mob/living/dominated_brain))
+			db = I
+
+	H.client.prefs.copy_to(new_body)
+	if(RIFT.real_body.dna)
+		RIFT.real_body.dna.ResetUIFrom(RIFT.real_body)
+		RIFT.real_body.sync_organ_dna()
+
+	RIFT.remove_riftwalker_abilities()
+
+	H.species = RIFT.species_holder
+
+	H.mind.transfer_to(new_body)
+
+	if(db)
+		db.mind.transfer_to(H)
+	else
+		log_admin("[key_name_admin(RIFT.real_body)] released [key_name_admin(H)], but there was no mind to place back")
+
+	qdel(RIFT.real_body)
+	qdel(db)
