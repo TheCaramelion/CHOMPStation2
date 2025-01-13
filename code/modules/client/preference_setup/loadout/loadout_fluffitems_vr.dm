@@ -1185,6 +1185,12 @@
     ckeywhitelist = list("satinisle")
     character_name = list("Millie Orlen")
 
+/datum/gear/fluff/memorycrown
+    path = /obj/item/clothing/head/fluff/memory_crown
+    display_name = "memory crown"
+    slot = slot_head
+    ckeywhitelist = list("sixberry")
+    character_name = list("Thistle")
 
 //  T CKEYS
 /datum/gear/fluff/ascian_medal
@@ -1445,23 +1451,23 @@
 	display_name = "Tempest's Medical Hud"
 	slot = slot_glasses
 	ckeywhitelist = list("wickedtemp")
-	character_name = list("Chakat Tempest Venosare")
-	allowed_roles = list(JOB_CHIEF_MEDICAL_OFFICER,JOB_MEDICAL_DOCTOR,JOB_CHEMIST,JOB_PSYCHIATRIST,JOB_PARAMEDIC,JOB_FIELD_MEDIC, JOB_OFFDUTY_MEDIC) //CHOMP keep explo
+	character_name = list("Chakat Tempest Trismaer")
+	allowed_roles = list(JOB_CHIEF_MEDICAL_OFFICER,JOB_MEDICAL_DOCTOR,JOB_CHEMIST,JOB_PSYCHIATRIST,JOB_PARAMEDIC, JOB_OFFDUTY_MEDIC)
 
 /datum/gear/fluff/tempest_hypospray
 	path = /obj/item/reagent_containers/hypospray/vial/tempest
 	display_name = "Tempest's Hypospray"
 	slot = slot_belt
 	ckeywhitelist = list("wickedtemp")
-	character_name = list("Chakat Tempest Venosare")
-	allowed_roles = list(JOB_CHIEF_MEDICAL_OFFICER,JOB_MEDICAL_DOCTOR,JOB_CHEMIST,JOB_PSYCHIATRIST,JOB_PARAMEDIC,JOB_FIELD_MEDIC ,  JOB_OFFDUTY_MEDIC) //CHOMP keep explo
+	character_name = list("Chakat Tempest Trismaer")
+	allowed_roles = list(JOB_CHIEF_MEDICAL_OFFICER,JOB_MEDICAL_DOCTOR,JOB_CHEMIST,JOB_PSYCHIATRIST,JOB_PARAMEDIC, JOB_OFFDUTY_MEDIC)
 
 /datum/gear/fluff/tempest_backpack
 	path = /obj/item/storage/backpack/saddlebag/tempest
 	display_name = "Tempest's Saddlebag"
 	slot = slot_back
 	ckeywhitelist = list("wickedtemp")
-	character_name = list("Chakat Tempest Venosare")
+	character_name = list("Chakat Tempest Trismaer")
 
 //  X CKEYS
 /datum/gear/fluff/penelope_box
