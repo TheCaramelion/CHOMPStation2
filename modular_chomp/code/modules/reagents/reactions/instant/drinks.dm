@@ -397,3 +397,9 @@
 	result = REAGENT_ID_WORMBLOOD
 	required_reagents = list(REAGENT_ID_BOOGER = 1, REAGENT_ID_PSILOCYBIN = 1)
 	result_amount = 2
+
+/decl/chemical_reaction/instant/drinks/deltaalert
+	name = REAGENT_DELTAALERT
+	result = REAGENT_ID_DELTAALERT
+	required_reagents = list(REAGENT_ID_NUKIEPEACH = 1, REAGENT_ID_NUKIEPEAR = 1, REAGENT_ID_NUKIECHERRY = 1, REAGENT_ID_NUKIEMELON = 1, REAGENT_ID_NUKIEBANANA = 1, REAGENT_ID_NUKIELEMON = 1)
+	result_amount = 5

@@ -161,6 +161,8 @@
 #define REAGENT_ID_STRAWBERRYLOVEPOTION "strawberrylovepotion"
 #define REAGENT_WORMBLOOD "Worm Blood"
 #define REAGENT_ID_WORMBLOOD "wormblood"
+#define REAGENT_DELTAALERT	"Delta Alert"
+#define REAGENT_ID_DELTAALERT "delta_alert"
 
 
 // Modifiers

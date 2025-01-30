@@ -723,3 +723,14 @@
 	description = "A dry mix for making delicious blondies."
 	reagent_state = SOLID
 	color = "#f3b44e"
+
+/datum/reagent/drink/coffee/nukie/deltaalert
+
+	name = REAGENT_DELTAALERT
+	id = REAGENT_ID_DELTAALERT
+	color = "#e9120b"
+	taste_description = "Whiskey, echo whiskey, with a hint of lime, apple, and dates."
+
+/datum/reagent/drink/coffee/nukie/deltaalert/affect_ingest(mob/living/carbon/M, alien, removed)
+	..()
+	playsound_local()
