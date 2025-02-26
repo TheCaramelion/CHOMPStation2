@@ -7,11 +7,12 @@
 	var/girder_type = /obj/structure/girder
 	var/frame_type = /obj/structure/frame
 	var/wall_frame_type = /obj/machinery/alarm
+	var/pool_type = /turf/simulated/floor/water/pool
 	var/window_dir = "FULL"
 	var/emagged = 0
 	window_type = "rglass"
 	var/turret_faction = null
-	modes = list(RCD_FLOORWALL, RCD_AIRLOCK, RCD_WINDOWGRILLE, RCD_DECONSTRUCT, RCD_WINDOOR, RCD_FIRELOCK, RCD_FRAME, RCD_WALLFRAME, RCD_CONVEYOR, RCD_TURRET)
+	modes = list(RCD_FLOORWALL, RCD_AIRLOCK, RCD_WINDOWGRILLE, RCD_DECONSTRUCT, RCD_WINDOOR, RCD_FIRELOCK, RCD_FRAME, RCD_WALLFRAME, RCD_CONVEYOR, RCD_TURRET, RCD_POOL)
 	var/static/image/radial_image_firelock = image(icon = 'modular_chomp/icons/mob/radial.dmi', icon_state = "firelock")
 	var/static/image/radial_image_windoor = image(icon= 'modular_chomp/icons/mob/radial.dmi', icon_state = "windoor")
 	var/static/image/radial_image_frame = image(icon = 'icons/mob/radial.dmi', icon_state = "machine")
@@ -20,6 +21,7 @@
 	var/static/image/radial_image_airlock_type = image(icon = 'icons/mob/radial.dmi', icon_state = "airlocktype")
 	var/static/image/radial_image_conveyor = image(icon = 'modular_chomp/icons/mob/radial.dmi', icon_state = "conveyor")
 	var/static/image/radial_image_turret = image(icon = 'modular_chomp/icons/mob/radial.dmi', icon_state = "turret")
+	var/static/image/radial_image_pool = image(icon = 'modular_chomp/icons/mob/radial.dmi', icon_state = "pool")
 
 /obj/item/rcd/advanced
 	can_remove_rwalls = 1
@@ -105,7 +107,8 @@ rborosilicate = 12
 		"WallFrames" = radial_image_wallframe,
 		"Change Access" = radial_image_access,
 		"Change Airlock Type" = radial_image_airlock_type,
-		"Conveyors" = radial_image_conveyor
+		"Conveyors" = radial_image_conveyor,
+		"Pools" = radial_image_pool
 		)
 	if(emagged)
 		choices["Turrets"] = radial_image_turret
@@ -239,6 +242,18 @@ rborosilicate = 12
 				if("HOSTILE TO ENEMIES")
 					turret_faction = user.faction
 			mode_index = modes.Find(RCD_TURRET)
+		if("Pools")
+			var/list/pool_types = list(
+				"Shallow Pool" = image(icon = 'modular_chomp/icons/mob/radial.dmi', icon_state = "water_shallow"),
+				"Deep Pool" = image(icon = 'modular_chomp/icons/mob/radial.dmi', icon_state = "water_deep")
+			)
+			var/selected_pool_type = show_radial_menu(user, src, pool_types, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE, tooltips = TRUE)
+			switch(selected_pool_type)
+				if("Shallow Pool")
+					pool_type = /turf/simulated/floor/water/pool
+				if("Deep Pool")
+					pool_type = /turf/simulated/floor/water/deep/pool
+			mode_index = modes.Find(RCD_POOL)
 		else
 			return
 	playsound(src, 'sound/effects/pop.ogg', 50, FALSE)
@@ -448,24 +463,36 @@ rborosilicate = 12
 /turf/rcd_values(mob/living/user, obj/item/rcd/the_rcd, passed_mode)
 	if(density || !can_build_into_floor)
 		return FALSE
-	if(passed_mode == RCD_FLOORWALL)
-		var/obj/structure/lattice/L = locate() in src
-		// A lattice costs one rod to make. A sheet can make two rods, meaning a lattice costs half of a sheet.
-		// A sheet also makes four floor tiles, meaning it costs 1/4th of a sheet to place a floor tile on a lattice.
-		// Therefore it should cost 3/4ths of a sheet if a lattice is not present, or 1/4th of a sheet if it does.
-		return list(
-			RCD_VALUE_MODE = RCD_FLOORWALL,
-			RCD_VALUE_DELAY = 0,
-			RCD_VALUE_COST = L ? RCD_SHEETS_PER_MATTER_UNIT * 0.25 : RCD_SHEETS_PER_MATTER_UNIT * 0.75
-			)
-	return FALSE
+	switch(passed_mode)
+		if(RCD_FLOORWALL)
+			var/obj/structure/lattice/L = locate() in src
+			// A lattice costs one rod to make. A sheet can make two rods, meaning a lattice costs half of a sheet.
+			// A sheet also makes four floor tiles, meaning it costs 1/4th of a sheet to place a floor tile on a lattice.
+			// Therefore it should cost 3/4ths of a sheet if a lattice is not present, or 1/4th of a sheet if it does.
+			return list(
+				RCD_VALUE_MODE = RCD_FLOORWALL,
+				RCD_VALUE_DELAY = 0,
+				RCD_VALUE_COST = L ? RCD_SHEETS_PER_MATTER_UNIT * 0.25 : RCD_SHEETS_PER_MATTER_UNIT * 0.75
+				)
+		if(RCD_POOL)
+			return list(
+				RCD_VALUE_MODE = RCD_POOL,
+				RCD_VALUE_DELAY = 0,
+				RCD_VALUE_COST = RCD_SHEETS_PER_MATTER_UNIT * 1.5
+				)
+		else return FALSE
 
 /turf/rcd_act(mob/living/user, obj/item/rcd/the_rcd, passed_mode)
-	if(passed_mode == RCD_FLOORWALL)
-		to_chat(user, span_notice("You build a floor."))
-		ChangeTurf(/turf/simulated/floor/airless, preserve_outdoors = TRUE)
-		return TRUE
-	return FALSE
+	switch(passed_mode)
+		if(RCD_FLOORWALL)
+			to_chat(user, span_notice("You build a floor."))
+			ChangeTurf(/turf/simulated/floor/airless, preserve_outdoors = TRUE)
+			return TRUE
+		if(RCD_POOL)
+			to_chat(user, span_notice("You build a pool."))
+			ChangeTurf(the_rcd.pool_type, preserve_outdoors = TRUE)
+			return TRUE
+		else return FALSE
 
 //////////////////////////////////////
 ///////////////FLOOR//////////////////

@@ -23,6 +23,7 @@
 #define RCD_WALLFRAME		"WallFrame"			// Build a selection of wall frames
 #define RCD_CONVEYOR		"Conveyor"			// Build direction conveyors
 #define RCD_TURRET			"Turret"			// Build turrets when emagged
+#define RCD_POOL			"Pool"				// Build pools
 
 
 #define VANTAG_VORE_YE	"vantag_vore_ye"
