@@ -56,7 +56,7 @@
 	if(antag && mind)
 		borers.add_antagonist(mind)
 
-/mob/living/simple_mob/animal/borer/Initialize()
+/mob/living/simple_mob/animal/borer/Initialize(mapload)
 	add_language("Cortical Link")
 
 	add_verb(src, /mob/living/proc/ventcrawl)
@@ -245,7 +245,7 @@
 					nearby_mobs += LM
 			var/mob/living/speaker
 			if(nearby_mobs.len)
-				speaker = tgui_input_list(usr, "Choose a target speaker:", "Target Choice", nearby_mobs)
+				speaker = tgui_input_list(src, "Choose a target speaker:", "Target Choice", nearby_mobs)
 			if(speaker)
 				log_admin("[src.ckey]/([src]) tried to force [speaker] to say: [message]")
 				message_admins("[src.ckey]/([src]) tried to force [speaker] to say: [message]")

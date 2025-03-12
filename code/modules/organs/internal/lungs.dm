@@ -11,7 +11,6 @@
 	if(!owner)
 		return
 
-	//VOREStation Edit Start Lungs were a surprisingly lethal cause of bloodloss.
 	if(is_broken())
 		if(prob(4))
 			spawn owner?.custom_emote(VISIBLE_MESSAGE, "coughs up a large amount of blood!")
@@ -29,7 +28,6 @@
 		if(prob(4)) //Get to medical quickly. but shouldn't kill without exceedingly bad RNG.
 			spawn owner?.custom_emote(VISIBLE_MESSAGE, "gasps for air!")
 			owner.AdjustLosebreath(10) //Losebreath is a DoT that does 1:1 damage and prevents oxyloss healing via breathing.
-	//VOREStation Edit End
 
 	if(owner.internal_organs_by_name[O_BRAIN]) // As the brain starts having Trouble, the lungs start malfunctioning.
 		var/obj/item/organ/internal/brain/Brain = owner.internal_organs_by_name[O_BRAIN]
@@ -39,7 +37,7 @@
 				owner.AdjustLosebreath(round(3 / max(0.1,Brain.get_control_efficiency())))
 
 /obj/item/organ/internal/lungs/proc/rupture()
-	if(owner)
+	if(owner && damage < min_bruised_damage) //Anti spam prevention.
 		var/obj/item/organ/external/parent = owner.get_organ(parent_organ)
 		if(istype(parent))
 			owner.custom_pain("You feel a stabbing pain in your [parent.name]!", 50)
@@ -61,10 +59,12 @@
 /obj/item/organ/internal/lungs/grey
 	icon_state = "lungs_grey"
 
-/obj/item/organ/internal/lungs/grey/colormatch/New()
+/obj/item/organ/internal/lungs/grey/colormatch/Initialize(mapload, internal)
 	..()
-	var/mob/living/carbon/human/H = null
-	spawn(15)
-		if(owner && ishuman(owner))
-			H = owner
-			color = H.species.blood_color
+	return INITIALIZE_HINT_LATELOAD
+
+/obj/item/organ/internal/lungs/grey/colormatch/LateInitialize()
+	. = ..()
+	if(owner && ishuman(loc))
+		var/mob/living/carbon/human/H = loc
+		color = H.species.blood_color

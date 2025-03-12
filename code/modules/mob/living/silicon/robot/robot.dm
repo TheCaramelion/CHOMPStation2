@@ -26,7 +26,7 @@
 	var/crisis //Admin-settable for combat module use.
 	var/crisis_override = 0
 	var/integrated_light_power = 6
-	var/robotdecal_on = 0
+	var/list/robotdecal_on = list()
 	var/datum/wires/robot/wires
 
 	can_be_antagged = TRUE
@@ -246,10 +246,11 @@
 			C.install()
 	cell.charge = cell.maxcharge
 	..()
+	update_icon()
 
 /mob/living/silicon/robot/proc/init()
 	aiCamera = new/obj/item/camera/siliconcam/robot_camera(src)
-	laws = new global.using_map.default_law_type // VOREstation edit: use map's default
+	laws = new global.using_map.default_law_type //use map's default
 	additional_law_channels["Binary"] = "#b"
 	var/new_ai = select_active_ai_with_fewest_borgs()
 	if(new_ai)
@@ -406,7 +407,7 @@
 			flavor_text = module_flavour
 		else
 			flavor_text = client.prefs.flavour_texts_robot["Default"]
-		// Vorestation Edit: and meta info
+		//and meta info
 		ooc_notes = client.prefs.read_preference(/datum/preference/text/living/ooc_notes)
 		ooc_notes_likes = client.prefs.read_preference(/datum/preference/text/living/ooc_notes_likes)
 		ooc_notes_dislikes = client.prefs.read_preference(/datum/preference/text/living/ooc_notes_dislikes)
@@ -415,6 +416,7 @@
 		ooc_notes_maybes = read_preference(/datum/preference/text/living/ooc_notes_maybes)
 		ooc_notes_style = read_preference(/datum/preference/toggle/living/ooc_notes_style)
 		//CHOMPAdd End
+		private_notes = client.prefs.read_preference(/datum/preference/text/living/private_notes)
 		custom_link = client.prefs.custom_link
 
 /mob/living/silicon/robot/verb/namepick()
@@ -422,7 +424,7 @@
 	set category = "Abilities.Settings"
 
 	if(custom_name)
-		to_chat(usr, "You can't pick another custom name. [isshell(src) ? "" : "Go ask for a name change."]")
+		to_chat(src, "You can't pick another custom name. [isshell(src) ? "" : "Go ask for a name change."]")
 		return 0
 
 	var/newname = sanitizeSafe(tgui_input_text(src,"You are a robot. Enter a name, or leave blank for the default name.", "Name change","", MAX_NAME_LEN), MAX_NAME_LEN)
@@ -448,15 +450,36 @@
 	set name = "Toggle Lights"
 
 	lights_on = !lights_on
-	to_chat(usr, span_filter_notice("You [lights_on ? "enable" : "disable"] your integrated light."))
+	to_chat(src, span_filter_notice("You [lights_on ? "enable" : "disable"] your integrated light."))
 	handle_light()
 	update_icon()
 
 /mob/living/silicon/robot/verb/toggle_robot_decals() // loads overlay UNDER lights.
 	set category = "Abilities.Silicon"
 	set name = "Toggle extras"
-	robotdecal_on = !robotdecal_on
-	to_chat(usr, span_filter_notice("You [robotdecal_on ? "enable" : "disable"] your extra apperances."))
+
+	if(!sprite_datum)
+		return
+	if(!LAZYLEN(sprite_datum.sprite_decals))
+		to_chat(src, span_warning("This module does not support decals."))
+		return
+
+	var/extra_message = "Enabled decals:\n"
+	for(var/decal in robotdecal_on)
+		extra_message += decal + "\n"
+
+	var/decal_to_toggle = tgui_input_list(src, "Please select which decal you want to toggle\n[extra_message]", "Decal Toggle", sprite_datum.sprite_decals)
+	if(!decal_to_toggle)
+		return
+
+	decal_to_toggle = lowertext(decal_to_toggle)
+
+	if(robotdecal_on.Find(decal_to_toggle))
+		robotdecal_on -= decal_to_toggle
+		to_chat(src, span_filter_notice("You disable your \"[decal_to_toggle]\" extra apperances."))
+	else
+		robotdecal_on += decal_to_toggle
+		to_chat(src, span_filter_notice("You enable your \"[decal_to_toggle]\" extra apperances."))
 	update_icon()
 
 /mob/living/silicon/robot/verb/spark_plug() //So you can still sparkle on demand without violence.
@@ -520,7 +543,7 @@
 	if(prob(75) && Proj.damage > 0) spark_system.start()
 	return 2
 
-/mob/living/silicon/robot/attackby(obj/item/W as obj, mob/user as mob)
+/mob/living/silicon/robot/attackby(obj/item/W, mob/user)
 	if (istype(W, /obj/item/handcuffs)) // fuck i don't even know why isrobot() in handcuff code isn't working so this will have to do
 		return
 
@@ -539,7 +562,7 @@
 					C.brute_damage = WC.brute
 					C.electronics_damage = WC.burn
 
-				to_chat(usr, span_notice("You install the [W.name]."))
+				to_chat(user, span_notice("You install the [W.name]."))
 
 				return
 
@@ -725,7 +748,7 @@
 		if(opened)
 			to_chat(user, span_filter_notice("You must close the cover to swipe an ID card."))
 		else
-			if(allowed(usr))
+			if(allowed(user))
 				locked = !locked
 				to_chat(user, span_filter_notice("You [ locked ? "lock" : "unlock"] [src]'s interface."))
 				update_icon()
@@ -735,21 +758,21 @@
 	else if(istype(W, /obj/item/borg/upgrade/))
 		var/obj/item/borg/upgrade/U = W
 		if(!opened)
-			to_chat(usr, span_filter_notice("You must access the borgs internals!"))
-		else if(!src.module && U.require_module)
-			to_chat(usr, span_filter_notice("The borg must choose a module before it can be upgraded!"))
+			to_chat(user, span_filter_notice("You must access the borgs internals!"))
+		else if(!module && U.require_module)
+			to_chat(user, span_filter_notice("The borg must choose a module before it can be upgraded!"))
 		else if(user == src && istype(W,/obj/item/borg/upgrade/utility/reset))
-			to_chat(usr, span_warning("You are restricted from reseting your own module."))
+			to_chat(user, span_warning("You are restricted from reseting your own module."))
 		else if(U.locked)
-			to_chat(usr, span_filter_notice("The upgrade is locked and cannot be used yet!"))
+			to_chat(user, span_filter_notice("The upgrade is locked and cannot be used yet!"))
 		else
 			if(U.action(src))
-				to_chat(usr, span_filter_notice("You apply the upgrade to [src]!"))
-				usr.drop_item()
+				to_chat(user, span_filter_notice("You apply the upgrade to [src]!"))
+				user.drop_item()
 				U.loc = src
 				hud_used.update_robot_modules_display()
 			else
-				to_chat(usr, span_filter_notice("Upgrade error!"))
+				to_chat(user, span_filter_notice("Upgrade error!"))
 
 
 	else
@@ -783,7 +806,7 @@
 	return
 
 /mob/living/silicon/robot/proc/module_reset(var/notify = TRUE)
-	transform_with_anim() //VOREStation edit: sprite animation
+	transform_with_anim() //sprite animation
 	uneq_all()
 	hud_used.update_robot_modules_display(TRUE)
 	modtype = initial(modtype)
@@ -808,10 +831,10 @@
 	set desc = "Allows to recolour once."
 
 	if(!has_recoloured)
-		var/datum/ColorMate/recolour = new /datum/ColorMate(usr)
-		recolour.tgui_interact(usr)
+		var/datum/ColorMate/recolour = new /datum/ColorMate(src)
+		recolour.tgui_interact(src)
 		return
-	to_chat(usr, "You've already recoloured yourself once. Ask for a module reset for another.")
+	to_chat(src, "You've already recoloured yourself once. Ask for a module reset for another.")
 
 /mob/living/silicon/robot/attack_hand(mob/user)
 	if(LAZYLEN(buckled_mobs))
@@ -975,11 +998,12 @@
 				if(eyes_overlay)
 					add_overlay(eyes_overlay)
 
-		if(robotdecal_on && sprite_datum.has_robotdecal_sprites)
+		if(robotdecal_on.len && LAZYLEN(sprite_datum.sprite_decals))
 			if(!shell || deployed) // Shell borgs that are not deployed will have no eyes.
-				var/robotdecal_overlay = sprite_datum.get_robotdecal_overlay(src)
-				if(robotdecal_overlay)
-					add_overlay(robotdecal_overlay)
+				for(var/enabled_decal in robotdecal_on)
+					var/robotdecal_overlay = sprite_datum.get_robotdecal_overlay(src, enabled_decal)
+					if(robotdecal_overlay)
+						add_overlay(robotdecal_overlay)
 
 		if(lights_on && sprite_datum.has_eye_light_sprites)
 			if(!shell || deployed) // Shell borgs that are not deployed will have no eyes.
@@ -1076,11 +1100,11 @@
 	update_icon()
 
 /mob/living/silicon/robot/proc/sensor_mode() //Medical/Security HUD controller for borgs
-	set name = "Toggle Sensor Augmentation" //VOREStation Add
+	set name = "Toggle Sensor Augmentation"
 	set category = "Abilities.Silicon"
 	set desc = "Augment visual feed with internal sensor overlays."
-	sensor_type = !sensor_type //VOREStation Add
-	to_chat(usr, "You [sensor_type ? "enable" : "disable"] your sensors.") //VOREStation Add
+	sensor_type = !sensor_type
+	to_chat(src, "You [sensor_type ? "enable" : "disable"] your sensors.")
 	toggle_sensor_mode()
 
 /mob/living/silicon/robot/proc/repick_laws()
@@ -1311,7 +1335,9 @@
 	if(!rest_style)
 		rest_style = "Default"
 
-/mob/living/silicon/robot/verb/robot_nom(var/mob/living/T in living_mobs_in_view(1)) //CHOMPEdit
+	update_icon()
+
+/mob/living/silicon/robot/verb/robot_nom(var/mob/living/T in living_mobs_in_view(1))
 	set name = "Robot Nom"
 	set category = "Abilities.Vore"
 	set desc = "Allows you to eat someone."

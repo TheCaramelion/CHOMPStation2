@@ -452,10 +452,10 @@
 	name = "custom security cuirass"
 	desc = "An armored vest that protects against some damage. It appears to be created for a wolfhound. The name 'Serdykov L. Antoz' is written on a tag inside one of the haunchplates."
 	species_restricted = null //Species restricted since all it cares about is a taur half
-	icon = 'icons/mob/taursuits_wolf_vr.dmi'
+	icon = 'icons/mob/taursuits_wolf.dmi'
 	icon_state = "serdy_armor"
 	item_state = "serdy_armor"
-	body_parts_covered = UPPER_TORSO|LOWER_TORSO|LEGS|ARMS //It's a full body suit, minus hands and feet. Arms and legs should be protected, not just the torso. Retains normal security armor values still.
+	body_parts_covered = CHEST|LEGS|ARMS //It's a full body suit, minus hands and feet. Arms and legs should be protected, not just the torso. Retains normal security armor values still.
 
 /obj/item/clothing/suit/armor/vest/wolftaur/serdy/mob_can_equip(var/mob/living/carbon/human/H, slot, disable_warning = 0)
 	if(istype(H) && istype(H.tail_style, /datum/sprite_accessory/tail/taur/wolf))
@@ -475,9 +475,7 @@
 	armor = list(melee = 40, bullet = 30, laser = 30, energy = 10, bomb = 10, bio = 0, rad = 0)
 	icon_override = 'icons/vore/custom_clothes_vr.dmi'
 	item_state = "serdyhelm_mob"
-	cold_protection = HEAD
 	min_cold_protection_temperature = HELMET_MIN_COLD_PROTECTION_TEMPERATURE
-	heat_protection = HEAD
 	max_heat_protection_temperature = HELMET_MAX_HEAT_PROTECTION_TEMPERATURE
 	siemens_coefficient = 0.7
 	w_class = ITEMSIZE_NORMAL
@@ -507,7 +505,7 @@
 	flags_inv = HIDEJUMPSUIT|HIDETIE|HIDEHOLSTER
 
 /obj/item/clothing/head/fluff/pink_tiara
-	name = "Pink Tourmaline Tiara"
+	name = "pink tourmaline tiara"
 	desc = "A small, steel tiara with a large, pink tourmaline gem in the center."
 	icon_state = "amp"
 	body_parts_covered = 0
@@ -532,7 +530,7 @@
 	var/client/owner_c = null //They'll be dead when we message them probably.
 	var/state = 0 //0 - New, 1 - Paired, 2 - Breaking, 3 - Broken (same as iconstates)
 
-/obj/item/clothing/accessory/collar/khcrystal/Initialize()
+/obj/item/clothing/accessory/collar/khcrystal/Initialize(mapload)
 	. = ..()
 	update_state(0)
 
@@ -618,7 +616,7 @@
 	max_storage_space = ITEMSIZE_COST_SMALL * 2
 	w_class = ITEMSIZE_SMALL
 
-/obj/item/storage/box/khcrystal/Initialize()
+/obj/item/storage/box/khcrystal/Initialize(mapload)
 	. = ..()
 	new /obj/item/paper/khcrystal_manual(src)
 	new /obj/item/clothing/accessory/collar/khcrystal(src)
@@ -692,7 +690,7 @@
 	var/ambulance_state = FALSE
 	var/ambulance_last_switch = 0
 
-/obj/item/storage/backpack/saddlebag/tempest/Initialize()
+/obj/item/storage/backpack/saddlebag/tempest/Initialize(mapload)
 	soundloop = new(list(src), FALSE)
 	return ..()
 
@@ -776,6 +774,9 @@
 	icon_state = "amayarahlwahID"
 	desc = "A primarily blue ID with a holographic 'WAH' etched onto its back. The letters do not obscure anything important on the card. It is shiny and it feels very bumpy."
 	title_strings = list("Amaya Rahl's Wah-identification card", "Amaya Rahl's Wah-ID card")
+
+/obj/item/clothing/glasses/fluff
+	name = DEVELOPER_WARNING_NAME
 
 //General use, Verk felt like sharing.
 /obj/item/clothing/glasses/fluff/science_proper
@@ -870,7 +871,7 @@
 
 /obj/item/fluff/injector/monkey/attack(mob/living/M, mob/living/user)
 
-	if(usr == M) //Is the person using it on theirself?
+	if(user == M) //Is the person using it on theirself?
 		if(ishuman(M)) //If so, monkify them.
 			var/mob/living/carbon/human/H = user
 			H.monkeyize()
@@ -884,7 +885,7 @@
 
 /obj/item/fluff/injector/numb_bite/attack(mob/living/M, mob/living/user)
 
-	if(usr == M) //Is the person using it on theirself?
+	if(user == M) //Is the person using it on theirself?
 		if(ishuman(M)) //Give them numbing bites.
 			var/mob/living/carbon/human/H = user
 			H.species.give_numbing_bite() //This was annoying, but this is the easiest way of performing it.
@@ -902,8 +903,8 @@
 				slot_r_hand_str = 'icons/vore/custom_items_right_hand_vr.dmi',
 				)
 
-/obj/item/material/twohanded/fluff/Initialize(var/newloc)
-	. = ..(newloc," ") //See materials_vr_dmi for more information as to why this is a blank space.
+/obj/item/material/twohanded/fluff/Initialize(mapload)
+	. = ..(mapload," ") //See materials_vr_dmi for more information as to why this is a blank space.
 
 //jacknoir413:Areax Third
 /obj/item/melee/baton/fluff/stunstaff
@@ -926,7 +927,7 @@
 	var/wielded = 0
 	var/base_name = "stunstaff"
 
-/obj/item/melee/baton/fluff/stunstaff/Initialize()
+/obj/item/melee/baton/fluff/stunstaff/Initialize(mapload)
 	. = ..()
 	bcell = new/obj/item/cell/device/weapon(src)
 	update_icon()
@@ -995,7 +996,7 @@
 	max_w_class = ITEMSIZE_HUGE
 	max_storage_space = 16
 
-/obj/item/storage/backpack/fluff/stunstaff/Initialize()
+/obj/item/storage/backpack/fluff/stunstaff/Initialize(mapload)
 	. = ..()
 	new /obj/item/melee/baton/fluff/stunstaff(src)
 
@@ -1155,7 +1156,7 @@
 	name = "flask of expensive alcohol"
 	desc = "A standard vacuum-flask filled with good and expensive drink."
 
-/obj/item/reagent_containers/food/drinks/flask/vacuumflask/fluff/viktor/Initialize()
+/obj/item/reagent_containers/food/drinks/flask/vacuumflask/fluff/viktor/Initialize(mapload)
 	. = ..()
 	reagents.add_reagent(REAGENT_ID_PWINE, 60)
 
@@ -1266,12 +1267,12 @@
 	base_name = "Clara's Vacuum Flask"
 	base_icon = "claraflask"
 	icon = 'icons/vore/custom_items_vr.dmi'
-	center_of_mass_x = 15 //CHOMPEdit
-	center_of_mass_y= 4 //CHOMPEdit
+	center_of_mass_x = 15
+	center_of_mass_y = 4
 	filling_states = list(15, 30, 50, 60, 80, 100)
 	volume = 60
 
-/obj/item/reagent_containers/food/drinks/glass2/fluff/claraflask/Initialize()
+/obj/item/reagent_containers/food/drinks/glass2/fluff/claraflask/Initialize(mapload)
 	. = ..()
 	reagents.add_reagent(REAGENT_ID_TEA, 40)
 	reagents.add_reagent(REAGENT_ID_MILK, 20)
@@ -1348,7 +1349,7 @@ End CHOMP Removal*/
 	w_class = ITEMSIZE_TINY
 	starts_with = list(/obj/item/clothing/mask/smokable/cigarette = 7)
 
-/obj/item/storage/fancy/fluff/charlotte/Initialize()
+/obj/item/storage/fancy/fluff/charlotte/Initialize(mapload)
 	if(!open_state)
 		open_state = "[initial(icon_state)]0"
 	if(!closed_state)
@@ -1399,7 +1400,7 @@ End CHOMP Removal*/
 	icon_state = "bottle3"
 	prefill = list(REAGENT_ID_BICARIDINE = 30, REAGENT_ID_NUTRIMENT = 30)
 
-/obj/item/clothing/accessory/storage/ritualharness/fluff/antoinette/Initialize()
+/obj/item/clothing/accessory/storage/ritualharness/fluff/antoinette/Initialize(mapload)
 	. = ..()
 	hold.max_storage_space = ITEMSIZE_COST_SMALL * 2
 	hold.can_hold = list(/obj/item/material/knife, /obj/item/reagent_containers/glass/bottle)
@@ -1472,16 +1473,6 @@ End CHOMP Removal*/
 	force = 1
 	sharp = TRUE
 	edge = TRUE
-
-//PastelPrinceDan - Kiyoshi/Masumi Maki
-/obj/item/toy/plushie/fluff/slimeowshi
-	name = "Slime-Cat " + JOB_RESEARCH_DIRECTOR + " plushie"
-	desc = "An adorable stuffed toy that resembles a slime. It's pink, and has little cat ears, as well as a tail! Atop its head is a small beret with a " + JOB_RESEARCH_DIRECTOR + "'s insignia."
-	icon = 'icons/vore/custom_items_vr.dmi'
-	icon_state = "kimeowshi"
-	attack_verb = list("blorbled", "slimed", "absorbed", "glomped")
-	gender = PLURAL // this seems like a good idea but probably prone to changing. todo: ask dan
-	// the only reason this thought is relevant because the base slimeplush has its gender set to female
 
 //YeCrowbarMan - Lemon Yellow
 /obj/item/toy/plushie/fluff/lemonplush
@@ -1568,7 +1559,7 @@ End CHOMP Removal*/
 	..()
 	icon_state = "ceph_d6[result]"
 
-/obj/item/dice/loaded/ceph/Initialize()
+/obj/item/dice/loaded/ceph/Initialize(mapload)
 	. = ..()
 	icon_state = "ceph_d6[rand(1,sides)]"
 

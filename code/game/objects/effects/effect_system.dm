@@ -38,6 +38,7 @@ would spawn and follow the beaker, even if it is carried or thrown.
 /datum/effect/effect/system/proc/start()
 
 /datum/effect/effect/system/Destroy()
+	location = null
 	holder = null
 	return ..()
 
@@ -101,7 +102,7 @@ steam.start() -- spawns the effect
 	anchored = TRUE
 	mouse_opacity = 0
 
-/obj/effect/effect/sparks/Initialize()
+/obj/effect/effect/sparks/Initialize(mapload)
 	. = ..()
 	playsound(src, "sparks", 100, 1)
 	var/turf/T = src.loc
@@ -178,12 +179,10 @@ steam.start() -- spawns the effect
 	pixel_x = -32
 	pixel_y = -32
 
-/obj/effect/effect/smoke/New()
-	..()
+/obj/effect/effect/smoke/Initialize(mapload)
+	. = ..()
 	if(time_to_live)
-		spawn (time_to_live)
-			if(!QDELETED(src))
-				qdel(src)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel), src), time_to_live, TIMER_DELETE_ME)
 
 /obj/effect/effect/smoke/Crossed(mob/living/carbon/M as mob )
 	if(M.is_incorporeal())
@@ -215,9 +214,9 @@ steam.start() -- spawns the effect
 	icon = 'icons/effects/effects.dmi'
 	icon_state = "sparks"
 
-/obj/effect/effect/smoke/illumination/New(var/newloc, var/lifetime=10, var/range=null, var/power=null, var/color=null)
+/obj/effect/effect/smoke/illumination/Initialize(mapload, var/lifetime=10, var/range=null, var/power=null, var/color=null)
 	time_to_live=lifetime
-	..()
+	. = ..()
 	set_light(range, power, color)
 
 /////////////////////////////////////////////
@@ -291,7 +290,7 @@ steam.start() -- spawns the effect
 	opacity = FALSE
 	var/strength = 5 // How much damage to do inside each affect()
 
-/obj/effect/effect/smoke/elemental/Initialize()
+/obj/effect/effect/smoke/elemental/Initialize(mapload)
 	START_PROCESSING(SSobj, src)
 	return ..()
 
@@ -433,6 +432,10 @@ steam.start() -- spawns the effect
 	var/processing = 1
 	var/on = 1
 
+/datum/effect/effect/system/ion_trail_follow/Destroy()
+	oldposition = null
+	. = ..()
+
 /datum/effect/effect/system/ion_trail_follow/set_up(atom/atom)
 	attach(atom)
 	oldposition = get_turf(atom)
@@ -488,6 +491,10 @@ steam.start() -- spawns the effect
 	var/turf/oldposition
 	var/processing = 1
 	var/on = 1
+
+/datum/effect/effect/system/steam_trail_follow/Destroy()
+	oldposition = null
+	. = ..()
 
 /datum/effect/effect/system/steam_trail_follow/set_up(atom/atom)
 	attach(atom)

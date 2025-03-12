@@ -4,7 +4,6 @@
 	desc = "A high-tech dark red space suit helmet. Used for AI satellite maintenance."
 	icon_state = "void"
 	item_state_slots = list(slot_r_hand_str = "syndicate", slot_l_hand_str = "syndicate")
-	heat_protection = HEAD
 	armor = list(melee = 30, bullet = 5, laser = 20,energy = 5, bomb = 35, bio = 100, rad = 20)
 	max_heat_protection_temperature = SPACE_SUIT_MAX_HEAT_PROTECTION_TEMPERATURE
 	min_pressure_protection = 0 * ONE_ATMOSPHERE
@@ -28,7 +27,6 @@
 	slowdown = 0.5
 	armor = list(melee = 30, bullet = 5, laser = 20,energy = 5, bomb = 35, bio = 100, rad = 20)
 	allowed = list(/obj/item/flashlight,/obj/item/tank,/obj/item/suit_cooling_unit,/obj/item/storage/backpack) //CHOMPedit: backpack
-	heat_protection = UPPER_TORSO|LOWER_TORSO|LEGS|FEET|ARMS|HANDS
 	max_heat_protection_temperature = SPACE_SUIT_MAX_HEAT_PROTECTION_TEMPERATURE
 	min_pressure_protection = 0 * ONE_ATMOSPHERE
 	max_pressure_protection = 10 * ONE_ATMOSPHERE
@@ -52,7 +50,7 @@
 	var/no_cycle = FALSE	//stop this item from being put in a cycler
 
 //Does it spawn with any Inbuilt devices?
-/obj/item/clothing/suit/space/void/Initialize()
+/obj/item/clothing/suit/space/void/Initialize(mapload)
 	. = ..()
 	if(boots && ispath(boots))
 		boots = new boots(src)
@@ -61,9 +59,9 @@
 	if(tank && ispath(tank))
 		tank = new tank(src)
 
-/obj/item/clothing/suit/space/void/examine(user)
+/obj/item/clothing/suit/space/void/examine(mob/user)
 	. = ..()
-	. += to_chat(usr, span_notice("Alt-click to relase Tank/Cooling unit if installed."))
+	. += to_chat(user, span_notice("Alt-click to relase Tank/Cooling unit if installed."))
 	for(var/obj/item/I in list(helmet,boots,tank,cooler))
 		. += "It has \a [I] installed."
 	if(tank && in_range(src,user))
@@ -230,7 +228,7 @@
 	removing.canremove = TRUE
 	H.drop_from_inventory(removing)
 
-/obj/item/clothing/suit/space/void/attackby(obj/item/W as obj, mob/user as mob)
+/obj/item/clothing/suit/space/void/attackby(obj/item/W, mob/user)
 
 	if(!isliving(user)) return
 
@@ -243,7 +241,7 @@
 
 	if(W.has_tool_quality(TOOL_SCREWDRIVER))
 		if(helmet || boots || tank)
-			var/choice = tgui_input_list(usr, "What component would you like to remove?", "Remove Component", list(helmet,boots,tank,cooler))
+			var/choice = tgui_input_list(user, "What component would you like to remove?", "Remove Component", list(helmet,boots,tank,cooler))
 			if(!choice) return
 
 			if(choice == tank)	//No, a switch doesn't work here. Sorry. ~Techhead

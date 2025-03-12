@@ -1,7 +1,8 @@
-import { useBackend } from '../../backend';
-import { Button, Icon, Section, Tabs } from '../../components';
+import { useBackend } from 'tgui/backend';
+import { Button, Icon, Section, Tabs } from 'tgui-core/components';
+
 import { GeneralRecordsViewGeneral } from './GeneralRecordsViewGeneral';
-import { Data } from './types';
+import type { Data } from './types';
 
 export const GeneralRecordsMaintenance = (props) => {
   const { act } = useBackend();

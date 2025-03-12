@@ -81,7 +81,7 @@
 	var/can_rotate = 1 //Defaults to yes, can be set to 0 for vendors without or with unwanted directionals.
 
 
-/obj/machinery/vending/Initialize()
+/obj/machinery/vending/Initialize(mapload)
 	. = ..()
 	wires = new(src)
 	if(product_slogans)
@@ -178,7 +178,6 @@ GLOBAL_LIST_EMPTY(vending_products)
 					malfunction()
 					return
 				return
-		else
 	return
 
 /obj/machinery/vending/emag_act(var/remaining_charges, var/mob/user)
@@ -232,6 +231,9 @@ GLOBAL_LIST_EMPTY(vending_products)
 		if(panel_open)
 			attack_hand(user)
 		return
+	else if(istype(W, /obj/item/fake_coin) && has_premium)
+		to_chat(user, span_notice("\The [W] doesn't fit into the coin slot on \the [src]."))
+		return
 	else if(istype(W, /obj/item/coin) && has_premium)
 		user.drop_item()
 		W.forceMove(src)
@@ -263,23 +265,23 @@ GLOBAL_LIST_EMPTY(vending_products)
 /**
  *  Receive payment with cashmoney.
  *
- *  usr is the mob who gets the change.
+ *  user is the mob who gets the change.
  */
 /obj/machinery/vending/proc/pay_with_cash(var/obj/item/spacecash/cashmoney, mob/user)
 	if(currently_vending.price > cashmoney.worth)
 
 		// This is not a status display message, since it's something the character
 		// themselves is meant to see BEFORE putting the money in
-		to_chat(usr, "[icon2html(cashmoney, user.client)] " + span_warning("That is not enough money."))
+		to_chat(user, "[icon2html(cashmoney, user.client)] " + span_warning("That is not enough money."))
 		return 0
 
 	if(istype(cashmoney, /obj/item/spacecash))
 
-		visible_message(span_info("\The [usr] inserts some cash into \the [src]."))
+		visible_message(span_info("\The [user] inserts some cash into \the [src]."))
 		cashmoney.worth -= currently_vending.price
 
 		if(cashmoney.worth <= 0)
-			usr.drop_from_inventory(cashmoney)
+			user.drop_from_inventory(cashmoney)
 			qdel(cashmoney)
 		else
 			cashmoney.update_icon()
@@ -298,7 +300,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 	visible_message(span_info("\The [user] swipes \the [wallet] through \the [src]."))
 	playsound(src, 'sound/machines/id_swipe.ogg', 50, 1)
 	if(currently_vending.price > wallet.worth)
-		to_chat(usr, span_warning("Insufficient funds on chargecard."))
+		to_chat(user, span_warning("Insufficient funds on chargecard."))
 		return 0
 	else
 		wallet.worth -= currently_vending.price
@@ -786,7 +788,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 	if(!target)
 		return 0
 
-	if(target.is_incorporeal()) // CHOMPADD - Don't shoot at things that aren't there.
+	if(target.is_incorporeal()) // Don't shoot at things that aren't there.
 		return 0
 
 	for(var/datum/stored_item/vending_product/R in shuffle(product_records))

@@ -3,7 +3,7 @@ var/list/admin_verbs_default = list(
 	/datum/admins/proc/show_player_panel,	//shows an interface for individual players, with various links (links require additional flags,
 	/client/proc/player_panel_new, //shows an interface for all players, with links to various panels,
 	/client/proc/player_panel,
-	/client/proc/deadmin_self,			//destroys our own admin datum so we can play as a regular player,
+	/client/proc/deadmin,			//destroys our own admin datum so we can play as a regular player,
 	/client/proc/hide_verbs,			//hides all our adminverbs,
 	/client/proc/hide_most_verbs,		//hides all our hideable adminverbs,
 	/client/proc/debug_variables,		//allows us to -see- the variables of any instance in the game. +VAREDIT needed to modify,
@@ -112,7 +112,8 @@ var/list/admin_verbs_admin = list(
 	/datum/admins/proc/view_feedback,
 	/client/proc/admin_teleport,	//CHOMPEdit
 	/client/proc/setckey, //YW add - readds SetCkey proc
-	/client/proc/debug_global_variables
+	/client/proc/debug_global_variables,
+	/client/proc/hide_motion_tracker_feedback
 	)
 
 var/list/admin_verbs_ban = list(
@@ -243,6 +244,7 @@ var/list/admin_verbs_debug = list(
 	/datum/admins/proc/change_time,
 	/client/proc/cmd_regenerate_asset_cache,
 	/client/proc/cmd_clear_smart_asset_cache,
+	/client/proc/cmd_reload_robot_sprite_test,
 	/client/proc/admin_give_modifier,
 	/client/proc/simple_DPS,
 	/datum/admins/proc/view_feedback,
@@ -271,7 +273,7 @@ var/list/admin_verbs_rejuv = list(
 
 //verbs which can be hidden - needs work
 var/list/admin_verbs_hideable = list(
-	/client/proc/deadmin_self,
+	/client/proc/deadmin,
 //	/client/proc/deadchat,
 	/datum/admins/proc/show_traitor_panel,
 	/datum/admins/proc/toggleenter,
@@ -402,6 +404,7 @@ var/list/admin_verbs_event_manager = list(
 	/datum/admins/proc/change_time,
 	/client/proc/cmd_regenerate_asset_cache,
 	/client/proc/cmd_clear_smart_asset_cache,
+	/client/proc/cmd_reload_robot_sprite_test,
 	/client/proc/admin_give_modifier,
 	/client/proc/Jump,
 	/client/proc/jumptomob,
@@ -431,6 +434,7 @@ var/list/admin_verbs_event_manager = list(
 	/datum/admins/proc/change_time,
 	/client/proc/cmd_regenerate_asset_cache,
 	/client/proc/cmd_clear_smart_asset_cache,
+	/client/proc/cmd_reload_robot_sprite_test,
 	/client/proc/admin_give_modifier,
 	/datum/admins/proc/cmd_admin_dress,
 	/client/proc/cmd_admin_gib_self,
@@ -514,7 +518,8 @@ var/list/admin_verbs_event_manager = list(
 	/client/proc/cmd_debug_del_all,
 	/client/proc/toggle_random_events,
 	/client/proc/modify_server_news,
-	/client/proc/debug_global_variables
+	/client/proc/debug_global_variables,
+	/client/proc/hide_motion_tracker_feedback
 )
 
 /client/proc/add_admin_verbs()

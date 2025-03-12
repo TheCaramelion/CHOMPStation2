@@ -45,7 +45,7 @@
 			render_target = ref(src)
 			em_block = new(src, render_target)
 			add_overlay(list(em_block), TRUE)
-			RegisterSignal(em_block, COMSIG_PARENT_QDELETING, PROC_REF(emblocker_gc)) //CHOMPEdit deal with emblocker deleting. see atoms_movable_ch.dm
+			RegisterSignal(em_block, COMSIG_PARENT_QDELETING, PROC_REF(emblocker_gc))
 	if(opacity)
 		AddElement(/datum/element/light_blocking)
 	if(icon_scale_x != DEFAULT_ICON_SCALE_X || icon_scale_y != DEFAULT_ICON_SCALE_Y || icon_rotation != DEFAULT_ICON_ROTATION)
@@ -59,7 +59,14 @@
 			AddComponent(/datum/component/overlay_lighting, is_directional = TRUE, starts_on = light_on)
 
 /atom/movable/Destroy()
+	if(em_block)
+		cut_overlay(em_block)
+		UnregisterSignal(em_block, COMSIG_PARENT_QDELETING)
+		QDEL_NULL(em_block)
 	. = ..()
+
+	unbuckle_all_mobs()
+
 	for(var/atom/movable/AM in contents)
 		qdel(AM)
 
@@ -221,7 +228,7 @@
 
 	// If we moved, call Moved() on ourselves
 	if(.)
-		Moved(oldloc, direct, FALSE, movetime ? movetime : MOVE_GLIDE_CALC(glide_size, moving_diagonally) ) //CHOMPEDIT - proper diagonal movement
+		Moved(oldloc, direct, FALSE, movetime ? movetime : MOVE_GLIDE_CALC(glide_size, moving_diagonally) )
 
 	// Update timers/cooldown stuff
 	move_speed = world.time - l_move_time
@@ -415,10 +422,14 @@
 /atom/movable/proc/hit_check(var/speed)
 	if(src.throwing)
 		for(var/atom/A in get_turf(src))
-			if(A == src) continue
+			if(A == src)
+				continue
+			if(A.is_incorporeal())
+				continue
 			if(isliving(A))
-				if(A:lying) continue
-				if(A.is_incorporeal()) continue // CHOMPEdit - For phased entities
+				var/mob/living/M = A
+				if(M.lying)
+					continue
 				src.throw_impact(A,speed)
 			if(isobj(A))
 				if(!A.density || A.throwpass)
@@ -457,10 +468,10 @@
 	var/atom/master = null
 	anchored = TRUE
 
-/atom/movable/overlay/New()
+/atom/movable/overlay/Initialize(mapload)
+	. = ..()
 	for(var/x in src.verbs)
 		src.verbs -= x
-	..()
 
 /atom/movable/overlay/attackby(a, b)
 	if (src.master)
@@ -644,3 +655,15 @@
 
 /atom/movable/proc/get_cell()
 	return
+
+/atom/movable/proc/emblocker_gc(var/datum/source)
+	UnregisterSignal(source, COMSIG_PARENT_QDELETING)
+	cut_overlay(source)
+	if(em_block == source)
+		em_block = null
+
+/atom/movable/proc/abstract_move(atom/new_loc)
+	var/atom/old_loc = loc
+	var/direction = get_dir(old_loc, new_loc)
+	loc = new_loc
+	Moved(old_loc, direction, TRUE)

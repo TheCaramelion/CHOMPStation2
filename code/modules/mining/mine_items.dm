@@ -161,7 +161,7 @@
 	item_state = "whiteshovel"
 	var/datum/material/material
 
-/obj/item/shovel/wood/Initialize(var/ml, var/_mat)
+/obj/item/shovel/wood/Initialize(mapload, var/_mat)
 	. = ..()
 	material = get_material_by_name(_mat)
 	if(!istype(material))
@@ -209,7 +209,7 @@
 	var/upright = 0
 	var/base_state
 
-/obj/item/stack/flag/Initialize()
+/obj/item/stack/flag/Initialize(mapload)
 	. = ..()
 	base_state = icon_state
 	update_icon()

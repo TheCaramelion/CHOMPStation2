@@ -108,12 +108,10 @@
 	if(src == M) //Don't eat YOURSELF dork
 		//ai_log("vr/won't eat [M] because it's me!", 3) //VORESTATION AI TEMPORARY REMOVAL
 		return 0
-	//CHOMPSTATION add
-	if(!M.devourable)	//Why was there never a check for edibility to begin with
+	if(!M.devourable)	// Why was there never a check for edibility to begin with
 		return 0
-	if(M.is_incorporeal()) // CHOMPADD - No eating the phased ones
+	if(M.is_incorporeal()) // No eating the phased ones
 		return 0
-	//CHOMPSTATION add end
 	if(vore_ignores_undigestable && !M.digestable) //Don't eat people with nogurgle prefs
 		//ai_log("vr/wont eat [M] because I am picky", 3) //VORESTATION AI TEMPORARY REMOVAL
 		return 0
@@ -157,10 +155,8 @@
 /mob/living/simple_mob/proc/CanPounceTarget(var/mob/living/M) //returns either FALSE or a %chance of success
 	if(!M.canmove || issilicon(M) || world.time < vore_pounce_cooldown) //eliminate situations where pouncing CANNOT happen
 		return FALSE
-	// CHOMPADD Start - No pouncing on the shades
 	if(M.is_incorporeal())
 		return FALSE
-	// CHOMPADD End
 	if(!prob(vore_pounce_chance) || !will_eat(M)) //mob doesn't want to pounce
 		return FALSE
 	if(vore_standing_too) //100% chance of hitting people we can eat on the spot
@@ -439,14 +435,14 @@
 
 	var/mob/living/T = tgui_input_list(src, "Who do you wish to leap at?", "Target Choice", choices)
 
-	if(!T || !src || src.stat) return
+	if(!T || !src || stat) return
 
 	if(get_dist(get_turf(T), get_turf(src)) > 3) return
 
 	if(last_special > world.time)
 		return
 
-	if(usr.incapacitated(INCAPACITATION_DISABLED))
+	if(incapacitated(INCAPACITATION_DISABLED))
 		to_chat(src, "You cannot leap in your current state.")
 		return
 
@@ -454,8 +450,8 @@
 	status_flags |= LEAPING
 	pixel_y = pixel_y + 10
 
-	src.visible_message(span_danger("\The [src] leaps at [T]!"))
-	src.throw_at(get_step(get_turf(T),get_turf(src)), 4, 1, src)
+	visible_message(span_danger("\The [src] leaps at [T]!"))
+	throw_at(get_step(get_turf(T),get_turf(src)), 4, 1, src)
 	playsound(src, 'sound/effects/bodyfall1.ogg', 50, 1)
 	pixel_y = default_pixel_y
 
@@ -463,7 +459,7 @@
 
 	if(status_flags & LEAPING) status_flags &= ~LEAPING
 
-	if(!src.Adjacent(T))
+	if(!Adjacent(T))
 		to_chat(src, span_warning("You miss!"))
 		return
 

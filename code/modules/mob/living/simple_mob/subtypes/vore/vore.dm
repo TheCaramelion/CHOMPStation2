@@ -12,6 +12,7 @@
 	. = ..()
 	add_verb(src, /mob/living/simple_mob/proc/set_name)
 	add_verb(src, /mob/living/simple_mob/proc/set_desc)
+	add_verb(src, /mob/living/simple_mob/proc/set_gender)
 
 	if(copy_prefs_to_mob)
 		login_prefs()
@@ -26,6 +27,7 @@
 	ooc_notes_maybes = read_preference(/datum/preference/text/living/ooc_notes_maybes)
 	ooc_notes_style = read_preference(/datum/preference/toggle/living/ooc_notes_style)
 	//CHOMPAdd End
+	private_notes = client.prefs.read_preference(/datum/preference/text/living/private_notes)
 	digestable = client.prefs_vr.digestable
 	devourable = client.prefs_vr.devourable
 	absorbable = client.prefs_vr.absorbable
@@ -98,6 +100,15 @@
 	newdesc = sanitizeSafe(tgui_input_text(src,"Set your description. Max 4096 chars.", "Description set","", prevent_enter = TRUE), MAX_MESSAGE_LEN)
 	if(newdesc)
 		desc = newdesc
+
+/mob/living/simple_mob/proc/set_gender()
+	set name = "Set Gender"
+	set desc = "Set your gender."
+	set category = "Abilities.Settings"
+	var/newgender
+	newgender = tgui_input_list(src, "Please select a gender:", "Set Gender", list(FEMALE, MALE, NEUTER, PLURAL))
+	if(newgender)
+		gender = newgender
 
 /mob/living/simple_mob/vore/aggressive
 	mob_bump_flag = HEAVY

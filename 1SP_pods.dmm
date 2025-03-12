@@ -1467,14 +1467,6 @@
 	},
 /turf/simulated/floor/tiled/techfloor/grid,
 /area/survivalpod/superpose/CultShip)
-"bbP" = (
-/obj/structure/hull_corner{
-	dir = 4
-	},
-/obj/structure/lattice,
-/obj/structure/lattice,
-/turf/template_noop,
-/area/template_noop)
 "bcf" = (
 /obj/structure/table/standard,
 /obj/machinery/reagentgrinder,
@@ -3889,7 +3881,6 @@
 /obj/item/clothing/shoes/sandal,
 /obj/item/clothing/shoes/sandal,
 /obj/machinery/computer/security/telescreen/entertainment{
-	icon_state = "frame";
 	pixel_x = -32
 	},
 /obj/item/towel/random,
@@ -6693,7 +6684,6 @@
 	dir = 8
 	},
 /obj/machinery/computer/security/telescreen/entertainment{
-	icon_state = "frame";
 	pixel_x = 32
 	},
 /turf/simulated/floor/carpet,
@@ -10935,9 +10925,7 @@
 "hJi" = (
 /obj/machinery/portable_atmospherics/hydroponics/soil,
 /obj/effect/decal/cleanable/dirt,
-/obj/item/seeds/wheatseed{
-	icon_state = "seed"
-	},
+/obj/item/seeds/wheatseed,
 /turf/simulated/floor/outdoors/dirt,
 /area/survivalpod/superpose/DragonCave)
 "hJu" = (
@@ -16708,7 +16696,6 @@
 /obj/structure/curtain/bed,
 /obj/item/bedsheet/hosdouble,
 /obj/machinery/computer/security/telescreen/entertainment{
-	icon_state = "frame";
 	pixel_y = 32
 	},
 /turf/simulated/floor/wood,
@@ -24599,7 +24586,7 @@
 /area/survivalpod/superpose/LoneHome)
 "qaP" = (
 /turf/simulated/floor/flesh/colour{
-	color = red
+	color = "red"
 	},
 /area/survivalpod/superpose/HellCave)
 "qaS" = (
@@ -30420,11 +30407,6 @@
 /obj/item/clothing/head/pin/flower/blue,
 /obj/item/clothing/head/pin/flower/orange,
 /obj/item/clothing/head/pin/flower/pink,
-/obj/item/clothing/head/justice,
-/obj/item/clothing/head/justice/blue,
-/obj/item/clothing/head/justice/green,
-/obj/item/clothing/head/justice/pink,
-/obj/item/clothing/head/justice/yellow,
 /obj/item/clothing/head/philosopher_wig,
 /obj/item/clothing/head/plaguedoctorhat,
 /obj/item/clothing/head/xenos,
@@ -32503,7 +32485,7 @@
 /area/survivalpod/superpose/GrandLibrary)
 "whZ" = (
 /turf/simulated/floor/flesh/colour{
-	color = red
+	color = "red"
 	},
 /area/template_noop)
 "wiQ" = (
@@ -33414,12 +33396,6 @@
 	},
 /turf/simulated/floor/tiled/techfloor,
 /area/survivalpod/superpose/CrashedInfestedShip)
-"wMJ" = (
-/obj/structure/cable{
-	icon_state = "2-4"
-	},
-/turf/simulated/shuttle/wall/voidcraft/blue,
-/area/survivalpod)
 "wMK" = (
 /obj/structure/shuttle/engine/propulsion{
 	dir = 1
@@ -34042,7 +34018,6 @@
 	pixel_y = 20
 	},
 /obj/machinery/computer/security/telescreen/entertainment{
-	icon_state = "frame";
 	pixel_x = -32
 	},
 /obj/item/handcuffs/legcuffs/fuzzy,
@@ -34253,9 +34228,7 @@
 /area/survivalpod/superpose/Farm)
 "xms" = (
 /obj/machinery/portable_atmospherics/hydroponics/soil,
-/obj/item/seeds/onionseed{
-	icon_state = "seed"
-	},
+/obj/item/seeds/onionseed,
 /obj/item/seeds/tomatoseed{
 	icon_state = "seed";
 	pixel_x = 4;
@@ -39786,7 +39759,7 @@ wWX
 uHE
 wWX
 uHE
-bbP
+rug
 pIr
 pIr
 pIr
@@ -54127,7 +54100,7 @@ jTF
 mtA
 ktQ
 fsy
-wMJ
+oKt
 qkX
 gjM
 eMp

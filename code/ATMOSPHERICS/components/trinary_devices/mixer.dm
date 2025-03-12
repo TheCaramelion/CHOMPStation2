@@ -37,7 +37,7 @@
 		icon_state += "off"
 		update_use_power(USE_POWER_OFF)
 
-/obj/machinery/atmospherics/trinary/mixer/Initialize()
+/obj/machinery/atmospherics/trinary/mixer/Initialize(mapload)
 	. = ..()
 
 	air1.volume = ATMOS_DEFAULT_VOLUME_MIXER
@@ -127,7 +127,7 @@
 	// 			<a href='byond://?src=\ref[src];node2_c=0.1'>+</a>
 	// 			"}
 
-	// user << browse("<HEAD><TITLE>[src.name] control</TITLE></HEAD><TT>[dat]</TT>", "window=atmo_mixer")
+	// user << browse("<html><HEAD><TITLE>[src.name] control</TITLE></HEAD><TT>[dat]</TT></html>", "window=atmo_mixer")
 	// onclose(user, "atmo_mixer")
 	// return
 

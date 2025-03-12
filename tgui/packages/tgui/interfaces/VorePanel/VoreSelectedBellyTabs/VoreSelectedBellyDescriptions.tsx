@@ -1,9 +1,15 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useBackend } from 'tgui/backend';
-import { Box, Button, Dimmer, LabeledList, Section } from 'tgui/components';
+import {
+  Box,
+  Button,
+  Dimmer,
+  LabeledList,
+  Section,
+} from 'tgui-core/components';
 
 import { SYNTAX_COLOR, SYNTAX_REGEX } from '../constants';
-import { Data, selectedData } from '../types';
+import type { Data, selectedData } from '../types';
 import { VoreSelectedBellyDescriptionsBellymode } from '../VoreSelectedBellyDescriptionTexts/VoreSelectedBellyDescriptionsBellymode';
 import { VoreSelectedBellyDescriptionsEscape } from '../VoreSelectedBellyDescriptionTexts/VoreSelectedBellyDescriptionsEscape';
 import { VoreSelectedBellyDescriptionsIdle } from '../VoreSelectedBellyDescriptionTexts/VoreSelectedBellyDescriptionsIdle';

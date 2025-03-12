@@ -118,12 +118,12 @@
 	desc = "A glob of slime that is thick as honey.  For the brave " + JOB_XENOBIOLOGIST + "."
 	icon_state = "honeycomb"
 	filling_color = "#FFBB00"
-	center_of_mass_x = 17 //CHOMPEdit
-	center_of_mass_y= 10 //CHOMPEdit
+	center_of_mass_x = 17
+	center_of_mass_y = 10
 	nutriment_amt = 25 // Very filling.
 	nutriment_desc = list("slime" = 10, "sweetness" = 10, REAGENT_ID_BLISS = 5)
 
-/obj/item/reagent_containers/food/snacks/slime/Initialize()
+/obj/item/reagent_containers/food/snacks/slime/Initialize(mapload)
 	. = ..()
 	bitesize = 5
 
@@ -144,7 +144,7 @@
 	power_use = 0
 	light_system = STATIC_LIGHT
 
-/obj/item/flashlight/slime/Initialize()
+/obj/item/flashlight/slime/Initialize(mapload)
 	. = ..()
 	set_light(light_range, light_power, light_color)
 
@@ -167,7 +167,7 @@
 	light_range = 2
 	w_class = ITEMSIZE_TINY
 
-/obj/item/slime_irradiator/Initialize()
+/obj/item/slime_irradiator/Initialize(mapload)
 	. = ..()
 	START_PROCESSING(SSobj, src)
 	set_light(light_range, light_power, light_color)

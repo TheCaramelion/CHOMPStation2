@@ -28,7 +28,7 @@
 				H.apply_damage(agony_to_apply, HALLOSS)
 
 	..()
-/obj/item/melee/baton/slime/loaded/Initialize()
+/obj/item/melee/baton/slime/loaded/Initialize(mapload)
 	bcell = new/obj/item/cell/device(src)
 	update_icon()
 	return ..()
@@ -52,7 +52,7 @@
 	description_fluff = "An easy to use weapon designed by NanoTrasen, for NanoTrasen. This weapon is based on the NT Mk30 NL, \
 	it's core components swaped out for a new design made to subdue lesser slime-based xeno lifeforms at a distance.  It is \
 	ineffective at stunning non-slimy lifeforms such as humanoids."
-	recoil_mode = 0 //CHOMP Addition
+	recoil_mode = 0
 
 /obj/item/gun/energy/taser/xeno/robot // Borg version
 	self_recharge = 1

@@ -33,7 +33,7 @@
 	icon_state = "base"
 	initialize_directions = dir
 
-/obj/machinery/atmospherics/unary/cryo_cell/Initialize()
+/obj/machinery/atmospherics/unary/cryo_cell/Initialize(mapload)
 	. = ..()
 	var/image/tank = image(icon,"tank")
 	tank.alpha = 200
@@ -363,7 +363,7 @@
 /datum/data/function/proc/reset()
 	return
 
-/datum/data/function/proc/r_input(href, href_list, mob/user as mob)
+/datum/data/function/proc/r_input(href, href_list, mob/user)
 	return
 
 /datum/data/function/proc/display()

@@ -42,6 +42,7 @@ GLOBAL_LIST_INIT(diseases, subtypesof(/datum/disease))
 	var/allow_dead = FALSE
 	var/infect_synthetics = FALSE
 	var/processing = FALSE
+	var/has_timer = FALSE
 
 /datum/disease/Destroy()
 	affected_mob = null
@@ -109,6 +110,8 @@ GLOBAL_LIST_INIT(diseases, subtypesof(/datum/disease))
 /datum/disease/proc/spread(force_spread = 0)
 	if(!affected_mob)
 		return
+	if(affected_mob.is_incorporeal())
+		return
 
 	if((spread_flags & SPECIAL || spread_flags & NON_CONTAGIOUS || spread_flags & BLOOD) && !force_spread)
 		return
@@ -127,6 +130,8 @@ GLOBAL_LIST_INIT(diseases, subtypesof(/datum/disease))
 	var/turf/target = affected_mob.loc
 	if(istype(target))
 		for(var/mob/living/carbon/human/C in oview(spread_range, affected_mob))
+			if(C.is_incorporeal())
+				continue
 			var/turf/current = get_turf(C)
 			if(current)
 				while(TRUE)
@@ -146,6 +151,23 @@ GLOBAL_LIST_INIT(diseases, subtypesof(/datum/disease))
 				affected_mob.resistances += type
 		remove_virus()
 	qdel(src)
+
+/datum/disease/proc/start_cure_timer()
+	if(has_timer)
+		return
+	if(!(disease_flags & CURABLE))
+		return
+	has_timer = TRUE
+	addtimer(CALLBACK(src, PROC_REF(check_natural_immunity)), (1 HOUR) + rand( -20 MINUTES, 30 MINUTES), TIMER_DELETE_ME)
+
+/datum/disease/proc/check_natural_immunity()
+	if(!(disease_flags & CURABLE))
+		return
+	if(prob(rand(10, 15)))
+		has_timer = FALSE
+		cure()
+		return
+	addtimer(CALLBACK(src, PROC_REF(check_natural_immunity)), rand(5 MINUTES, 10 MINUTES), TIMER_DELETE_ME)
 
 /datum/disease/proc/IsSame(datum/disease/D)
 	if(ispath(D))
@@ -173,8 +195,14 @@ GLOBAL_LIST_INIT(diseases, subtypesof(/datum/disease))
 /datum/disease/proc/remove_virus()
 	affected_mob.viruses -= src
 
+// Called when a disease is added onto a mob
 /datum/disease/proc/Start()
 	return
 
+// Called when a disease is removed from a mob
 /datum/disease/proc/End()
+	return
+
+// Called when the mob dies
+/datum/disease/proc/OnDeath()
 	return

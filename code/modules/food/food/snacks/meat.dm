@@ -4,10 +4,10 @@
 	icon_state = "meat"
 	health = 180
 	filling_color = "#FF1C1C"
-	center_of_mass_x = 16 //CHOMPEdit
-	center_of_mass_y= 14 //CHOMPEdit
+	center_of_mass_x = 16
+	center_of_mass_y = 14
 
-/obj/item/reagent_containers/food/snacks/meat/Initialize()
+/obj/item/reagent_containers/food/snacks/meat/Initialize(mapload)
 	. = ..()
 	reagents.add_reagent(REAGENT_ID_PROTEIN, 6)
 	reagents.add_reagent(REAGENT_ID_TRIGLYCERIDE, 2)
@@ -54,7 +54,7 @@
 	cooked_icon = "chickensteak"
 	filling_color = "#BBBBAA"
 
-/obj/item/reagent_containers/food/snacks/meat/chicken/Initialize()
+/obj/item/reagent_containers/food/snacks/meat/chicken/Initialize(mapload)
 	. = ..()
 	reagents.remove_reagent(REAGENT_ID_TRIGLYCERIDE, INFINITY)
 	//Chicken is low fat. Less total calories than other meats
@@ -65,7 +65,7 @@
 	icon_state = "crabmeat"
 	bitesize = 1
 
-/obj/item/reagent_containers/food/snacks/crabmeat/Initialize()
+/obj/item/reagent_containers/food/snacks/crabmeat/Initialize(mapload)
 	. = ..()
 	reagents.add_reagent(REAGENT_ID_SEAFOOD, 2)
 
@@ -74,13 +74,13 @@
 	desc = "A slice from a huge mushroom."
 	icon_state = "hugemushroomslice"
 	filling_color = "#E0D7C5"
-	center_of_mass_x = 17 //CHOMPEdit
-	center_of_mass_y= 16 //CHOMPEdit
+	center_of_mass_x = 17
+	center_of_mass_y = 16
 	nutriment_amt = 3
 	nutriment_desc = list("raw" = 2, PLANT_MUSHROOMS = 2)
 	bitesize = 6
 
-/obj/item/reagent_containers/food/snacks/hugemushroomslice/Initialize()
+/obj/item/reagent_containers/food/snacks/hugemushroomslice/Initialize(mapload)
 	. = ..()
 	reagents.add_reagent(REAGENT_ID_PSILOCYBIN, 3)
 
@@ -89,8 +89,8 @@
 	desc = "A slice from a huge tomato"
 	icon_state = "tomatomeat"
 	filling_color = "#DB0000"
-	center_of_mass_x = 17 //CHOMPEdit
-	center_of_mass_y= 16 //CHOMPEdit
+	center_of_mass_x = 17
+	center_of_mass_y = 16
 	nutriment_amt = 3
 	nutriment_desc = list("raw" = 2, PLANT_TOMATO = 3)
 	bitesize = 6
@@ -100,11 +100,11 @@
 	desc = "A very manly slab of meat."
 	icon_state = "bearmeat"
 	filling_color = "#DB0000"
-	center_of_mass_x = 16 //CHOMPEdit
-	center_of_mass_y= 10 //CHOMPEdit
+	center_of_mass_x = 16
+	center_of_mass_y = 10
 	bitesize = 3
 
-/obj/item/reagent_containers/food/snacks/bearmeat/Initialize()
+/obj/item/reagent_containers/food/snacks/bearmeat/Initialize(mapload)
 	. = ..()
 	reagents.add_reagent(REAGENT_ID_PROTEIN, 12)
 	reagents.add_reagent(REAGENT_ID_HYPERZINE, 5)
@@ -114,11 +114,11 @@
 	desc = "A slab of green meat. Smells like acid."
 	icon_state = "xenomeat"
 	filling_color = "#43DE18"
-	center_of_mass_x = 16 //CHOMPEdit
-	center_of_mass_y= 10 //CHOMPEdit
+	center_of_mass_x = 16
+	center_of_mass_y = 10
 	bitesize = 6
 
-/obj/item/reagent_containers/food/snacks/xenomeat/Initialize()
+/obj/item/reagent_containers/food/snacks/xenomeat/Initialize(mapload)
 	. = ..()
 	reagents.add_reagent(REAGENT_ID_PROTEIN, 6)
 	reagents.add_reagent(REAGENT_ID_PACID,6)
@@ -128,11 +128,11 @@
 	desc = "A slab of green meat."
 	icon_state = "xenomeat"
 	filling_color = "#43DE18"
-	center_of_mass_x = 16 //CHOMPEdit
-	center_of_mass_y= 10 //CHOMPEdit
+	center_of_mass_x = 16
+	center_of_mass_y = 10
 	bitesize = 6
 
-/obj/item/reagent_containers/food/snacks/xenomeat/spidermeat/Initialize()
+/obj/item/reagent_containers/food/snacks/xenomeat/spidermeat/Initialize(mapload)
 	. = ..()
 	reagents.add_reagent(REAGENT_ID_SPIDERTOXIN,6)
 	reagents.remove_reagent(REAGENT_ID_PACID,6)
@@ -143,7 +143,7 @@
 	icon_state = "rawturkey"
 	bitesize = 2.5
 
-/obj/item/reagent_containers/food/snacks/rawturkey/Initialize()
+/obj/item/reagent_containers/food/snacks/rawturkey/Initialize(mapload)
 	. = ..()
 	reagents.add_reagent(REAGENT_ID_PROTEIN, 10)
 
@@ -156,10 +156,10 @@
 	desc = "A slab of grub meat, it gives a gentle shock if you touch it"
 	icon = 'icons/obj/food.dmi'
 	icon_state = "grubmeat"
-	center_of_mass_x = 16 //CHOMPEdit
-	center_of_mass_y= 10 //CHOMPEdit
+	center_of_mass_x = 16
+	center_of_mass_y = 10
 
-/obj/item/reagent_containers/food/snacks/meat/grubmeat/Initialize()
+/obj/item/reagent_containers/food/snacks/meat/grubmeat/Initialize(mapload)
 	. = ..()
 	reagents.add_reagent(REAGENT_ID_PROTEIN, 1)
 	reagents.add_reagent(REAGENT_ID_SHOCKCHEM, 6)
@@ -171,10 +171,10 @@
 	icon_state = "wormmeat"
 	health = 180
 	filling_color = "#551A8B"
-	center_of_mass_x = 16 //CHOMPEdit
-	center_of_mass_y= 14 //CHOMPEdit
+	center_of_mass_x = 16
+	center_of_mass_y = 14
 
-/obj/item/reagent_containers/food/snacks/meat/worm/Initialize()
+/obj/item/reagent_containers/food/snacks/meat/worm/Initialize(mapload)
 	. = ..()
 	reagents.add_reagent(REAGENT_ID_PROTEIN, 6)
 	reagents.add_reagent(REAGENT_ID_PHORON, 3)

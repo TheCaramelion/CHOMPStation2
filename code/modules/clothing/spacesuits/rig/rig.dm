@@ -106,8 +106,8 @@
 	var/obj/item/storage/backpack/rig_storage
 	permeability_coefficient = 0  //Protect the squishies, after all this shit should be waterproof.
 
-/obj/item/rig/New()
-	..()
+/obj/item/rig/Initialize(mapload)
+	. = ..()
 
 	suit_state = icon_state
 	item_state = icon_state
@@ -176,6 +176,8 @@
 	chest = null
 	cell = null
 	air_supply = null
+	for(var/obj/item/rig_module/module in installed_modules)
+		qdel(module)
 	STOP_PROCESSING(SSobj, src)
 	qdel(wires)
 	wires = null
@@ -191,7 +193,7 @@
 				continue
 			. += "[icon2html(piece, user.client)] \The [piece] [piece.gender == PLURAL ? "are" : "is"] deployed."
 
-	if(src.loc == usr)
+	if(src.loc == user)
 		. += "The access panel is [locked? "locked" : "unlocked"]."
 		. += "The maintenance panel is [open ? "open" : "closed"]."
 		. += "Hardsuit systems are [offline ? span_warning("offline") : span_notice("online")]."
@@ -430,14 +432,14 @@
 		return
 
 	cooling_on = 1
-	to_chat(usr, span_notice("You switch \the [src]'s cooling system on."))
+	to_chat(user, span_notice("You switch \the [src]'s cooling system on."))
 
 
 /obj/item/rig/proc/turn_cooling_off(var/mob/user, var/failed)
 	if(failed)
 		visible_message("\The [src]'s cooling system clicks and whines as it powers down.")
 	else
-		to_chat(usr, span_notice("You switch \the [src]'s cooling system off."))
+		to_chat(user, span_notice("You switch \the [src]'s cooling system off."))
 	cooling_on = 0
 
 /obj/item/rig/proc/get_environment_temperature()
@@ -577,7 +579,7 @@
 		var/mob/living/carbon/human/H = user
 		if(istype(H) && (H.back != src && H.belt != src))
 			fail_msg = span_warning("You must be wearing \the [src] to do this.")
-		else if(user.incorporeal_move)
+		else if(user.is_incorporeal())
 			fail_msg = span_warning("You must be solid to do this.")
 	if(sealing)
 		fail_msg = span_warning("The hardsuit is in the process of adjusting seals and cannot be activated.")
@@ -691,15 +693,15 @@
 	if((!istype(wearer) || (!wearer.back == src && !wearer.belt == src)) && !forced)
 		return
 
-	if((usr == wearer && (usr.stat||usr.paralysis||usr.stunned)) && !forced) // If the usr isn't wearing the suit it's probably an AI.
+	if(!H)
+		return
+
+	if((H == wearer && (H.stat||H.paralysis||H.stunned)) && !forced) // If the user isn't wearing the suit it's probably an AI.
 		return
 
 	var/obj/item/check_slot
 	var/equip_to
 	var/obj/item/use_obj
-
-	if(!H)
-		return
 
 	switch(piece)
 		if("helmet")

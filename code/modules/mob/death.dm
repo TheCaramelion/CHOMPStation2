@@ -85,6 +85,7 @@
 		src.visible_message(span_infoplain(span_bold("\The [src.name]") + " [deathmessage]"))
 
 	set_stat(DEAD)
+	SSmotiontracker.ping(src,80)
 
 	update_canmove()
 
@@ -99,6 +100,16 @@
 
 	drop_r_hand()
 	drop_l_hand()
+
+	if(viruses)
+		for(var/datum/disease/D in viruses)
+			if(istype(D, /datum/disease/advance))
+				var/datum/disease/advance/AD = D
+				for(var/symptom in AD.symptoms)
+					var/datum/symptom/S = symptom
+					S.OnDeath(AD)
+			else
+				D.OnDeath()
 
 	if(healths)
 		healths.overlays = null // This is specific to humans but the relevant code is here; shouldn't mess with other mobs.

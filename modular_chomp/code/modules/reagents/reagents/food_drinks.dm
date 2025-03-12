@@ -681,16 +681,6 @@
 /////////FOODSTUFF/////////////////////////////
 //////////////////////////////////////////////
 
-/datum/reagent/cinnamonpowder
-	name = REAGENT_CINNAMONPOWDER
-	id = REAGENT_ID_CINNAMONPOWDER
-	description = "Cinnamon, a spice made from tree bark, ground into a fine powder. Probably not a good idea to eat on its own!"
-	taste_description= "sweet spice with a hint of wood"
-	color = "#a96622"
-
-	glass_name = REAGENT_CINNAMONPOWDER
-	glass_desc = "A glass of ground cinnamon. Dare you take the challenge?"
-
 //YW drinks
 /datum/reagent/drink/lovepotion_yw
 	name = REAGENT_STRAWBERRYLOVEPOTION
@@ -714,7 +704,8 @@
 	glass_name = "Worm blood"
 	glass_desc = "Who had the grand idea to bottle THE BLOOD OF A WORM."
 	glass_icon_state = "wormblood"
-	glass_center_of_mass = list("x"=16, "y"=8)
+	glass_center_of_mass_x = 16
+	glass_center_of_mass_y = 8
 	glass_icon_file = 'icons/obj/drinks_yw.dmi'
 
 /datum/reagent/blondiemix

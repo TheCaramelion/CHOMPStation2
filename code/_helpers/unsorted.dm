@@ -345,7 +345,7 @@ Turf and target are seperate in case you want to teleport some distance from a t
 
 		for(var/i=1,i<=3,i++)	//we get 3 attempts to pick a suitable name.
 			//newname = tgui_input_text(src,"You are \a [role]. Would you like to change your name to something else?", "Name change",oldname)
-			newname = input(src,"You are \a [role]. Would you like to change your name to something else?", "Name change",oldname)
+			newname = tgui_input_text(src,"You are \a [role]. Would you like to change your name to something else?", "Name change",oldname, MAX_NAME_LEN)
 			if((world.time-time_passed)>3000)
 				return	//took too long
 			newname = sanitizeName(newname, ,allow_numbers)	//returns null if the name doesn't meet some basic requirements. Tidies up a few other things like bad-characters.
@@ -1157,8 +1157,15 @@ var/global/list/common_tools = list(
 
 // check if mob is lying down on something we can operate him on.
 // The RNG with table/rollerbeds comes into play in do_surgery() so that fail_step() can be used instead.
-/proc/can_operate(mob/living/carbon/M)
-	return M.lying
+/proc/can_operate(mob/living/carbon/M, mob/living/user)
+	. = M.lying
+
+	if(user && M == user && user.allow_self_surgery && user.a_intent == I_HELP)	// You can, technically, always operate on yourself after standing still. Inadvised, but you can.
+
+		if(!M.isSynthetic())
+			. = TRUE
+
+	return .
 
 // Returns an instance of a valid surgery surface.
 /mob/living/proc/get_surgery_surface()
@@ -1278,7 +1285,7 @@ var/mob/dview/dview_mob = new
 		color = origin.color
 		set_light(origin.light_range, origin.light_power, origin.light_color)
 
-/mob/dview/Initialize()
+/mob/dview/Initialize(mapload)
 	. = ..()
 	// We don't want to be in any mob lists; we're a dummy not a mob.
 	mob_list -= src
@@ -1528,6 +1535,10 @@ var/mob/dview/dview_mob = new
 	if(istype(D))
 		return !QDELETED(D)
 	return FALSE
+
+/// No op
+/proc/pass(...)
+	return
 
 //gives us the stack trace from CRASH() without ending the current proc.
 /proc/stack_trace(msg)

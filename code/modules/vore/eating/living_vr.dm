@@ -187,7 +187,7 @@
 	else if(istype(I,/obj/item/radio/beacon))
 		var/confirm = tgui_alert(user, "[src == user ? "Eat the beacon?" : "Feed the beacon to [src]?"]", "Confirmation", list("Yes!", "Cancel"))
 		if(confirm == "Yes!")
-			var/obj/belly/B = tgui_input_list(user, "Which belly?", "Select A Belly", vore_organs) //ChompEDIT - user, not usr
+			var/obj/belly/B = tgui_input_list(user, "Which belly?", "Select A Belly", vore_organs)
 			if(!istype(B))
 				return TRUE
 			visible_message(span_warning("[user] is trying to stuff a beacon into [src]'s [lowertext(B.name)]!"),
@@ -458,14 +458,14 @@
 		return
 
 	load_character(slotnum)
-	attempt_vr(user.client?.prefs_vr,"load_vore","") //VOREStation Edit
+	attempt_vr(user.client?.prefs_vr,"load_vore","")
 	sanitize_preferences()
 
 	return remember_default
 
 /datum/preferences/proc/return_to_character_slot(mob/user, var/remembered_default)
 	load_character(remembered_default)
-	attempt_vr(user.client?.prefs_vr,"load_vore","") //VOREStation Edit
+	attempt_vr(user.client?.prefs_vr,"load_vore","")
 	sanitize_preferences()
 
 //
@@ -516,7 +516,7 @@
 //
 // Clearly super important. Obviously.
 //
-/mob/living/proc/lick(mob/living/tasted in living_mobs_in_view(1, TRUE)) //CHOMPEdit
+/mob/living/proc/lick(mob/living/tasted in living_mobs_in_view(1, TRUE))
 	set name = "Lick"
 	set category = "IC.Game"
 	set desc = "Lick someone nearby!"
@@ -531,10 +531,10 @@
 	setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 	if(tasted == src) //CHOMPEdit Start
 		visible_message(span_vwarning("[src] licks themself!"),span_notice("You lick yourself. You taste rather like [tasted.get_taste_message()]."),span_infoplain(span_bold("Slurp!")))
-		balloon_alert_visible("Licks themself!", "Tastes like [tasted.get_taste_message()]")
+		balloon_alert_visible("licks themself!", "tastes like [tasted.get_taste_message()]")
 	else
 		visible_message(span_vwarning("[src] licks [tasted]!"),span_notice("You lick [tasted]. They taste rather like [tasted.get_taste_message()]."),span_infoplain(span_bold("Slurp!")))
-		balloon_alert_visible("Licks [tasted]!", "Tastes like [tasted.get_taste_message()]")
+		balloon_alert_visible("licks [tasted]!", "tastes like [tasted.get_taste_message()]")
 		//CHOMPEdit End
 
 
@@ -576,10 +576,10 @@
 	setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 	if(smelled == src) //CHOMPEdit Start
 		visible_message(span_vwarning("[src] smells themself!"),span_notice("You smell yourself. You smell like [smelled.get_smell_message()]."),span_infoplain(span_bold("Sniff!")))
-		balloon_alert_visible("Smells themself!", "Smells like [smelled.get_smell_message()]")
+		balloon_alert_visible("smells themself!", "smells like [smelled.get_smell_message()]")
 	else
 		visible_message(span_vwarning("[src] smells [smelled]!"),span_notice("You smell [smelled]. They smell like [smelled.get_smell_message()]."),span_infoplain(span_bold("Sniff!")))
-		balloon_alert_visible("Smells [smelled]!", "Smells like [smelled.get_smell_message()]")
+		balloon_alert_visible("smells [smelled]!", "smells like [smelled.get_smell_message()]")
 		//CHOMPEdit End
 
 /mob/living/proc/get_smell_message(allow_generic = 1)
@@ -616,7 +616,7 @@
 			s.undo_prey_takeover(TRUE)
 			return
 		var/obj/belly/B = loc
-		var/confirm = tgui_alert(src, "Please feel free to press use this button at any time you are uncomfortable and in a belly. Consent is important.", "Confirmation", list("Okay", "Cancel")) //CHOMPedit
+		var/confirm = tgui_alert(src, "Please feel free to use this button at any time you are uncomfortable and in a belly. Consent is important.", "Confirmation", list("Okay", "Cancel"))
 		if(confirm != "Okay" || loc != B)
 			return
 		//Actual escaping
@@ -628,9 +628,7 @@
 			LAZYSET(SA.prey_excludes, src, world.time)
 		log_and_message_admins("used the OOC escape button to get out of [key_name(B.owner)] ([B.owner ? "<a href='byond://?_src_=holder;[HrefToken()];adminplayerobservecoodjump=1;X=[B.owner.x];Y=[B.owner.y];Z=[B.owner.z]'>JMP</a>" : "null"])", src)
 
-		B.owner.update_fullness() //CHOMPEdit - This is run whenever a belly's contents are changed.
-		if(!ishuman(B.owner))
-			B.owner.update_icons()
+		B.owner.handle_belly_update() //CHOMPEdit - This is run whenever a belly's contents are changed.
 
 	//You're in a dogborg!
 	else if(istype(loc, /obj/item/dogborg/sleeper))
@@ -747,17 +745,17 @@
 /mob/living/proc/eat_held_mob(mob/living/user, mob/living/prey, mob/living/pred)
 	var/belly
 	if(user != pred)
-		belly = tgui_input_list(user, "Choose Belly", "Belly Choice", pred.feedable_bellies())	//CHOMPEdit remove usr
+		belly = tgui_input_list(user, "Choose Belly", "Belly Choice", pred.feedable_bellies())	//CHOMPEdit
 	else
 		belly = pred.vore_selected
 	return perform_the_nom(user, prey, pred, belly)
 
 /mob/living/proc/feed_self_to_grabbed(mob/living/user, mob/living/pred)
-	var/belly = tgui_input_list(user, "Choose Belly", "Belly Choice", pred.feedable_bellies())	//CHOMPEdit - remove usr
+	var/belly = tgui_input_list(user, "Choose Belly", "Belly Choice", pred.feedable_bellies())	//CHOMPEdit
 	return perform_the_nom(user, user, pred, belly)
 
 /mob/living/proc/feed_grabbed_to_other(mob/living/user, mob/living/prey, mob/living/pred)
-	var/belly = tgui_input_list(user, "Choose Belly", "Belly Choice", pred.feedable_bellies())	//CHOMPEdit - remove usr
+	var/belly = tgui_input_list(user, "Choose Belly", "Belly Choice", pred.feedable_bellies())	//CHOMPEdit
 	return perform_the_nom(user, prey, pred, belly)
 
 //
@@ -948,10 +946,8 @@
 //CHOMPEdit End
 
 /mob/living/proc/feed_grabbed_to_self_falling_nom(var/mob/living/user, var/mob/living/prey)
-	// CHOMPAdd Start
 	if(user.is_incorporeal())
 		return FALSE
-	// CHOMPAdd End
 	var/belly = user.vore_selected
 	return perform_the_nom(user, prey, user, belly, delay = 1) //1/10th of a second is probably fine.
 
@@ -959,6 +955,10 @@
 	set name = "Glow (Toggle)"
 	set category = "Abilities.General"
 	set desc = "Toggle your glowing on/off!"
+
+	if(stat || paralysis || weakened || stunned || world.time < last_special)
+		to_chat(src, span_warning("You can't do that in your current state."))
+		return
 
 	//I don't really see a point to any sort of checking here.
 	//If they're passed out, the light won't help them. Same with buckled. Really, I think it's fine to do this whenever.
@@ -973,7 +973,7 @@
 
 	//Again, no real need for a check on this. I'm unsure how it could be somehow abused.
 	//Even if they open the box 900 times, who cares, they get the wrong color and do it again.
-	var/new_color = input(src,"Select a new color","Body Glow",glow_color) as color
+	var/new_color = tgui_color_picker(src,"Select a new color","Body Glow",glow_color)
 	if(new_color)
 		glow_color = new_color
 
@@ -991,6 +991,10 @@
 	set category = "Abilities.Vore"
 	set desc = "Consume held garbage."
 
+	if(stat || paralysis || weakened || stunned || world.time < last_special)
+		to_chat(src, span_warning("You can't do that in your current state."))
+		return
+
 	if(!vore_selected)
 		to_chat(src,span_warning("You either don't have a belly selected, or don't have a belly!"))
 		return
@@ -1000,159 +1004,14 @@
 		to_chat(src, span_notice("You are not holding anything."))
 		return
 
-	if(is_type_in_list(I,item_vore_blacklist) && !adminbus_trash) //If someone has adminbus, they can eat whatever they want.
-		to_chat(src, span_warning("You are not allowed to eat this."))
-		return
-
-	if(!I.trash_eatable) //OOC pref. This /IS/ respected, even if adminbus_trash is enabled
-		to_chat(src, span_warning("You can't eat that so casually!"))
-		return
-
-	if(istype(I, /obj/item/paicard))
-		var/obj/item/paicard/palcard = I
-		var/mob/living/silicon/pai/pocketpal = palcard.pai
-		if(pocketpal && (!pocketpal.devourable))
-			to_chat(src, span_warning("\The [pocketpal] doesn't allow you to eat it."))
+	if(is_type_in_list(I,edible_trash) || adminbus_trash || is_type_in_list(I,edible_tech) && isSynthetic()) // CHOMPEdit adds edible tech for synth
+		if(!I.on_trash_eaten(src)) // shows object's rejection message itself
 			return
-
-	if(istype(I, /obj/item/book))
-		var/obj/item/book/book = I
-		if(book.carved)
-			to_chat(src, span_warning("\The [book] is not worth eating without the filling."))
-			return
-
-	if(is_type_in_list(I,edible_trash) | adminbus_trash || is_type_in_list(I,edible_tech) && isSynthetic()) //chompstation add synth check
-		if(I.hidden_uplink)
-			to_chat(src, span_warning("You really should not be eating this."))
-			message_admins("[key_name(src)] has attempted to ingest an uplink item. ([src ? ADMIN_JMP(src) : "null"])")
-			return
-		if(istype(I,/obj/item/pda))
-			var/obj/item/pda/P = I
-			if(P.owner)
-				var/watching = FALSE
-				for(var/mob/living/carbon/human/H in view(src))
-					if(H.real_name == P.owner && H.client)
-						watching = TRUE
-						break
-				if(!watching)
-					return
-				else
-					visible_message(span_warning("[src] is threatening to make [P] disappear!"))
-					if(P.id)
-						var/confirm = tgui_alert(src, "The PDA you're holding contains a vulnerable ID card. Will you risk it?", "Confirmation", list("Definitely", "Cancel"))
-						if(confirm != "Definitely")
-							return
-					if(!do_after(src, 100, P))
-						return
-					visible_message(span_warning("[src] successfully makes [P] disappear!"))
-			to_chat(src, span_notice("You can taste the sweet flavor of delicious technology."))
-			drop_item()
-			I.forceMove(vore_selected)
-			updateVRPanel()
-			return
-		if(istype(I,/obj/item/clothing/shoes))
-			var/obj/item/clothing/shoes/S = I
-			if(S.holding)
-				to_chat(src, span_warning("There's something inside!"))
-				return
-		if(iscapturecrystal(I))
-			var/obj/item/capture_crystal/C = I
-			if(!C.bound_mob.devourable)
-				to_chat(src, span_warning("That doesn't seem like a good idea. (\The [C.bound_mob]'s prefs don't allow it.)"))
-				return
 		drop_item()
 		I.forceMove(vore_selected)
 		updateVRPanel()
-
 		log_admin("VORE: [src] used Eat Trash to swallow [I].")
-
-		if(istype(I,/obj/item/flashlight/flare) || istype(I,/obj/item/flame/match) || istype(I,/obj/item/storage/box/matches))
-			to_chat(src, span_notice("You can taste the flavor of spicy cardboard."))
-		else if(istype(I,/obj/item/flashlight/glowstick))
-			to_chat(src, span_notice("You found out the glowy juice only tastes like regret."))
-		else if(istype(I,/obj/item/trash/cigbutt))
-			to_chat(src, span_notice("You can taste the flavor of bitter ash. Classy."))
-		else if(istype(I,/obj/item/clothing/mask/smokable))
-			var/obj/item/clothing/mask/smokable/C = I
-			if(C.lit)
-				to_chat(src, span_notice("You can taste the flavor of burning ash. Spicy!"))
-			else
-				to_chat(src, span_notice("You can taste the flavor of aromatic rolling paper and funny looks."))
-		else if(istype(I,/obj/item/paper))
-			to_chat(src, span_notice("You can taste the dry flavor of bureaucracy."))
-		else if(istype(I,/obj/item/book))
-			to_chat(src, span_notice("You can taste the dry flavor of knowledge."))
-		else if(istype(I,/obj/item/dice)) //CHOMPedit: Removed roulette ball because that's not active here.
-			to_chat(src, span_notice("You can taste the bitter flavor of cheating."))
-		else if(istype(I,/obj/item/lipstick))
-			to_chat(src, span_notice("You can taste the flavor of couture and style. Toddler at the make-up bag style."))
-		else if(istype(I,/obj/item/soap))
-			to_chat(src, span_notice("You can taste the bitter flavor of verbal purification."))
-		else if(istype(I,/obj/item/spacecash) || istype(I,/obj/item/storage/wallet))
-			to_chat(src, span_notice("You can taste the flavor of wealth and reckless waste."))
-		else if(istype(I,/obj/item/broken_bottle) || istype(I,/obj/item/material/shard))
-			to_chat(src, span_notice("You can taste the flavor of pain. This can't possibly be healthy for your guts."))
-		else if(istype(I,/obj/item/light))
-			var/obj/item/light/L = I
-			if(L.status == LIGHT_BROKEN)
-				to_chat(src, span_notice("You can taste the flavor of pain. This can't possibly be healthy for your guts."))
-			else
-				to_chat(src, span_notice("You can taste the flavor of really bad ideas."))
-		else if(istype(I,/obj/item/bikehorn/tinytether))
-			to_chat(src, span_notice("You feel a rush of power swallowing such a large, err, tiny structure."))
-		else if(istype(I,/obj/item/mmi/digital/posibrain) || istype(I,/obj/item/aicard))
-			to_chat(src, span_notice("You can taste the sweet flavor of digital friendship. Or maybe it is something else."))
-		else if(istype(I,/obj/item/paicard))
-			to_chat(src, span_notice("You can taste the sweet flavor of digital friendship."))
-			var/obj/item/paicard/ourcard = I
-			if(ourcard.pai && ourcard.pai.client && isbelly(ourcard.loc))
-				var/obj/belly/B = ourcard.loc
-				to_chat(ourcard.pai, span_boldnotice("[B.desc]"))
-		else if(istype(I,/obj/item/reagent_containers/food))
-			var/obj/item/reagent_containers/food/F = I
-			if(!F.reagents.total_volume)
-				to_chat(src, span_notice("You can taste the flavor of garbage and leftovers. Delicious?"))
-			else
-				to_chat(src, span_notice("You can taste the flavor of gluttonous waste of food."))
-		else if (istype(I,/obj/item/clothing/accessory/collar))
-			to_chat(src, span_notice("You can taste the submissiveness in the wearer of [I]!"))
-		else if(iscapturecrystal(I))
-			var/obj/item/capture_crystal/C = I
-			if(C.bound_mob && (C.bound_mob in C.contents))
-				if(isbelly(C.loc))
-					//var/obj/belly/B = C.loc //CHOMPedit
-					//to_chat(C.bound_mob, span_notice("Outside of your crystal, you can see; " + span_notice("[B.desc]"))) //CHOMPedit: moved to modular_chomp capture_crystal.dm
-					to_chat(src, span_notice("You can taste the the power of command."))
-		// CHOMPedit begin
-		else if(istype(I,/obj/item/starcaster_news))
-			to_chat(src, span_notice("You can taste the dry flavor of digital garbage, oh wait its just the news."))
-		else if(istype(I,/obj/item/newspaper))
-			to_chat(src, span_notice("You can taste the dry flavor of garbage, oh wait its just the news."))
-		else if (istype(I,/obj/item/cell))
-			visible_message(span_warning("[src] sates their electric appetite with a [I]!"))
-			to_chat(src, span_notice("You can taste the spicy flavor of electrolytes, yum."))
-		else if (istype(I,/obj/item/walkpod))
-			visible_message(span_warning("[src] sates their musical appetite with a [I]!"))
-			to_chat(src, span_notice("You can taste the jazzy flavor of music."))
-		else if (istype(I,/obj/item/mail/junkmail))
-			visible_message(span_warning("[src] devours the [I]!"))
-			to_chat(src, span_notice("You can taste the flavor of the galactic postal service."))
-		else if (istype(I,/obj/item/gun/energy/sizegun))
-			visible_message(span_warning("[src] devours the [I]!"))
-			to_chat(src, span_notice("You didn't read the warning label, did you?"))
-		else if (istype(I,/obj/item/slow_sizegun))
-			visible_message(span_warning("[src] devours the [I]!"))
-			to_chat(src, span_notice("You taste the flavor of sunday driver bluespace."))
-		else if (istype(I,/obj/item/laser_pointer))
-			visible_message(span_warning("[src] devours the [I]!"))
-			to_chat(src, span_notice("You taste the flavor of a laser."))
-		else if (istype(I,/obj/item/canvas))
-			visible_message(span_warning("[src] devours the [I]!"))
-			to_chat(src, span_notice("You taste the flavor of priceless artwork."))
-		//CHOMPedit end
-
-		else
-			to_chat(src, span_notice("You can taste the flavor of garbage. Delicious."))
+		I.after_trash_eaten(src)
 		visible_message(span_vwarning("[src] demonstrates the voracious capabilities of their [lowertext(vore_selected.name)] by making [I] disappear!")) //CHOMPedit
 		return
 	to_chat(src, span_notice("This snack is too powerful to go down that easily.")) //CHOMPEdit
@@ -1322,7 +1181,7 @@
 	if(custom_link)
 		. += "Custom link: " + span_linkify("[custom_link]")
 	if(ooc_notes)
-		. += "OOC Notes: <a href='byond://?src=\ref[src];ooc_notes=1'>\[View\]</a> - <a href='byond://?src=\ref[src];print_ooc_notes_to_chat=1'>\[Print\]</a>"
+		. += "OOC Notes: <a href='byond://?src=\ref[src];ooc_notes=1'>\[View\]</a> - <a href='byond://?src=\ref[src];print_ooc_notes_chat=1'>\[Print\]</a>"
 	. += "<a href='byond://?src=\ref[src];vore_prefs=1'>\[Mechanical Vore Preferences\]</a>"
 
 
@@ -1330,31 +1189,37 @@
 	if(href_list["vore_prefs"])
 		display_voreprefs(usr)
 	if(href_list["ooc_notes"])
-		src.Examine_OOC()
+		do_examine_ooc(usr)
 	if(href_list["edit_ooc_notes"])
 		if(usr == src)
-			set_metainfo_panel(usr) //ChompEDIT - usr arg
+			set_metainfo_panel(usr)
 	if(href_list["edit_ooc_note_likes"])
 		if(usr == src)
-			set_metainfo_likes(usr) //ChompEDIT - usr arg
+			set_metainfo_likes(usr)
 	if(href_list["edit_ooc_note_dislikes"])
 		if(usr == src)
-			set_metainfo_dislikes(usr) //ChompEDIT - usr arg
+			set_metainfo_dislikes(usr)
 	if(href_list["save_ooc_panel"])
 		if(usr == src)
-			save_ooc_panel(usr) //ChompEDIT - usr arg
-	if(href_list["print_ooc_notes_to_chat"])
-		print_ooc_notes_to_chat(usr) //ChompEDIT - usr arg
+			save_ooc_panel(usr)
+	if(href_list["print_ooc_notes_chat"])
+		print_ooc_notes_chat(usr)
 	//CHOMPEdit Start
 	if(href_list["edit_ooc_note_favs"])
 		if(usr == src)
-			set_metainfo_favs(usr) //ChompEDIT - usr arg
+			set_metainfo_favs(usr)
 	if(href_list["edit_ooc_note_maybes"])
 		if(usr == src)
-			set_metainfo_maybes(usr) //ChompEDIT - usr arg
+			set_metainfo_maybes(usr)
 	if(href_list["set_metainfo_ooc_style"])
-		set_metainfo_ooc_style(usr) //ChompEDIT - usr arg
+		set_metainfo_ooc_style(usr)
 	//CHOMPEdit End
+	if(href_list["save_private_notes"])
+		if(usr == src)
+			save_private_notes(usr)
+	if(href_list["edit_private_notes"])
+		if(usr == src)
+			set_metainfo_private_notes(usr)
 	return ..()
 
 /mob/living/proc/display_voreprefs(mob/user)	//Called by Topic() calls on instances of /mob/living (and subtypes) containing vore_prefs as an argument
@@ -1433,12 +1298,12 @@
 	if(result == "Open Panel")
 		var/mob/living/user = usr
 		if(!user)
-			to_chat(usr,span_notice("Mob undefined: [user]"))
+			to_chat(user,span_notice("Mob undefined: [user]"))
 			return FALSE
 
 		var/datum/vore_look/export_panel/exportPanel
 		if(!exportPanel)
-			exportPanel = new(usr)
+			exportPanel = new(user)
 
 		if(!exportPanel)
 			to_chat(user,span_notice("Export panel undefined: [exportPanel]"))

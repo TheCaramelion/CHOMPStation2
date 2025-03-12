@@ -36,6 +36,7 @@
 
 /mob/proc/AddDisease(datum/disease/D, respect_carrier = FALSE)
 	var/datum/disease/DD = new D.type(1, D, 0)
+	DD.start_cure_timer()
 	viruses += DD
 	DD.affected_mob = src
 	active_diseases += DD
@@ -48,11 +49,12 @@
 			continue
 		if(istype(DD.vars[V],/list))
 			var/list/L = D.vars[V]
-			DD.vars[V] = L.Copy()
+			if(L)
+				DD.vars[V] = L.Copy()
 		else
 			DD.vars[V] = D.vars[V]
 
-	log_admin("[key_name(usr)] has contracted the virus \"[DD]\"")
+	log_admin("[key_name(src)] has contracted the virus \"[DD]\"")
 
 /mob/living/carbon/ContractDisease(datum/disease/D)
 	if(!CanContractDisease(D))
@@ -83,14 +85,7 @@
 	if(nutrition > 300 && prob(nutrition/50))
 		return
 
-	var/list/zone_weights = list(
-		1 = head_ch,
-		2 = body_ch,
-		3 = hands_ch,
-		4 = feet_ch
-		)
-
-	var/target_zone = pick(zone_weights)
+	var/target_zone = pick(head_ch;1,body_ch;2,hands_ch;3,feet_ch;4)
 
 	if(ishuman(src))
 		var/mob/living/carbon/human/H = src
@@ -174,7 +169,7 @@
 	set name = "Release Virus"
 	set desc = "Release a pre-set virus."
 
-	if(!is_admin())
+	if(!check_rights(R_FUN|R_EVENT))
 		return FALSE
 
 	var/disease = tgui_input_list(usr, "Choose virus", "Viruses", subtypesof(/datum/disease), subtypesof(/datum/disease))

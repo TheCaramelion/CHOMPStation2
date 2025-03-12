@@ -1,8 +1,8 @@
-import { BooleanLike } from 'common/react';
+import { Box, Collapsible, Section } from 'tgui-core/components';
+import type { BooleanLike } from 'tgui-core/react';
 
-import { Box, Collapsible, Section } from '../../components';
 import { digestModeToColor, digestModeToPreyMode } from './constants';
-import { insideData } from './types';
+import type { insideData } from './types';
 import { VoreContentsPanel } from './VoreContentsPanel';
 
 export const VoreInsidePanel = (props: {

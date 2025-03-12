@@ -39,7 +39,7 @@
 		t1 += "Access requirement is set to "
 		t1 += one_access ? "<a style='color: green' href='byond://?src=\ref[src];one_access=1'>ONE</a><hr>" : "<a style='color: red' href='byond://?src=\ref[src];one_access=1'>ALL</a><hr>"
 
-		t1 += conf_access == null ? "<font color=red>All</font><br>" : "<a href='byond://?src=\ref[src];access=all'>All</a><br>"
+		t1 += conf_access == null ? span_red("All") + "<br>" : "<a href='byond://?src=\ref[src];access=all'>All</a><br>"
 
 		t1 += "<br>"
 
@@ -56,7 +56,7 @@
 
 	t1 += text("<p><a href='byond://?src=\ref[];close=1'>Close</a></p>\n", src)
 
-	user << browse(t1, "window=airlock_electronics")
+	user << browse("<html>[t1]</html>", "window=airlock_electronics")
 	onclose(user, "airlock")
 
 /obj/item/airlock_electronics/Topic(href, href_list)

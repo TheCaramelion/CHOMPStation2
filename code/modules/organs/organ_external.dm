@@ -95,6 +95,9 @@
 		parent.children -= src
 		parent = null
 
+	if(wounds)
+		QDEL_LIST(wounds)
+
 	if(children)
 		for(var/obj/item/organ/external/C in children)
 			children -= C
@@ -166,9 +169,9 @@
 		return //no eating the limb until everything's been removed
 	return ..()
 
-/obj/item/organ/external/examine()
+/obj/item/organ/external/examine(mob/user)
 	. = ..()
-	if(in_range(usr, src) || isobserver(usr))
+	if(in_range(user, src) || isobserver(user))
 		for(var/obj/item/I in contents)
 			if(istype(I, /obj/item/organ))
 				continue
@@ -245,13 +248,16 @@
 /obj/item/organ/external/update_health()
 	damage = min(max_damage, (brute_dam + burn_dam))
 
-/obj/item/organ/external/New(var/mob/living/carbon/holder)
-	..(holder, 0)
+/obj/item/organ/external/Initialize(mapload, var/internal)
+	..(mapload, 0)
 	if(istype(owner))
 		replaced(owner)
 		sync_colour_to_human(owner)
-	spawn(1)
-		get_icon()
+	return INITIALIZE_HINT_LATELOAD
+
+/obj/item/organ/external/LateInitialize()
+	. = ..()
+	get_icon()
 
 /obj/item/organ/external/replaced(var/mob/living/carbon/human/target)
 	owner = target
@@ -592,7 +598,8 @@ This function completely restores a damaged organ to perfect condition.
 	if((damage > 15) && (type != BURN) && (local_damage > 30) && prob(damage) && (robotic < ORGAN_ROBOT) && !(species.flags & NO_BLOOD))
 		var/datum/wound/internal_bleeding/I = new (min(damage - 15, 15))
 		wounds += I
-		owner.custom_pain("You feel something rip in your [name]!", 50)
+		owner.custom_pain("Something ruptures inside of your [name]. You get the feeling you'll need more than just a bandage to fix it.", 15, TRUE)
+		to_chat(owner, span_bolddanger(span_massive("OH GOD! Something just tore in your [name]!"))) //Let's make this CLEAR that an artery was severed. This was vague enough that most players didn't realize they had IB.
 
 	if((damage > 5 || damage + burn_dam >= 15) && type == BURN && (robotic < ORGAN_ROBOT) && !(species.flags & NO_BLOOD))
 		var/fluid_loss = 0.1 * (damage/(owner.getMaxHealth() - CONFIG_GET(number/health_threshold_dead))) * owner.species.blood_volume*(1 - owner.species.blood_level_fatal) //CHOMPedit reduce fluid loss 4-fold so lasers dont suck your blood
@@ -796,19 +803,6 @@ Note that amputating the affected organ does in fact remove the infection from t
 			wounds -= W
 			continue
 			// let the GC handle the deletion of the wound
-
-		// Internal wounds get worse over time. Low temperatures (cryo) stop them.
-		if(W.internal && owner.bodytemperature >= 170)
-			var/bicardose = owner.reagents.get_reagent_amount(REAGENT_ID_BICARIDINE)
-			var/inaprovaline = owner.reagents.get_reagent_amount(REAGENT_ID_INAPROVALINE)
-			var/myeldose = owner.reagents.get_reagent_amount(REAGENT_ID_MYELAMINE)
-			if(!(W.can_autoheal() || (bicardose && inaprovaline) || myeldose))	//bicaridine and inaprovaline stop internal wounds from growing bigger with time, unless it is so small that it is already healing
-				W.open_wound(0.1 * wound_update_accuracy)
-
-			owner.remove_blood( wound_update_accuracy * W.damage/40) //line should possibly be moved to handle_blood, so all the bleeding stuff is in one place.
-			if(prob(1 * wound_update_accuracy))
-				owner.custom_pain("You feel a stabbing pain in your [name]!", 50)
-
 		// slow healing
 		var/heal_amt = 0
 
@@ -952,6 +946,16 @@ Note that amputating the affected organ does in fact remove the infection from t
 				span_bolddanger("Your [src.name] explodes[gore]!"),\
 				span_danger("You hear the [gore_sound]."))
 
+		if(DROPLIMB_ACID)
+			if(cannot_gib)
+				return
+			var/gore = "[(robotic >= ORGAN_ROBOT) ? "": " in gush of gore"]"
+			var/gore_sound = "[(status >= ORGAN_ROBOT) ? "sizzling sound of melting metal" : "sickening drips of melting flesh"]"
+			owner.visible_message(
+				span_danger("\The [owner]'s [src.name] sloughs off[gore]!"),\
+				span_bolddanger("<b>Your [src.name] sloughs off of your body[gore]!</b>"),\
+				span_danger("You hear the [gore_sound]."))
+
 	var/mob/living/carbon/human/victim = owner //Keep a reference for post-removed().
 	var/obj/item/organ/external/parent_organ = parent
 
@@ -1029,6 +1033,14 @@ Note that amputating the affected organ does in fact remove the infection from t
 				I.throw_at(get_edge_target_turf(src,pick(alldirs)),rand(1,3),5)
 
 			qdel(src)
+
+		if(DROPLIMB_ACID)
+			appearance_flags &= ~PIXEL_SCALE
+			compile_icon()
+			add_blood(victim)
+			var/matrix/M = matrix()
+			M.Turn(rand(180))
+			transform = M
 
 	if(victim.l_hand)
 		if(istype(victim.l_hand,/obj/item/material/twohanded)) //if they're holding a two-handed weapon, drop it now they've lost a hand

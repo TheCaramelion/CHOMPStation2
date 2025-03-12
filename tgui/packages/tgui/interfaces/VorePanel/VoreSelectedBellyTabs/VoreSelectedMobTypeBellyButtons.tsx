@@ -1,8 +1,8 @@
-import { capitalize } from 'common/string';
 import { useBackend } from 'tgui/backend';
-import { Button, LabeledList, Section } from 'tgui/components';
+import { Button, LabeledList, Section } from 'tgui-core/components';
+import { capitalize } from 'tgui-core/string';
 
-import { hostMob, selectedData } from '../types';
+import type { hostMob, selectedData } from '../types';
 
 export const VoreSelectedMobTypeBellyButtons = (props: {
   belly: selectedData;

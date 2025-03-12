@@ -119,8 +119,6 @@
 
 	var/global/list/abilities = list()
 
-	var/monochromatic = FALSE //IGNORE ME
-
 	var/blob_appearance = "puddle1"
 	var/blob_color_1 = "#363636"
 	var/blob_color_2 = "#ba3636"
@@ -132,7 +130,6 @@
 		"dragon_hornsPointy" = "#FFFFFF",
 		"dragon_eyesNormal" = "#FFFFFF"
 	)
-	// CHOMPEdit Start
 	var/list/dullahan_overlays = list(
 		"dullahanbody" = "#FFFFFF",
 		"dullahanhead" = "#FFFFFF",
@@ -140,8 +137,8 @@
 		"dullahaneyes" = "#FFFFFF",
 		"dullahandecals" = "#FFFFFF",
 		"dullahanextended" = "#FFFFFF"
+		// loads the icons from the DMI file in that order on spawn. they are overlay 1-6.
 	)
-	// CHOMPEdit End
 	var/pseudodead = 0
 
 /datum/species/protean/New()

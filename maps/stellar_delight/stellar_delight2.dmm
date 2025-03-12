@@ -8781,7 +8781,6 @@
 /area/engineering/engine_room)
 "sZ" = (
 /obj/structure/closet/crate{
-	icon_state = "crate";
 	name = "Grenade Crate"
 	},
 /obj/item/grenade/chem_grenade,
@@ -9108,9 +9107,6 @@
 /area/stellardelight/deck2/port)
 "tM" = (
 /obj/structure/table/rack,
-/obj/structure/bed/chair/wheelchair{
-	dir = 4
-	},
 /obj/structure/bed/chair/wheelchair{
 	dir = 4
 	},

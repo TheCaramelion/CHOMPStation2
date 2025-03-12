@@ -15,7 +15,7 @@
 	// The trap item will be triggered in some manner when detonating. Default only checks for grenades.
 	var/obj/item/trap = null
 
-/obj/effect/mine/Initialize()
+/obj/effect/mine/Initialize(mapload)
 	icon_state = "landmine_armed"
 	wires = new(src)
 	. = ..()
@@ -139,7 +139,9 @@
 		M.radiation += 50
 		randmutb(M)
 		domutcheck(M,null)
+		M.UpdateAppearance()
 	visible_message("\The [src.name] flashes violently before disintegrating!")
+	SSmotiontracker.ping(src,100)
 	spawn(0)
 		qdel(s)
 		qdel(src)
@@ -157,6 +159,7 @@
 	if(istype(M))
 		M.Stun(30)
 	visible_message("\The [src.name] flashes violently before disintegrating!")
+	SSmotiontracker.ping(src,100)
 	spawn(0)
 		qdel(s)
 		qdel(src)
@@ -172,6 +175,7 @@
 		if(!target.blocks_air)
 			target.assume_gas(GAS_N2O, 30)
 	visible_message("\The [src.name] detonates!")
+	SSmotiontracker.ping(src,100)
 	spawn(0)
 		qdel(src)
 
@@ -187,6 +191,7 @@
 			target.assume_gas(GAS_PHORON, 30)
 			target.hotspot_expose(1000, CELL_VOLUME)
 	visible_message("\The [src.name] detonates!")
+	SSmotiontracker.ping(src,100)
 	spawn(0)
 		qdel(src)
 
@@ -228,6 +233,7 @@
 		return
 	src.fragmentate(O, 20, 7, list(/obj/item/projectile/bullet/pellet/fragment)) //only 20 weak fragments because you're stepping directly on it
 	visible_message("\The [src.name] detonates!")
+	SSmotiontracker.ping(src,100)
 	spawn(0)
 		qdel(s)
 		qdel(src)
@@ -257,6 +263,7 @@
 	s.set_up(3, 1, src)
 	s.start()
 	visible_message("\The [src.name] flashes violently before disintegrating!")
+	SSmotiontracker.ping(src,100)
 	empulse(loc, 2, 4, 7, 10, 1) // As strong as an EMP grenade
 	spawn(0)
 		qdel(src)
@@ -278,6 +285,7 @@
 		M.adjust_fire_stacks(5)
 		M.fire_act()
 	visible_message("\The [src.name] bursts into flames!")
+	SSmotiontracker.ping(src,100)
 	spawn(0)
 		qdel(src)
 
@@ -299,6 +307,7 @@
 	else
 		explosion(loc, 0, 0, 2, 2)
 		visible_message("\The [src.name] detonates!")
+	SSmotiontracker.ping(src,100)
 
 	qdel(s)
 	qdel(src)

@@ -527,7 +527,7 @@ var/list/possible_cable_coil_colours = list(
 	uses_charge = 1
 	charge_costs = list(1)
 
-/obj/item/stack/cable_coil/Initialize(ml, length = MAXCOIL, var/param_color = null)
+/obj/item/stack/cable_coil/Initialize(mapload, length = MAXCOIL, var/param_color = null)
 	. = ..()
 	amount = length
 	if (param_color) // It should be red by default, so only recolor it if parameter was specified.
@@ -615,16 +615,16 @@ var/list/possible_cable_coil_colours = list(
 	var/mob/M = usr
 
 	if(ishuman(M) && !M.restrained() && !M.stat && !M.paralysis && ! M.stunned)
-		if(!istype(usr.loc,/turf)) return
+		if(!istype(M.loc,/turf)) return
 		if(src.amount <= 14)
-			to_chat(usr, span_warning("You need at least 15 lengths to make restraints!"))
+			to_chat(M, span_warning("You need at least 15 lengths to make restraints!"))
 			return
-		var/obj/item/handcuffs/cable/B = new /obj/item/handcuffs/cable(usr.loc)
+		var/obj/item/handcuffs/cable/B = new /obj/item/handcuffs/cable(M.loc)
 		B.color = color
-		to_chat(usr, span_notice("You wind some cable together to make some restraints."))
+		to_chat(M, span_notice("You wind some cable together to make some restraints."))
 		src.use(15)
 	else
-		to_chat(usr, span_notice("You cannot do that."))
+		to_chat(M, span_notice("You cannot do that."))
 
 /obj/item/stack/cable_coil/cyborg/verb/set_colour()
 	set name = "Change Colour"
@@ -824,7 +824,7 @@ var/list/possible_cable_coil_colours = list(
 /obj/item/stack/cable_coil/cut
 	item_state = "coil2"
 
-/obj/item/stack/cable_coil/cut/Initialize(ml)
+/obj/item/stack/cable_coil/cut/Initialize(mapload)
 	. = ..()
 	amount = rand(1,2)
 	pixel_x = rand(-2,2)
@@ -904,12 +904,12 @@ var/list/possible_cable_coil_colours = list(
 	stacktype = /obj/item/stack/cable_coil
 	color = COLOR_BROWN
 
-/obj/item/stack/cable_coil/random/Initialize()
+/obj/item/stack/cable_coil/random/Initialize(mapload)
 	stacktype = /obj/item/stack/cable_coil
 	color = pick(COLOR_RED, COLOR_BLUE, COLOR_LIME, COLOR_WHITE, COLOR_PINK, COLOR_YELLOW, COLOR_CYAN, COLOR_SILVER, COLOR_GRAY, COLOR_BLACK, COLOR_MAROON, COLOR_OLIVE, COLOR_LIME, COLOR_TEAL, COLOR_NAVY, COLOR_PURPLE, COLOR_BEIGE, COLOR_BROWN)
 	. = ..()
 
-/obj/item/stack/cable_coil/random_belt/Initialize()
+/obj/item/stack/cable_coil/random_belt/Initialize(mapload)
 	stacktype = /obj/item/stack/cable_coil
 	color = pick(COLOR_RED, COLOR_YELLOW, COLOR_ORANGE)
 	amount = 30
@@ -952,7 +952,7 @@ var/list/possible_cable_coil_colours = list(
 	stacktype = null
 	toolspeed = 0.25
 
-/obj/item/stack/cable_coil/alien/Initialize(ml, length = MAXCOIL, var/param_color = null)		//There has to be a better way to do this.
+/obj/item/stack/cable_coil/alien/Initialize(mapload, length = MAXCOIL, var/param_color = null)		//There has to be a better way to do this.
 	. = ..()
 	if(embed_chance == -1)		//From /obj/item, don't want to do what the normal cable_coil does
 		if(sharp)

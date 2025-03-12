@@ -1,8 +1,9 @@
-import { useBackend } from '../../backend';
-import { Box, Button, LabeledList, Section } from '../../components';
+import { useBackend } from 'tgui/backend';
+import { Box, Button, LabeledList, Section } from 'tgui-core/components';
+
 import { modalOpen } from '../../interfaces/common/ComplexModal';
 import { doEdit } from '../GeneralRecords/functions';
-import { Data } from './types';
+import type { Data } from './types';
 
 export const SecurityRecordsViewSecurity = (props) => {
   const { act, data } = useBackend<Data>();

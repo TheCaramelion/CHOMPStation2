@@ -28,7 +28,7 @@
 		to_chat(C, span_warning("You must have a tighter grip to bite this creature."))
 		return
 
-	var/choice = input(src, "What do you wish to inject?") as null|anything in list(REAGENT_APHRODISIAC, "Numbing", "Paralyzing")
+	var/choice = tgui_input_list(src, "What do you wish to inject?", "Reagent", list(REAGENT_APHRODISIAC, "Numbing", "Paralyzing"))
 
 	last_special = world.time + 600
 
@@ -41,16 +41,16 @@
 		if(choice == REAGENT_APHRODISIAC)
 			src.show_message(span_warning("You sink your fangs into [T] and inject your aphrodisiac!"))
 			src.visible_message(span_red("[src] sinks their fangs into [T]!"))
-			T.bloodstr.add_reagent("succubi_aphrodisiac",100)
+			T.bloodstr.add_reagent(REAGENT_ID_APHRODIAC_FLUID,100)
 			return 0
 		else if(choice == "Numbing")
 			src.show_message(span_warning("You sink your fangs into [T] and inject your poison!"))
 			src.visible_message(span_red("[src] sinks their fangs into [T]!"))
-			T.bloodstr.add_reagent("numbing_enzyme",20) //Poisons should work when more units are injected
+			T.bloodstr.add_reagent(REAGENT_ID_NUMBING_FLUID,20) //Poisons should work when more units are injected
 		else if(choice == "Paralyzing")
 			src.show_message(span_warning("You sink your fangs into [T] and inject your poison!"))
 			src.visible_message(span_red("[src] sinks their fangs into [T]!"))
-			T.bloodstr.add_reagent("succubi_paralize",20) //Poisons should work when more units are injected
+			T.bloodstr.add_reagent(REAGENT_ID_PARALYZE_FLUID,20) //Poisons should work when more units are injected
 		else
 			return //Should never happen
 
@@ -65,7 +65,7 @@ mob/living/carbon/proc/charmed() //TODO
 
 /datum/reagent/succubi_aphrodisiac
 	name = REAGENT_APHRODISIAC
-	id = "succubi_aphrodisiac"
+	id = REAGENT_ID_APHRODIAC_FLUID
 	description = "A unknown liquid, it smells sweet"
 	metabolism = REM * 0.8
 	color = "#8A0829"
@@ -79,8 +79,8 @@ mob/living/carbon/proc/charmed() //TODO
 	return
 
 /datum/reagent/succubi_numbing //Using numbing_enzyme instead.
-	name = "Numbing Fluid"
-	id = "succubi_numbing"
+	name = REAGENT_NUMBING_FLUID
+	id = REAGENT_ID_NUMBING_FLUID
 	description = "A unknown liquid, it doesn't smell"
 	metabolism = REM * 0.5
 	color = "#41029B"
@@ -97,8 +97,8 @@ mob/living/carbon/proc/charmed() //TODO
 	return
 
 /datum/reagent/succubi_paralize
-	name = "Paralyzing Fluid"
-	id = "succubi_paralize"
+	name = REAGENT_PARALYZE_FLUID
+	id = REAGENT_ID_PARALYZE_FLUID
 	description = "A unknown liquid, it doesn't smell"
 	metabolism= REM * 0.5
 	color = "#41029B"
@@ -127,7 +127,7 @@ var/eggs = 0
 	if(last_special > world.time)
 		return
 
-	var/choice = input(src, "What do you want to do?") as null|anything in list("Make a Egg", "lay your Eggs")
+	var/choice = tgui_input_list(src, "What do you want to do?", "Egg Option", list("Make a Egg", "lay your Eggs"))
 	last_special = world.time + 600
 
 	if(!choice)
@@ -182,7 +182,7 @@ var/eggs = 0
 	var/list/victims = list()
 	for(var/mob/living/carbon/C in oview(1))
 		victims += C
-	var/mob/living/carbon/T = input(src, "Who will we sting?") as null|anything in victims
+	var/mob/living/carbon/T = tgui_input_list(src, "Who will we sting?", "Target", victims)
 
 	if(!T)
 		return

@@ -1,4 +1,3 @@
-import { round, toFixed } from 'common/math';
 import { useBackend } from 'tgui/backend';
 import {
   Box,
@@ -7,8 +6,9 @@ import {
   NumberInput,
   Section,
 } from 'tgui-core/components';
+import { round, toFixed } from 'tgui-core/math';
 
-import { PanelOpenData } from './types';
+import type { PanelOpenData } from './types';
 
 export const PanelOpen = (props) => {
   const { act, data } = useBackend<PanelOpenData>();

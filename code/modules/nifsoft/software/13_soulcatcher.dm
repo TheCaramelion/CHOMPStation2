@@ -73,52 +73,77 @@
 /datum/nifsoft/soulcatcher/proc/notify_into(var/message)
 	var/sound = nif.good_sound
 
+	message = " " + span_bold("Soulcatcher") + " displays, \"" + span_notice(span_nif("[message]")) + "\""
+
 	to_chat(nif.human,
 			type = MESSAGE_TYPE_NIF,
-			html = span_nif(span_bold("\[[icon2html(nif.big_icon, nif.human)]NIF\]") + " " + span_bold("Soulcatcher") + " displays, \"" + span_notice(span_nif("[message]")) + "\""))
+			html = span_nif(span_bold("\[[icon2html(nif.big_icon, nif.human)]NIF\]") + message))
 	nif.human << sound
 
 	for(var/mob/living/carbon/brain/caught_soul/CS as anything in brainmobs)
 		to_chat(CS,
 				type = MESSAGE_TYPE_NIF,
-				html = span_nif(span_bold("\[[icon2html(nif.big_icon, CS.client)]NIF\]") + " " + span_bold("Soulcatcher") + " displays, \"" + span_notice(span_nif("[message]")) + "\""))
+				html = span_nif(span_bold("\[[icon2html(nif.big_icon, CS.client)]NIF\]") + message))
 		CS << sound
 
-/datum/nifsoft/soulcatcher/proc/say_into(var/message, var/mob/living/sender, var/mob/eyeobj)
+/datum/nifsoft/soulcatcher/proc/say_into(var/message, var/mob/living/sender, var/mob/eyeobj, var/whisper)
 	var/sender_name = eyeobj ? eyeobj.name : sender.name
 
 	//AR Projecting
 	if(eyeobj)
-		sender.eyeobj.visible_message(span_game(span_say(span_bold("[sender_name]") + " says, \"[message]\"")))
+		var/speak_verb = "says"
+		message = span_game(span_say(span_bold("[sender_name]") + " [speak_verb], \"[message]\""))
+		if(whisper)
+			speak_verb = "whispers"
+			sender.eyeobj.visible_message(span_italics(message), range = 1)
+		else
+			sender.eyeobj.visible_message(message)
 
 	//Not AR Projecting
 	else
+		var/speak_verb = "speaks"
+		message = " " + span_bold("[sender_name]") + " [speak_verb], \"[message]\""
 		to_chat(nif.human,
 				type = MESSAGE_TYPE_NIF,
-				html = span_nif(span_bold("\[[icon2html(nif.big_icon, nif.human.client)]NIF\]") + " " + span_bold("[sender_name]") + " speaks, \"[message]\""))
-		for(var/mob/living/carbon/brain/caught_soul/CS as anything in brainmobs)
-			to_chat(CS,
+				html = span_nif(span_bold("\[[icon2html(nif.big_icon, nif.human.client)]NIF\]") + message))
+		if(whisper)
+			speak_verb = "whispers"
+			to_chat(sender,
 					type = MESSAGE_TYPE_NIF,
-					html = span_nif(span_bold("\[[icon2html(nif.big_icon, CS.client)]NIF\]") + " " + span_bold("[sender_name]") + " speaks, \"[message]\""))
+					html = span_nif(span_bold("\[[icon2html(nif.big_icon, sender.client)]NIF\]") + span_italics(message)))
+		else
+			for(var/mob/living/carbon/brain/caught_soul/CS as anything in brainmobs)
+				to_chat(CS,
+						type = MESSAGE_TYPE_NIF,
+						html = span_nif(span_bold("\[[icon2html(nif.big_icon, CS.client)]NIF\]") + message))
 
 	log_nsay(message,nif.human.real_name,sender)
 
-/datum/nifsoft/soulcatcher/proc/emote_into(var/message, var/mob/living/sender, var/mob/eyeobj)
+/datum/nifsoft/soulcatcher/proc/emote_into(var/message, var/mob/living/sender, var/mob/eyeobj, var/whisper)
 	var/sender_name = eyeobj ? eyeobj.name : sender.name
 
 	//AR Projecting
 	if(eyeobj)
-		sender.eyeobj.visible_message(span_emote("[sender_name] [message]"))
+		var/range = world.view
+		if(whisper)
+			range = 1
+		sender.eyeobj.visible_message(span_emote("[sender_name] [message]"), range = range)
 
 	//Not AR Projecting
 	else
+		message = " " + span_bold("[sender_name]") + " [message]"
 		to_chat(nif.human,
 				type = MESSAGE_TYPE_NIF,
-				html = span_nif(span_bold("\[[icon2html(nif.big_icon,nif.human.client)]NIF\]") + " " + span_bold("[sender_name]") + " [message]"))
-		for(var/mob/living/carbon/brain/caught_soul/CS as anything in brainmobs)
-			to_chat(CS,
+				html = span_nif(span_bold("\[[icon2html(nif.big_icon,nif.human.client)]NIF\]") + message))
+		if(whisper)
+			to_chat(sender,
 					type = MESSAGE_TYPE_NIF,
-					html = span_nif(span_bold("\[[icon2html(nif.big_icon,CS.client)]NIF\]") + " " + span_bold("[sender_name]") + " [message]"))
+					html = span_nif(span_bold("\[[icon2html(nif.big_icon,sender.client)]NIF\]") + span_italics(message)))
+		else
+			for(var/mob/living/carbon/brain/caught_soul/CS as anything in brainmobs)
+				to_chat(CS,
+						type = MESSAGE_TYPE_NIF,
+						html = span_nif(span_bold("\[[icon2html(nif.big_icon,CS.client)]NIF\]") + message))
 
 	log_nme(message,nif.human.real_name,sender)
 
@@ -240,7 +265,7 @@
 	//If they have these values, apply them
 	if(ishuman(M))
 		var/mob/living/carbon/human/H = M
-		brainmob.dna = H.dna
+		qdel_swap(brainmob.dna, H.dna.Clone())
 		brainmob.ooc_notes = H.ooc_notes
 		brainmob.ooc_notes_likes = H.ooc_notes_likes
 		brainmob.ooc_notes_dislikes = H.ooc_notes_dislikes
@@ -359,16 +384,6 @@
 		return FALSE
 	..()
 
-/mob/living/carbon/brain/caught_soul/me_verb_subtle()
-	set hidden = TRUE
-
-	return FALSE
-
-/mob/living/carbon/brain/caught_soul/whisper()
-	set hidden = TRUE
-
-	return FALSE
-
 /mob/living/carbon/brain/caught_soul/face_atom(var/atom/A)
 	if(eyeobj)
 		return eyeobj.face_atom(A)
@@ -380,6 +395,14 @@
 		return eyeobj.set_dir(direction)
 	else
 		return ..(direction)
+
+/mob/living/carbon/brain/caught_soul/me_verb_subtle(message as message)
+	if(silent) return FALSE
+	soulcatcher.emote_into(message,src,eyeobj,TRUE)
+
+/mob/living/carbon/brain/caught_soul/whisper(message as text)
+	if(silent) return FALSE
+	soulcatcher.say_into(message,src,eyeobj,TRUE)
 
 /mob/living/carbon/brain/caught_soul/say(var/message, var/datum/language/speaking = null, var/whispering = 0)
 	if(silent) return FALSE
@@ -519,7 +542,7 @@
 /mob/proc/nsay(message as text)
 	set name = "NSay"
 	set desc = "Speak into your NIF's Soulcatcher."
-	set category = "IC.NiF"
+	set category = "IC.NIF"
 
 	src.nsay_act(message)
 
@@ -541,7 +564,7 @@
 		to_chat(src,span_warning("You need a loaded mind to use NSay."))
 		return
 	if(!message)
-		message = tgui_input_text(usr, "Type a message to say.","Speak into Soulcatcher")
+		message = tgui_input_text(src, "Type a message to say.","Speak into Soulcatcher")
 	if(message)
 		var/sane_message = sanitize(message)
 		SC.say_into(sane_message,src)
@@ -549,7 +572,7 @@
 /mob/proc/nme(message as message)
 	set name = "NMe"
 	set desc = "Emote into your NIF's Soulcatcher."
-	set category = "IC.NiF"
+	set category = "IC.NIF"
 
 	src.nme_act(message)
 
@@ -572,7 +595,7 @@
 		return
 
 	if(!message)
-		message = tgui_input_text(usr, "Type an action to perform.","Emote into Soulcatcher")
+		message = tgui_input_text(src, "Type an action to perform.","Emote into Soulcatcher")
 	if(message)
 		var/sane_message = sanitize(message)
 		SC.emote_into(sane_message,src)
@@ -627,7 +650,7 @@
 	set category = "Soulcatcher"
 
 	if(!message)
-		message = tgui_input_text(usr, "Type a message to say.","Speak into Soulcatcher")
+		message = tgui_input_text(src, "Type a message to say.","Speak into Soulcatcher")
 	if(message)
 		var/sane_message = sanitize(message)
 		soulcatcher.say_into(sane_message,src,null)
@@ -638,7 +661,7 @@
 	set category = "Soulcatcher"
 
 	if(!message)
-		message = tgui_input_text(usr, "Type an action to perform.","Emote into Soulcatcher")
+		message = tgui_input_text(src, "Type an action to perform.","Emote into Soulcatcher")
 	if(message)
 		var/sane_message = sanitize(message)
 		soulcatcher.emote_into(sane_message,src,null)

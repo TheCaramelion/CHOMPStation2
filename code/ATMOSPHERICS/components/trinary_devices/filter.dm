@@ -39,7 +39,7 @@
 	if(frequency)
 		radio_connection = radio_controller.add_object(src, frequency, RADIO_ATMOSIA)
 
-/obj/machinery/atmospherics/trinary/atmos_filter/Initialize()
+/obj/machinery/atmospherics/trinary/atmos_filter/Initialize(mapload)
 	. = ..()
 
 	switch(filter_type)
@@ -153,7 +153,7 @@
 	// 		<B>Flow rate: </B>[round(last_flow_rate, 0.1)]L/s
 	// 		"}
 
-	// user << browse("<HEAD><TITLE>[src.name] control</TITLE></HEAD><TT>[dat]</TT>", "window=atmos_filter")
+	// user << browse("<html><HEAD><TITLE>[src.name] control</TITLE></HEAD><TT>[dat]</TT></html>", "window=atmos_filter")
 	// onclose(user, "atmos_filter")
 
 

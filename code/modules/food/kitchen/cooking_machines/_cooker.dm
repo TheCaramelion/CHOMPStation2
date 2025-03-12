@@ -61,7 +61,7 @@
 
 	switch(action)
 		if("toggle_power")
-			attempt_toggle_power(usr)
+			attempt_toggle_power(ui.user)
 			return TRUE
 		if("toggle_safety")
 			toggle_safety()
@@ -113,7 +113,7 @@
 	// to_world("Our cooking_power is [cooking_power] and our efficiency is [(cooking_power / optimal_power) * 100].") // Debug lines, uncomment if you need to test.
 	return (cooking_power / optimal_power) * 100
 
-/obj/machinery/appliance/cooker/Initialize()
+/obj/machinery/appliance/cooker/Initialize(mapload)
 	. = ..()
 	loss = (active_power_usage / resistance)*0.5
 	cooking_objs = list()

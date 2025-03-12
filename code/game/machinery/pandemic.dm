@@ -12,6 +12,12 @@
 	var/selected_strain_index = 1
 	var/obj/item/reagent_containers/beaker = null
 
+// PanDEMIC Bottle
+/obj/item/reagent_containers/glass/bottle/vaccine
+	icon_state = "bottle10"
+	possible_transfer_amounts = (list(5, 10, 15))
+	volume = 15
+
 /obj/machinery/computer/pandemic/Initialize(mapload)
 	. = ..()
 	update_icon()
@@ -67,13 +73,20 @@
 		return
 	icon_state = "pandemic[(beaker)?"1":"0"][!(stat & NOPOWER) ? "" : "_nopower"]"
 
-/obj/machinery/computer/pandemic/proc/create_culture(name, bottle_type = "culture", cooldown = 50)
-	var/obj/item/reagent_containers/glass/bottle/B = new/obj/item/reagent_containers/glass/bottle(loc)
-	B.icon_state = "bottle10"
+/obj/machinery/computer/pandemic/proc/create_culture(name, bottle_type = "culture", cooldown = 50, vaccine = FALSE)
+
+	var/obj/item/reagent_containers/glass/bottle/B
+	if(vaccine)
+		B = new /obj/item/reagent_containers/glass/bottle/vaccine(loc)
+		B.name = "[name] vaccine"
+	else
+		B = new(loc)
+		B.icon_state = "bottle10"
+		B.name = "[name] [bottle_type] bottle"
+
 	B.pixel_x = rand(-3, 3)
 	B.pixel_y = rand(-3, 3)
 	replicator_cooldown(cooldown)
-	B.name = "[name] [bottle_type] bottle"
 	return B
 
 /obj/machinery/computer/pandemic/tgui_act(action, params, datum/tgui/ui, datum/tgui_state/state)
@@ -146,8 +159,13 @@
 				atom_say("Unable to synthesize requested antibody.")
 				return
 
-			var/obj/item/reagent_containers/glass/bottle/B = create_culture(vaccine_name, REAGENT_ID_VACCINE, 200)
+			var/obj/item/reagent_containers/glass/bottle/vaccine/B = create_culture(vaccine_name, REAGENT_ID_VACCINE, 200, TRUE)
 			B.reagents.add_reagent(REAGENT_ID_VACCINE, 15, list(vaccine_type))
+			if(beaker && beaker.reagents && length(beaker.reagents.reagent_list))
+				beaker.reagents.remove_reagent(REAGENT_ID_BLOOD, 5)
+				if(!length(beaker.reagents.reagent_list))
+					update_tgui_static_data(ui.user)
+
 		if("eject_beaker")
 			eject_beaker()
 			update_tgui_static_data(ui.user)
@@ -319,7 +337,7 @@
 
 		var/signature
 		if(tgui_alert(user, "Would you like to add your signature?", "Signature", list("Yes","No")) == "Yes")
-			signature = "<font face=\"Times New Roman\"><i>[user ? user.real_name : "Anonymous"]</i></font>"
+			signature = "<font face=\"Times New Roman\">" + span_italics("[user ? user.real_name : "Anonymous"]") + "</font>"
 		else
 			signature = "<span class=\"paper_field\"></span>"
 
@@ -328,17 +346,17 @@
 		visible_message(span_notice("[src] rattles and prints out a sheet of paper."))
 		playsound(loc, 'sound/machines/printer.ogg', 50, 1)
 
-		P.info = "<U><font size=\"4\"><B><center> Releasing Virus </B></center></font></U>"
+		P.info = span_underline(span_huge(span_bold("<center> Releasing Virus </center>")))
 		P.info += "<HR>"
-		P.info += "<U>Name of the Virus:</U> [D.name] <BR>"
-		P.info += "<U>Symptoms:</U> [symtoms]<BR>"
-		P.info += "<U>Spreads by:</U> [D.spread_text]<BR>"
-		P.info += "<U>Cured by:</U> [D.cure_text]<BR>"
+		P.info += span_underline("Name of the Virus:") + " [D.name] <BR>"
+		P.info += span_underline("Symptoms:") + " [symtoms]<BR>"
+		P.info += span_underline("Spreads by:") + " [D.spread_text]<BR>"
+		P.info += span_underline("Cured by:") + " [D.cure_text]<BR>"
 		P.info += "<BR>"
-		P.info += "<U>Reason for releasing:</U> [reason]"
+		P.info += span_underline("Reason for releasing:") + " [reason]"
 		P.info += "<HR>"
 		P.info += "The Virologist is responsible for any biohazards caused by the virus released.<BR>"
-		P.info += "<U>Virologist's sign:</U> [signature]<BR>"
+		P.info += span_underline("Virologist's sign:") + " [signature]<BR>"
 		P.info += "If approved, stamp below with the Chief Medical Officer's stamp, and/or the Captain's stamp if required:"
 		P.updateinfolinks()
 		P.name = "Releasing Virus - [D.name]"
@@ -361,17 +379,17 @@
 	if(I.has_tool_quality(TOOL_SCREWDRIVER))
 		eject_beaker()
 		return
-	if(istype(I, /obj/item/reagent_containers/glass) && I.is_open_container())
+	if(istype(I, /obj/item/reagent_containers/glass) && I.is_open_container() || istype(I, /obj/item/reagent_containers/syringe))
 		if(stat & (NOPOWER|BROKEN))
 			return
 		if(beaker)
-			to_chat(user, span_warning("A beaker is already loaded into the machine!"))
+			to_chat(user, span_warning("A [beaker] is already loaded into the machine!"))
 			return
 
 		user.drop_item()
 		beaker = I
 		beaker.loc = src
-		to_chat(user, span_notice("You add the beaker to the machine."))
+		to_chat(user, span_notice("You add \the [I] to the machine."))
 		update_tgui_static_data(user)
 		icon_state = "pandemic1"
 	else

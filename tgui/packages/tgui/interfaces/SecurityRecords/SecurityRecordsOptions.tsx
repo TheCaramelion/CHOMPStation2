@@ -1,8 +1,9 @@
-import { useBackend } from '../../backend';
-import { Button, Section, Tabs } from '../../components';
+import { useBackend } from 'tgui/backend';
+import { Button, Section, Tabs } from 'tgui-core/components';
+
 import { SecurityRecordsViewGeneral } from './SecurityRecordsViewGeneral';
 import { SecurityRecordsViewSecurity } from './SecurityRecordsViewSecurity';
-import { Data } from './types';
+import type { Data } from './types';
 
 export const SecurityRecordsMaintenance = (props) => {
   const { act } = useBackend();

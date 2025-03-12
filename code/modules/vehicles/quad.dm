@@ -27,21 +27,21 @@
 
 	var/outdoors_speed_mod = 0.7 //The general 'outdoors' speed. I.E., the general difference you'll be at when driving outside.
 
-/obj/vehicle/train/engine/quadbike/New()
-	cell = new /obj/item/cell/high(src)
-	key = new key_type(src)
-	soundloop = new(list(src), FALSE)
+/obj/vehicle/train/engine/quadbike/Initialize(mapload, assembly)
 	. = ..()
+	if(!assembly)
+		cell = new /obj/item/cell/high(src)
+		soundloop = new(list(src), FALSE)
+	key = new key_type(src)
 	turn_off()
 	update_icon()
 
-/obj/vehicle/train/engine/quadbike/built/New()
-	key = new key_type(src)
-	turn_off()
+/obj/vehicle/train/engine/quadbike/built/Initialize(mapload)
+	. = ..(mapload, TRUE)
 
-/obj/vehicle/train/engine/quadbike/random/New()
+/obj/vehicle/train/engine/quadbike/random/Initialize(mapload)
 	paint_color = rgb(rand(1,255),rand(1,255),rand(1,255))
-	..()
+	. = ..()
 
 /obj/vehicle/train/engine/quadbike/Destroy()
 	QDEL_NULL(soundloop)
@@ -88,9 +88,9 @@
 		if(8)
 			pixel_y = 0
 
-/obj/vehicle/train/engine/quadbike/attackby(obj/item/W as obj, mob/user as mob)
+/obj/vehicle/train/engine/quadbike/attackby(obj/item/W, mob/user)
 	if(istype(W, /obj/item/multitool) && open)
-		var/new_paint = input(usr, "Please select paint color.", "Paint Color", paint_color) as color|null
+		var/new_paint = tgui_color_picker(user, "Please select paint color.", "Paint Color", paint_color)
 		if(new_paint)
 			paint_color = new_paint
 			update_icon()
@@ -202,9 +202,9 @@
 
 	paint_color = "#ffffff"
 
-/obj/vehicle/train/trolley/trailer/random/New()
+/obj/vehicle/train/trolley/trailer/random/Initialize(mapload)
 	paint_color = rgb(rand(1,255),rand(1,255),rand(1,255))
-	..()
+	. = ..()
 
 /obj/vehicle/train/trolley/trailer/proc/update_load()
 	if(load)
@@ -216,7 +216,7 @@
 		return 1
 	return 0
 
-/obj/vehicle/train/trolley/trailer/Initialize()
+/obj/vehicle/train/trolley/trailer/Initialize(mapload)
 	. = ..()
 	update_icon()
 
@@ -276,9 +276,9 @@
 	Bodypaint.color = paint_color
 	add_overlay(Bodypaint)
 
-/obj/vehicle/train/trolley/trailer/attackby(obj/item/W as obj, mob/user as mob)
+/obj/vehicle/train/trolley/trailer/attackby(obj/item/W, mob/user)
 	if(istype(W, /obj/item/multitool) && open)
-		var/new_paint = input(usr, "Please select paint color.", "Paint Color", paint_color) as color|null
+		var/new_paint = tgui_color_picker(user, "Please select paint color.", "Paint Color", paint_color)
 		if(new_paint)
 			paint_color = new_paint
 			update_icon()

@@ -5,6 +5,7 @@
 	no_variants = FALSE
 	drop_sound = 'sound/items/drop/glass.ogg'
 	pickup_sound = 'sound/items/pickup/glass.ogg'
+	coin_type = /obj/item/coin/phoron
 
 /obj/item/stack/material/diamond
 	name = MAT_DIAMOND
@@ -13,6 +14,7 @@
 	no_variants = FALSE //CHOMPedit - Variants added
 	drop_sound = 'sound/items/drop/glass.ogg'
 	pickup_sound = 'sound/items/pickup/glass.ogg'
+	coin_type = /obj/item/coin/diamond
 
 /obj/item/stack/material/painite
 	name = MAT_PAINITE
@@ -54,11 +56,21 @@
 	default_type = MAT_VERDANTIUM
 	no_variants = FALSE
 	apply_colour = TRUE
+	coin_type = /obj/item/coin/verdantium
 
 /obj/item/stack/material/morphium
 	name = MAT_MORPHIUM
 	icon_state = "sheet-wavy"
 	item_state = "mhydrogen"
 	default_type = MAT_MORPHIUM
+	no_variants = FALSE
+	apply_colour = TRUE
+	coin_type = /obj/item/coin/morphium
+
+/obj/item/stack/material/glamour
+	name = MAT_GLAMOUR
+	icon_state = "sheet-glamour"
+	item_state = "mhydrogen"
+	default_type = MAT_GLAMOUR
 	no_variants = FALSE
 	apply_colour = TRUE

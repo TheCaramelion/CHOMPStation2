@@ -56,9 +56,11 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 		var/datum/sprite_accessory/instance = style_list[path]
 		if(!istype(instance))
 			continue
+		if(instance.name == DEVELOPER_WARNING_NAME)
+			continue
 		if(instance.ckeys_allowed && (!client || !(client.ckey in instance.ckeys_allowed)))
 			continue
-		if(instance.species_allowed && (!species || !(species in instance.species_allowed)) && (!client || !check_rights(R_ADMIN | R_EVENT | R_FUN, 0, client)) && (!custom_base || !(custom_base in instance.species_allowed))) //VOREStation Edit: Custom Species
+		if(instance.species_allowed && (!species || !(species in instance.species_allowed)) && (!client || !check_rights_for(client, R_ADMIN | R_EVENT | R_FUN)) && (!custom_base || !(custom_base in instance.species_allowed)))
 			continue
 		.[instance.name] = instance
 
@@ -83,7 +85,6 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	pref.f_style			= save_data["facial_style_name"]
 	pref.grad_style			= save_data["grad_style_name"]
 	pref.b_type				= save_data["b_type"]
-	pref.disabilities		= save_data["disabilities"]
 	pref.organ_data			= check_list_copy(save_data["organ_data"])
 	pref.rlimb_data			= check_list_copy(save_data["rlimb_data"])
 	pref.body_markings		= check_list_copy(save_data["body_markings"])
@@ -95,13 +96,6 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	pref.synth_markings		= save_data["synth_markings"]
 	pref.bgstate			= save_data["bgstate"]
 	pref.body_descriptors	= check_list_copy(save_data["body_descriptors"])
-	//YWadd start
-	pref.wingdings			= save_data["Wingdings"]
-	pref.colorblind_mono	= save_data["colorblind_mono"]
-	pref.colorblind_vulp	= save_data["colorblind_vulp"]
-	pref.colorblind_taj		= save_data["colorblind_taj"]
-	pref.haemophilia		= save_data["haemophilia"]
-	//YWadd end
 	pref.ear_style			= save_data["ear_style"]
 	pref.ear_secondary_style = save_data["ear_secondary_style"]
 	pref.ear_secondary_colors = save_data["ear_secondary_colors"]
@@ -116,7 +110,6 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	save_data["facial_style_name"]	= pref.f_style
 	save_data["grad_style_name"]	= pref.grad_style
 	save_data["b_type"]				= pref.b_type
-	save_data["disabilities"]		= pref.disabilities
 	save_data["organ_data"]			= check_list_copy(pref.organ_data)
 	save_data["rlimb_data"]			= check_list_copy(pref.rlimb_data)
 	var/list/body_markings 			= check_list_copy(pref.body_markings)
@@ -129,13 +122,6 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	save_data["synth_markings"]		= pref.synth_markings
 	save_data["bgstate"]			= pref.bgstate
 	save_data["body_descriptors"]	= check_list_copy(pref.body_descriptors)
-	//YWadd start
-	save_data["Wingdings"]			= pref.wingdings
-	save_data["colorblind_mono"]	= pref.colorblind_mono
-	save_data["colorblind_vulp"]	= pref.colorblind_vulp
-	save_data["colorblind_taj"]		= pref.colorblind_taj
-	save_data["haemophilia"]		= pref.haemophilia
-	//YWadd end
 	save_data["ear_style"]			= pref.ear_style
 	save_data["ear_secondary_style"] = pref.ear_secondary_style
 	save_data["ear_secondary_colors"] = pref.ear_secondary_colors
@@ -148,17 +134,15 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 		pref.species = SPECIES_HUMAN
 	pref.s_tone			= sanitize_integer(pref.s_tone, -185, 34, initial(pref.s_tone))
 	pref.h_style		= sanitize_inlist(pref.h_style, hair_styles_list, initial(pref.h_style))
-	pref.grad_style		= sanitize_inlist(pref.grad_style, GLOB.hair_gradients, initial(pref.grad_style))
 	pref.f_style		= sanitize_inlist(pref.f_style, facial_hair_styles_list, initial(pref.f_style))
 	pref.grad_style		= sanitize_inlist(pref.grad_style, GLOB.hair_gradients, initial(pref.grad_style))
 	pref.b_type			= sanitize_text(pref.b_type, initial(pref.b_type))
 
-	pref.disabilities	= sanitize_integer(pref.disabilities, 0, 65535, initial(pref.disabilities))
 	if(!pref.organ_data) pref.organ_data = list()
 	if(!pref.rlimb_data) pref.rlimb_data = list()
 	if(!pref.body_markings) pref.body_markings = list()
 	else pref.body_markings &= body_marking_styles_list
-	for (var/M in pref.body_markings) //VOREStation Edit
+	for (var/M in pref.body_markings)
 		if (!islist(pref.body_markings[M]))
 			var/col = istext(pref.body_markings[M]) ? pref.body_markings[M] : "#000000"
 			pref.body_markings[M] = pref.mass_edit_marking_list(M,color=col)
@@ -183,7 +167,6 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	character.f_style	= pref.f_style
 	character.s_tone	= pref.s_tone
 	character.h_style	= pref.h_style
-	character.grad_style= pref.grad_style
 	character.f_style	= pref.f_style
 	character.grad_style= pref.grad_style
 	character.b_type	= pref.b_type
@@ -214,24 +197,6 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 
 	character.set_gender(pref.biological_gender)
 
-	if(pref.species == "Grey")//YWadd START
-		character.wingdings = pref.wingdings
-
-	if(pref.colorblind_mono == 1)
-		character.add_modifier(/datum/modifier/trait/colorblind_monochrome)
-
-	else if(pref.colorblind_vulp == 1)
-		character.add_modifier(/datum/modifier/trait/colorblind_vulp)
-
-	else if(pref.colorblind_taj == 1)
-		character.add_modifier(/datum/modifier/trait/colorblind_taj)
-
-	if(pref.haemophilia == 1)
-		character.add_modifier(/datum/modifier/trait/haemophilia)
-	//YWadd END
-
-	// Destroy/cyborgize organs and limbs.
-	//VOREStation Edit
 	character.synthetic = pref.species == "Protean" ? all_robolimbs["protean"] : null //Clear the existing var. (unless protean, then switch it to the normal protean limb)
 	var/list/organs_to_edit = list()
 	for (var/name in list(BP_TORSO, BP_HEAD, BP_GROIN, BP_L_ARM, BP_R_ARM, BP_L_HAND, BP_R_HAND, BP_L_LEG, BP_R_LEG, BP_L_FOOT, BP_R_FOOT))
@@ -242,7 +207,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 				organs_to_edit += name
 			else
 				organs_to_edit.Insert(x+(O.robotic == ORGAN_NANOFORM ? 1 : 0), name)
-	for(var/name in organs_to_edit) //VOREStation edit end
+	for(var/name in organs_to_edit)
 		var/status = pref.organ_data[name]
 		var/obj/item/organ/external/O = character.organs_by_name[name]
 		if(O)
@@ -279,7 +244,6 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	for(var/M in pref.body_markings)
 		priority += 1
 		var/datum/sprite_accessory/marking/mark_datum = body_marking_styles_list[M]
-		//var/mark_color = "[pref.body_markings[M]]" //VOREStation Edit
 
 		for(var/BP in mark_datum.body_parts)
 			var/obj/item/organ/external/O = character.organs_by_name[BP]
@@ -306,15 +270,13 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	. = list()
 
 	var/datum/species/mob_species = GLOB.all_species[pref.species]
-	. += "<table><tr style='vertical-align:top'><td><b>Body</b> "
-	. += "(<a href='byond://?src=\ref[src];random=1'>&reg;</A>)"
+	. += "<table><tr style='vertical-align:top'><td>" + span_bold("Body") + " "
+	. += "(<a title='Randomize' href='byond://?src=\ref[src];random=1'>&reg;</A>)"
 	. += "<br>"
 	. += "Species: <a href='byond://?src=\ref[src];show_species=1'>[pref.species]</a><br>"
 	. += "Blood Type: <a href='byond://?src=\ref[src];blood_type=1'>[pref.b_type]</a><br>"
 	if(has_flag(mob_species, HAS_SKIN_TONE))
 		. += "Skin Tone: <a href='byond://?src=\ref[src];skin_tone=1'>[-pref.s_tone + 35]/220</a><br>"
-	. += "<b>Disabilities</b><br> <a href='byond://?src=\ref[src];disabilities_yw=1'>Adjust</a><br>" // YWadd
-	//YWcommented moved onto disabilities. += "Needs Glasses: <a href='byond://?src=\ref[src];disabilities=[NEARSIGHTED]'><b>[pref.disabilities & NEARSIGHTED ? "Yes" : "No"]</b></a><br>"
 	. += "Limbs: <a href='byond://?src=\ref[src];limbs=1'>Adjust</a> <a href='byond://?src=\ref[src];reset_limbs=1'>Reset</a><br>"
 	. += "Internal Organs: <a href='byond://?src=\ref[src];organs=1'>Adjust</a><br>"
 	//display limbs below
@@ -428,10 +390,10 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 		. += "<table>"
 		for(var/entry in pref.body_descriptors)
 			var/datum/mob_descriptor/descriptor = mob_species.descriptors[entry]
-			. += "<tr><td><b>[capitalize(descriptor.chargen_label)]:</b></td><td>[descriptor.get_standalone_value_descriptor(pref.body_descriptors[entry])]</td><td><a href='byond://?src=\ref[src];change_descriptor=[entry]'>Change</a><br/></td></tr>"
+			. += "<tr><td>" + span_bold("[capitalize(descriptor.chargen_label)]:") + "</td><td>[descriptor.get_standalone_value_descriptor(pref.body_descriptors[entry])]</td><td><a href='byond://?src=\ref[src];change_descriptor=[entry]'>Change</a><br/></td></tr>"
 		. += "</table><br>"
 
-	. += "</td><td><b>Preview</b><br>"
+	. += "</td><td>" + span_bold("Preview") + "<br>"
 	. += "<br><a href='byond://?src=\ref[src];cycle_bg=1'>Cycle background</a>"
 	. += "<br><a href='byond://?src=\ref[src];toggle_preview_value=[EQUIP_PREVIEW_LOADOUT]'>[pref.equip_preview_mob & EQUIP_PREVIEW_LOADOUT ? "Hide loadout" : "Show loadout"]</a>"
 	. += "<br><a href='byond://?src=\ref[src];toggle_preview_value=[EQUIP_PREVIEW_JOB]'>[pref.equip_preview_mob & EQUIP_PREVIEW_JOB ? "Hide job gear" : "Show job gear"]</a>"
@@ -447,21 +409,21 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	. += "<a href='byond://?src=\ref[src];grad_color=1'>Change Color</a> [color_square(hex = pref.read_preference(/datum/preference/color/human/grad_color))] "
 	. += " Style: <a href='byond://?src=\ref[src];grad_style_left=[pref.grad_style]'><</a> <a href='byond://?src=\ref[src];grad_style_right=[pref.grad_style]''>></a> <a href='byond://?src=\ref[src];grad_style=1'>[pref.grad_style]</a><br>"
 
-	. += "<br><b>Facial</b><br>"
+	. += "<br>" + span_bold("Facial") + "<br>"
 	if(has_flag(mob_species, HAS_HAIR_COLOR))
 		. += "<a href='byond://?src=\ref[src];facial_color=1'>Change Color</a> [color_square(hex = pref.read_preference(/datum/preference/color/human/facial_color))] "
 	. += " Style: <a href='byond://?src=\ref[src];facial_style_left=[pref.f_style]'><</a> <a href='byond://?src=\ref[src];facial_style_right=[pref.f_style]''>></a> <a href='byond://?src=\ref[src];facial_style=1'>[pref.f_style]</a><br>" //Same as above with the extra > & < characters
 
 	if(has_flag(mob_species, HAS_EYE_COLOR))
-		. += "<br><b>Eyes</b><br>"
+		. += "<br>" + span_bold("Eyes") + "<br>"
 		. += "<a href='byond://?src=\ref[src];eye_color=1'>Change Color</a> [color_square(hex = pref.read_preference(/datum/preference/color/human/eyes_color))]<br>"
 
 	if(has_flag(mob_species, HAS_SKIN_COLOR))
-		. += "<br><b>Body Color</b><br>"
+		. += "<br>" + span_bold("Body Color") + "<br>"
 		. += "<a href='byond://?src=\ref[src];skin_color=1'>Change Color</a> [color_square(hex = pref.read_preference(/datum/preference/color/human/skin_color))]<br>"
 
 	if(mob_species.digi_allowed)
-		. += "<br><b>Digitigrade?:</b> <a href='byond://?src=\ref[src];digitigrade=1'><b>[pref.digitigrade ? "Yes" : "No"]</b></a><br>"
+		. += "<br>" + span_bold("Digitigrade?:") + " <a href='byond://?src=\ref[src];digitigrade=1'>" + span_bold("[pref.digitigrade ? "Yes" : "No"]") + "</a><br>"
 
 	. += "<h2>Genetics Settings</h2>"
 
@@ -523,8 +485,8 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 
 	. += "</table>"
 	. += "<br>"
-	. += span_bold("Allow Synth markings:") + " <a href='byond://?src=\ref[src];synth_markings=1'><b>[pref.synth_markings ? "Yes" : "No"]</b></a><br>"
-	. += span_bold("Allow Synth color:") + " <a href='byond://?src=\ref[src];synth_color=1'><b>[pref.synth_color ? "Yes" : "No"]</b></a><br>"
+	. += span_bold("Allow Synth markings:") + " <a href='byond://?src=\ref[src];synth_markings=1'>" + span_bold("[pref.synth_markings ? "Yes" : "No"]") + "</a><br>"
+	. += span_bold("Allow Synth color:") + " <a href='byond://?src=\ref[src];synth_color=1'>" + span_bold("[pref.synth_color ? "Yes" : "No"]") + "</a><br>"
 	if(pref.synth_color)
 		. += "<a href='byond://?src=\ref[src];synth2_color=1'>Change Color</a> [color_square(hex = pref.read_preference(/datum/preference/color/human/synth_color))]"
 
@@ -545,7 +507,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 			var/desc_id = href_list["change_descriptor"]
 			if(pref.body_descriptors[desc_id])
 				var/datum/mob_descriptor/descriptor = mob_species.descriptors[desc_id]
-				var/choice = tgui_input_list(user, "Please select a descriptor.", "Descriptor", descriptor.chargen_value_descriptors) //ChompEDIT - usr removal
+				var/choice = tgui_input_list(user, "Please select a descriptor.", "Descriptor", descriptor.chargen_value_descriptors)
 				if(choice && mob_species.descriptors[desc_id]) // Check in case they sneakily changed species.
 					pref.body_descriptors[desc_id] = descriptor.chargen_value_descriptors[choice]
 					return TOPIC_REFRESH
@@ -558,15 +520,12 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 
 	else if(href_list["show_species"])
 		// Actual whitelist checks are handled elsewhere, this is just for accessing the preview window.
-		var/choice = tgui_input_list(user, "Which species would you like to look at?", "Species Choice", GLOB.playable_species) //ChompEDIT - usr removal
+		var/choice = tgui_input_list(user, "Which species would you like to look at?", "Species Choice", GLOB.playable_species)
 		if(!choice) return
 		pref.species_preview = choice
 		SetSpecies(preference_mob())
 		pref.alternate_languages.Cut() // Reset their alternate languages. Todo: attempt to just fix it instead?
 		return TOPIC_HANDLED
-
-	else if(href_list["disabilities_yw"])
-		Disabilities_YW(user) //ChompEDIT - usr removal
 
 	else if(href_list["set_species"])
 		user << browse(null, "window=species")
@@ -580,7 +539,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 		else
 			return TOPIC_NOACTION
 
-		if(((!(setting_species.spawn_flags & SPECIES_CAN_JOIN)) || (!is_alien_whitelisted(preference_mob(),setting_species))) && !check_rights(R_ADMIN|R_EVENT, 0) && !(setting_species.spawn_flags & SPECIES_WHITELIST_SELECTABLE))	//VOREStation Edit: selectability
+		if(((!(setting_species.spawn_flags & SPECIES_CAN_JOIN)) || (!is_alien_whitelisted(user.client,setting_species))) && !check_rights(R_ADMIN|R_EVENT, 0) && !(setting_species.spawn_flags & SPECIES_WHITELIST_SELECTABLE))
 			return TOPIC_NOACTION
 
 		var/prev_species = pref.species
@@ -588,9 +547,9 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 		if(prev_species != pref.species)
 			if(!(pref.biological_gender in mob_species.genders))
 				pref.set_biological_gender(mob_species.genders[1])
-			pref.custom_species = null //VOREStation Edit - This is cleared on species changes
+			pref.custom_species = null
 			//grab one of the valid hair styles for the newly chosen species
-			var/list/valid_hairstyles = pref.get_valid_hairstyles()
+			var/list/valid_hairstyles = pref.get_valid_hairstyles(user)
 
 			if(valid_hairstyles.len)
 				if(!(pref.h_style in valid_hairstyles))
@@ -621,14 +580,14 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 			var/min_age = get_min_age()
 			var/max_age = get_max_age()
 			pref.update_preference_by_type(/datum/preference/numeric/human/age, max(min(pref.read_preference(/datum/preference/numeric/human/age), max_age), min_age))
-			pref.blood_color = setting_species.blood_color // VOREstation edit
+			pref.blood_color = setting_species.blood_color
 
 			return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["hair_color"])
 		if(!has_flag(mob_species, HAS_HAIR_COLOR))
 			return TOPIC_NOACTION
-		var/new_hair = input(user, "Choose your character's hair colour:", "Character Preference", pref.read_preference(/datum/preference/color/human/hair_color)) as color|null
+		var/new_hair = tgui_color_picker(user, "Choose your character's hair colour:", "Character Preference", pref.read_preference(/datum/preference/color/human/hair_color))
 		if(new_hair && has_flag(mob_species, HAS_HAIR_COLOR) && CanUseTopic(user))
 			pref.update_preference_by_type(/datum/preference/color/human/hair_color, new_hair)
 			return TOPIC_REFRESH_UPDATE_PREVIEW
@@ -636,25 +595,17 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	else if(href_list["grad_color"])
 		if(!has_flag(mob_species, HAS_HAIR_COLOR))
 			return TOPIC_NOACTION
-		var/new_grad = input(user, "Choose your character's secondary hair color:", "Character Preference", pref.read_preference(/datum/preference/color/human/grad_color)) as color|null
+		var/new_grad = tgui_color_picker(user, "Choose your character's secondary hair color:", "Character Preference", pref.read_preference(/datum/preference/color/human/grad_color))
 		if(new_grad && has_flag(mob_species, HAS_HAIR_COLOR) && CanUseTopic(user))
 			pref.update_preference_by_type(/datum/preference/color/human/grad_color, new_grad)
 			return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["hair_style"])
-		var/list/valid_hairstyles = pref.get_valid_hairstyles()
+		var/list/valid_hairstyles = pref.get_valid_hairstyles(user)
 
 		var/new_h_style = tgui_input_list(user, "Choose your character's hair style:", "Character Preference", valid_hairstyles, pref.h_style)
 		if(new_h_style && CanUseTopic(user))
 			pref.h_style = new_h_style
-			return TOPIC_REFRESH_UPDATE_PREVIEW
-
-	else if(href_list["grad_style"])
-		var/list/valid_gradients = GLOB.hair_gradients
-
-		var/new_grad_style = input(user, "Choose a color pattern for your hair:", "Character Preference", pref.grad_style)  as null|anything in valid_gradients
-		if(new_grad_style && CanUseTopic(user))
-			pref.grad_style = new_grad_style
 			return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["grad_style"])
@@ -665,9 +616,31 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 			pref.grad_style = new_grad_style
 			return TOPIC_REFRESH_UPDATE_PREVIEW
 
+	else if(href_list["grad_style_left"])
+		var/H = href_list["grad_style_left"]
+		var/list/valid_gradients = GLOB.hair_gradients
+		var/start = valid_gradients.Find(H)
+
+		if(start != 1) //If we're not the beginning of the list, become the previous element.
+			pref.grad_style = valid_gradients[start-1]
+		else //But if we ARE, become the final element.
+			pref.grad_style = valid_gradients[valid_gradients.len]
+		return TOPIC_REFRESH_UPDATE_PREVIEW
+
+	else if(href_list["grad_style_right"])
+		var/H = href_list["grad_style_right"]
+		var/list/valid_gradients = GLOB.hair_gradients
+		var/start = valid_gradients.Find(H)
+
+		if(start != valid_gradients.len) //If we're not the end of the list, become the next element.
+			pref.grad_style = valid_gradients[start+1]
+		else //But if we ARE, become the first element.
+			pref.grad_style = valid_gradients[1]
+		return TOPIC_REFRESH_UPDATE_PREVIEW
+
 	else if(href_list["hair_style_left"])
 		var/H = href_list["hair_style_left"]
-		var/list/valid_hairstyles = pref.get_valid_hairstyles()
+		var/list/valid_hairstyles = pref.get_valid_hairstyles(user)
 		var/start = valid_hairstyles.Find(H)
 
 		if(start != 1) //If we're not the beginning of the list, become the previous element.
@@ -678,7 +651,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 
 	else if(href_list["hair_style_right"])
 		var/H = href_list["hair_style_right"]
-		var/list/valid_hairstyles = pref.get_valid_hairstyles()
+		var/list/valid_hairstyles = pref.get_valid_hairstyles(user)
 		var/start = valid_hairstyles.Find(H)
 
 		if(start != valid_hairstyles.len) //If we're not the end of the list, become the next element.
@@ -690,7 +663,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	else if(href_list["facial_color"])
 		if(!has_flag(mob_species, HAS_HAIR_COLOR))
 			return TOPIC_NOACTION
-		var/new_facial = input(user, "Choose your character's facial-hair colour:", "Character Preference", pref.read_preference(/datum/preference/color/human/facial_color)) as color|null
+		var/new_facial = tgui_color_picker(user, "Choose your character's facial-hair colour:", "Character Preference", pref.read_preference(/datum/preference/color/human/facial_color))
 		if(new_facial && has_flag(mob_species, HAS_HAIR_COLOR) && CanUseTopic(user))
 			pref.update_preference_by_type(/datum/preference/color/human/facial_color, new_facial)
 			return TOPIC_REFRESH_UPDATE_PREVIEW
@@ -703,7 +676,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	else if(href_list["eye_color"])
 		if(!has_flag(mob_species, HAS_EYE_COLOR))
 			return TOPIC_NOACTION
-		var/new_eyes = input(user, "Choose your character's eye colour:", "Character Preference", pref.read_preference(/datum/preference/color/human/eyes_color)) as color|null
+		var/new_eyes = tgui_color_picker(user, "Choose your character's eye colour:", "Character Preference", pref.read_preference(/datum/preference/color/human/eyes_color))
 		if(new_eyes && has_flag(mob_species, HAS_EYE_COLOR) && CanUseTopic(user))
 			pref.update_preference_by_type(/datum/preference/color/human/eyes_color, new_eyes)
 			return TOPIC_REFRESH_UPDATE_PREVIEW
@@ -719,7 +692,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	else if(href_list["skin_color"])
 		if(!has_flag(mob_species, HAS_SKIN_COLOR))
 			return TOPIC_NOACTION
-		var/new_skin = input(user, "Choose your character's skin colour: ", "Character Preference", pref.read_preference(/datum/preference/color/human/skin_color)) as color|null
+		var/new_skin = tgui_color_picker(user, "Choose your character's skin colour: ", "Character Preference", pref.read_preference(/datum/preference/color/human/skin_color))
 		if(new_skin && has_flag(mob_species, HAS_SKIN_COLOR) && CanUseTopic(user))
 			pref.update_preference_by_type(/datum/preference/color/human/skin_color, new_skin)
 			return TOPIC_REFRESH_UPDATE_PREVIEW
@@ -756,15 +729,6 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 
 	else if(href_list["marking_style"])
 		var/list/usable_markings = pref.body_markings.Copy() ^ body_marking_styles_list.Copy()
-		/* VOREStation Removal - No markings whitelist, let people mix/match
-		for(var/M in usable_markings)
-			var/datum/sprite_accessory/S = usable_markings[M]
-			var/datum/species/spec = GLOB.all_species[pref.species]
-			if(!S.species_allowed.len)
-				continue
-			else if(!(pref.species in S.species_allowed) && !(pref.custom_base in S.species_allowed) && !(spec.base_species in S.species_allowed))
-				usable_markings -= M
-		*/ //VOREStation Removal End
 		var/new_marking = tgui_input_list(user, "Choose a body marking:", "Character Preference", usable_markings)
 		if(new_marking && CanUseTopic(user))
 			pref.body_markings[new_marking] = pref.mass_edit_marking_list(new_marking) //New markings start black
@@ -812,7 +776,8 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 		if (isnull(pref.body_markings[M]["color"]))
 			if (tgui_alert(user, "You currently have customized marking colors. This will reset each bodypart's color. Are you sure you want to continue?","Reset Bodypart Colors",list("Yes","No")) != "Yes")
 				return TOPIC_NOACTION
-		var/mark_color = input(user, "Choose the [M] color: ", "Character Preference", pref.body_markings[M]["color"]) as color|null
+		var/current = pref.body_markings[M] ? pref.body_markings[M]["color"] : "#000000"
+		var/mark_color = tgui_color_picker(user, "Choose the [M] color: ", "Character Preference", current)
 		if(mark_color && CanUseTopic(user))
 			pref.body_markings[M] = pref.mass_edit_marking_list(M,FALSE,TRUE,pref.body_markings[M],color="[mark_color]")
 			return TOPIC_REFRESH_UPDATE_PREVIEW
@@ -837,7 +802,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 		if (pref.body_markings.Find(marking) == 0)
 			winshow(user, "prefs_markings_subwindow", FALSE)
 			return TOPIC_NOACTION
-		var/mark_color = input(user, "Choose the [marking] color: ", "Character Preference", pref.body_markings[marking]["color"]) as color|null
+		var/mark_color = tgui_color_picker(user, "Choose the [marking] color: ", "Character Preference", pref.body_markings[marking]["color"])
 		if(mark_color && CanUseTopic(user))
 			pref.body_markings[marking] = pref.mass_edit_marking_list(marking,FALSE,TRUE,pref.body_markings[marking],color="[mark_color]")
 			markings_subwindow(user, marking)
@@ -850,7 +815,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 			return TOPIC_NOACTION
 		var/zone = href_list["zone"]
 		pref.body_markings[marking]["color"] = null //turn off the color button outside the submenu
-		var/mark_color = input(user, "Choose the [marking] color: ", "Character Preference", pref.body_markings[marking][zone]["color"]) as color|null
+		var/mark_color = tgui_color_picker(user, "Choose the [marking] color: ", "Character Preference", pref.body_markings[marking][zone]["color"])
 		if(mark_color && CanUseTopic(user))
 			pref.body_markings[marking][zone]["color"] = "[mark_color]"
 			markings_subwindow(user, marking)
@@ -961,10 +926,8 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 						continue
 					if(tmp_species in M.species_cannot_use)
 						continue
-					//VOREStation Add - Cyberlimb whitelisting.
 					if(M.whitelisted_to && !(user.ckey in M.whitelisted_to))
 						continue
-					//VOREStation Add End
 					usable_manufacturers[company] = M
 				if(!usable_manufacturers.len)
 					return
@@ -1061,11 +1024,6 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 
 		return TOPIC_REFRESH
 
-	else if(href_list["disabilities"])
-		var/disability_flag = text2num(href_list["disabilities"])
-		pref.disabilities ^= disability_flag
-		Disabilities_YW(user) //YW Edit //ChompEDIT - usr removal
-
 	else if(href_list["toggle_preview_value"])
 		pref.equip_preview_mob ^= text2num(href_list["toggle_preview_value"])
 		return TOPIC_REFRESH_UPDATE_PREVIEW
@@ -1079,7 +1037,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 		return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["synth2_color"])
-		var/new_color = input(user, "Choose your character's synth colour: ", "Character Preference", pref.read_preference(/datum/preference/color/human/synth_color)) as color|null
+		var/new_color = tgui_color_picker(user, "Choose your character's synth colour: ", "Character Preference", pref.read_preference(/datum/preference/color/human/synth_color))
 		if(new_color && CanUseTopic(user))
 			pref.update_preference_by_type(/datum/preference/color/human/synth_color, new_color)
 			return TOPIC_REFRESH_UPDATE_PREVIEW
@@ -1092,38 +1050,6 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 		pref.bgstate = next_in_list(pref.bgstate, pref.bgstate_options)
 		return TOPIC_REFRESH_UPDATE_PREVIEW
 
-	//YW Add Start
-
-	else if(href_list["wingdings"])
-		pref.wingdings = !pref.wingdings
-		Disabilities_YW(user) //ChompEDIT - usr removal
-
-	else if(href_list["colorblind_mono"])
-		pref.colorblind_mono = !pref.colorblind_mono
-		Disabilities_YW(user) //ChompEDIT - usr removal
-
-	else if(href_list["colorblind_vulp"])
-		pref.colorblind_vulp = !pref.colorblind_vulp
-		Disabilities_YW(user) //ChompEDIT - usr removal
-
-	else if(href_list["colorblind_taj"])
-		pref.colorblind_taj = !pref.colorblind_taj
-		Disabilities_YW(user) //ChompEDIT - usr removal
-
-	else if(href_list["haemophilia"])
-		pref.haemophilia = !pref.haemophilia
-		Disabilities_YW(user) //ChompEDIT - usr removal
-
-	else if(href_list["reset_disabilities"])
-		pref.wingdings = 0
-		pref.colorblind_mono = 0
-		pref.colorblind_taj = 0
-		pref.colorblind_vulp = 0
-		pref.haemophilia = 0
-		Disabilities_YW(user) //ChompEDIT - usr removal
-
-	//YW Add End
-
 	else if(href_list["ear_style"])
 		var/new_ear_style = tgui_input_list(user, "Select an ear style for this character:", "Character Preference", pref.get_available_styles(global.ear_styles_list), pref.ear_style)
 		if(new_ear_style)
@@ -1132,22 +1058,22 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 		return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["ear_color"])
-		var/new_earc = input(user, "Choose your character's ear colour:", "Character Preference",
-			pref.read_preference(/datum/preference/color/human/ears_color1)) as color|null
+		var/new_earc = tgui_color_picker(user, "Choose your character's ear colour:", "Character Preference",
+			pref.read_preference(/datum/preference/color/human/ears_color1))
 		if(new_earc)
 			pref.update_preference_by_type(/datum/preference/color/human/ears_color1, new_earc)
 			return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["ear_color2"])
-		var/new_earc2 = input(user, "Choose your character's ear colour:", "Character Preference",
-			pref.read_preference(/datum/preference/color/human/ears_color2)) as color|null
+		var/new_earc2 = tgui_color_picker(user, "Choose your character's secondary ear colour:", "Character Preference",
+			pref.read_preference(/datum/preference/color/human/ears_color2))
 		if(new_earc2)
 			pref.update_preference_by_type(/datum/preference/color/human/ears_color2, new_earc2)
 			return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["ear_color3"])
-		var/new_earc3 = input(user, "Choose your character's tertiary ear colour:", "Character Preference",
-			pref.read_preference(/datum/preference/color/human/ears_color3)) as color|null
+		var/new_earc3 = tgui_color_picker(user, "Choose your character's tertiary ear colour:", "Character Preference",
+			pref.read_preference(/datum/preference/color/human/ears_color3))
 		if(new_earc3)
 			pref.update_preference_by_type(/datum/preference/color/human/ears_color3, new_earc3)
 			return TOPIC_REFRESH_UPDATE_PREVIEW
@@ -1164,12 +1090,12 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 		if(channel > GLOB.fancy_sprite_accessory_color_channel_names.len)
 			return TOPIC_NOACTION
 		// this would say 'secondary ears' but you'd get 'choose your character's primary secondary ear colour' which sounds silly
-		var/new_color = input(
+		var/new_color = tgui_color_picker(
 			user,
 			"Choose your character's [lowertext(GLOB.fancy_sprite_accessory_color_channel_names[channel])] ear colour:",
 			"Secondary Ear Coloration",
 			LAZYACCESS(pref.ear_secondary_colors, channel) || "#ffffff",
-		) as color | null
+		)
 		if(!new_color)
 			return TOPIC_NOACTION
 		// ensures color channel list is at least that long
@@ -1185,22 +1111,22 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 		return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["tail_color"])
-		var/new_tailc = input(user, "Choose your character's tail/taur colour:", "Character Preference",
-			pref.read_preference(/datum/preference/color/human/tail_color1)) as color|null
+		var/new_tailc = tgui_color_picker(user, "Choose your character's tail/taur colour:", "Character Preference",
+			pref.read_preference(/datum/preference/color/human/tail_color1))
 		if(new_tailc)
 			pref.update_preference_by_type(/datum/preference/color/human/tail_color1, new_tailc)
 			return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["tail_color2"])
-		var/new_tailc2 = input(user, "Choose your character's secondary tail/taur colour:", "Character Preference",
-			pref.read_preference(/datum/preference/color/human/tail_color2)) as color|null
+		var/new_tailc2 = tgui_color_picker(user, "Choose your character's secondary tail/taur colour:", "Character Preference",
+			pref.read_preference(/datum/preference/color/human/tail_color2))
 		if(new_tailc2)
 			pref.update_preference_by_type(/datum/preference/color/human/tail_color2, new_tailc2)
 			return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["tail_color3"])
-		var/new_tailc3 = input(user, "Choose your character's tertiary tail/taur colour:", "Character Preference",
-			pref.read_preference(/datum/preference/color/human/tail_color3)) as color|null
+		var/new_tailc3 = tgui_color_picker(user, "Choose your character's tertiary tail/taur colour:", "Character Preference",
+			pref.read_preference(/datum/preference/color/human/tail_color3))
 		if(new_tailc3)
 			pref.update_preference_by_type(/datum/preference/color/human/tail_color3, new_tailc3)
 			return TOPIC_REFRESH_UPDATE_PREVIEW
@@ -1213,22 +1139,22 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 		return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["wing_color"])
-		var/new_wingc = input(user, "Choose your character's wing colour:", "Character Preference",
-			pref.read_preference(/datum/preference/color/human/wing_color1)) as color|null
+		var/new_wingc = tgui_color_picker(user, "Choose your character's wing colour:", "Character Preference",
+			pref.read_preference(/datum/preference/color/human/wing_color1))
 		if(new_wingc)
 			pref.update_preference_by_type(/datum/preference/color/human/wing_color1, new_wingc)
 			return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["wing_color2"])
-		var/new_wingc = input(user, "Choose your character's secondary wing colour:", "Character Preference",
-			pref.read_preference(/datum/preference/color/human/wing_color2)) as color|null
+		var/new_wingc = tgui_color_picker(user, "Choose your character's secondary wing colour:", "Character Preference",
+			pref.read_preference(/datum/preference/color/human/wing_color2))
 		if(new_wingc)
 			pref.update_preference_by_type(/datum/preference/color/human/wing_color2, new_wingc)
 			return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["wing_color3"])
-		var/new_wingc = input(user, "Choose your character's tertiary wing colour:", "Character Preference",
-			pref.read_preference(/datum/preference/color/human/wing_color3)) as color|null
+		var/new_wingc = tgui_color_picker(user, "Choose your character's tertiary wing colour:", "Character Preference",
+			pref.read_preference(/datum/preference/color/human/wing_color3))
 		if(new_wingc)
 			pref.update_preference_by_type(/datum/preference/color/human/wing_color3, new_wingc)
 			return TOPIC_REFRESH_UPDATE_PREVIEW
@@ -1255,56 +1181,54 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	if(!pref.species_preview || !(pref.species_preview in GLOB.all_species))
 		pref.species_preview = SPECIES_HUMAN
 	var/datum/species/current_species = GLOB.all_species[pref.species_preview]
-	var/dat = "<body>"
+	var/dat = "<html><body>"
 	dat += "<center><h2>[current_species.name] \[<a href='byond://?src=\ref[src];show_species=1'>change</a>\]</h2></center><hr/>"
 	dat += "<table padding='8px'>"
 	dat += "<tr>"
-	//vorestation edit begin
 	if(current_species.wikilink)
 		dat += "<td width = 400>[current_species.blurb]<br><br>See <a href=[current_species.wikilink]>the wiki</a> for more details.</td>"
 	else
 		dat += "<td width = 400>[current_species.blurb]</td>"
-	//vorestation edit end
 	dat += "<td width = 200 align='center'>"
 	if("preview" in cached_icon_states(current_species.icobase))
-		user << browse_rsc(icon(current_species.icobase,"preview"), "species_preview_[current_species.name].png") //ChompEDIT usr -> user
+		user << browse_rsc(icon(current_species.icobase,"preview"), "species_preview_[current_species.name].png")
 		dat += "<img src='species_preview_[current_species.name].png' width='64px' height='64px'><br/><br/>"
 	dat += span_bold("Language:") + " [current_species.species_language]<br/>"
 	dat += "<small>"
 	if(current_species.spawn_flags & SPECIES_CAN_JOIN)
 		switch(current_species.rarity_value)
 			if(1 to 2)
-				dat += "</br><b>Often present on human stations.</b>"
+				dat += "</br>" + span_bold("Often present on human stations.")
 			if(3 to 4)
-				dat += "</br><b>Rarely present on human stations.</b>"
+				dat += "</br>" + span_bold("Rarely present on human stations.")
 			if(5)
-				dat += "</br><b>Unheard of on human stations.</b>"
+				dat += "</br>" + span_bold("Unheard of on human stations.")
 			else
-				dat += "</br><b>May be present on human stations.</b>"
+				dat += "</br>" + span_bold("May be present on human stations.")
 	if(current_species.spawn_flags & SPECIES_IS_WHITELISTED)
-		dat += "</br><b>Whitelist restricted.</b>"
+		dat += "</br>" + span_bold("Whitelist restricted.")
 	if(!current_species.has_organ[O_HEART])
-		dat += "</br><b>Does not have a circulatory system.</b>"
+		dat += "</br>" + span_bold("Does not have a circulatory system.")
 	if(!current_species.has_organ[O_LUNGS])
-		dat += "</br><b>Does not have a respiratory system.</b>"
+		dat += "</br>" + span_bold("Does not have a respiratory system.")
 	if(current_species.flags & NO_SCAN)
-		dat += "</br><b>Does not have DNA.</b>"
+		dat += "</br>" + span_bold("Does not have DNA.")
 	if(current_species.flags & NO_DEFIB)
-		dat += "</br><b>Cannot be defibrillated.</b>"
+		dat += "</br>" + span_bold("Cannot be defibrillated.")
 	if(current_species.flags & NO_PAIN)
-		dat += "</br><b>Does not feel pain.</b>"
+		dat += "</br>" + span_bold("Does not feel pain.")
 	if(current_species.flags & NO_SLIP)
-		dat += "</br><b>Has excellent traction.</b>"
+		dat += "</br>" + span_bold("Has excellent traction.")
 	if(current_species.flags & NO_POISON)
-		dat += "</br><b>Immune to most poisons.</b>"
+		dat += "</br>" + span_bold("Immune to most poisons.")
 	if(current_species.appearance_flags & HAS_SKIN_TONE)
-		dat += "</br><b>Has a variety of skin tones.</b>"
+		dat += "</br>" + span_bold("Has a variety of skin tones.")
 	if(current_species.appearance_flags & HAS_SKIN_COLOR)
-		dat += "</br><b>Has a variety of skin colours.</b>"
+		dat += "</br>" + span_bold("Has a variety of skin colours.")
 	if(current_species.appearance_flags & HAS_EYE_COLOR)
-		dat += "</br><b>Has a variety of eye colours.</b>"
+		dat += "</br>" + span_bold("Has a variety of eye colours.")
 	if(current_species.flags & IS_PLANT)
-		dat += "</br><b>Has a plantlike physiology.</b>"
+		dat += "</br>" + span_bold("Has a plantlike physiology.")
 	dat += "</small></td>"
 	dat += "</tr>"
 	dat += "</table><center><hr/>"
@@ -1313,17 +1237,17 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 
 	if(!(current_species.spawn_flags & SPECIES_CAN_JOIN))
 		restricted = 2
-	else if(!is_alien_whitelisted(preference_mob(),current_species))
+	else if(!is_alien_whitelisted(user.client,current_species))
 		restricted = 1
 
 	if(restricted)
 		if(restricted == 1)
-			dat += "<font color='red'><b>You cannot play as this species.</br><small>If you wish to be whitelisted, you can make an application post on <a href='byond://?src=\ref[user];preference=open_whitelist_forum'>the forums</a>.</small></b></font></br>"
+			dat += span_red(span_bold("You cannot play as this species.</br>" + span_small("If you wish to be whitelisted, you can make an application post on <a href='byond://?src=\ref[user];preference=open_whitelist_forum'>the forums</a>."))) + "</br>"
 		else if(restricted == 2)
-			dat += "<font color='red'><b>You cannot play as this species.</br><small>This species is not available for play as a station race..</small></b></font></br>"
-	if(!restricted || check_rights(R_ADMIN|R_EVENT, 0) || current_species.spawn_flags & SPECIES_WHITELIST_SELECTABLE)	//VOREStation Edit: selectability
+			dat += span_red(span_bold("You cannot play as this species.</br>" + span_small("This species is not available for play as a station race.."))) + "</br>"
+	if(!restricted || check_rights(R_ADMIN|R_EVENT, 0) || current_species.spawn_flags & SPECIES_WHITELIST_SELECTABLE)
 		dat += "\[<a href='byond://?src=\ref[src];set_species=[pref.species_preview]'>select</a>\]"
-	dat += "</center></body>"
+	dat += "</center></body></html>"
 
 	user << browse(dat, "window=species;size=700x400")
 

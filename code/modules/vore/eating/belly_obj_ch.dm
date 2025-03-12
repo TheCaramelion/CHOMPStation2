@@ -177,7 +177,7 @@
 	for(var/reagent in generated_reagents)
 		reagents.add_reagent(reagent, generated_reagents[reagent])
 	if(count_liquid_for_sprite)
-		owner.update_fullness() //This is run whenever a belly's contents are changed.
+		owner.handle_belly_update() //This is run whenever a belly's contents are changed.
 	if(LAZYLEN(belly_surrounding))
 		SEND_SIGNAL(src, COMSIG_BELLY_UPDATE_VORE_FX, FALSE, reagents.total_volume) // Signals vore_fx() reagents updates.
 
@@ -549,7 +549,7 @@
 				if(O.possessed_voice && O.possessed_voice.len)
 					for(var/mob/living/voice/V in O.possessed_voice)
 						D.inhabit_item(V, null, V.tf_mob_holder)
-						V.Destroy()
+						qdel(V)
 					O.possessed_voice = list()
 				//CHOMPAdd End
 				return TRUE
@@ -558,7 +558,7 @@
 		if(O.possessed_voice && O.possessed_voice.len)
 			for(var/mob/living/voice/V in O.possessed_voice)
 				D.inhabit_item(V, null, V.tf_mob_holder)
-				V.Destroy()
+				qdel(V)
 			O.possessed_voice = list()
 		//CHOMPAdd End
 	return TRUE

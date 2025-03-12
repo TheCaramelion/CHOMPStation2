@@ -44,6 +44,26 @@
 	icon_state = "dark"
 	},
 /area/syndicate_station)
+"aaj" = (
+/obj/item/bedsheet/mimedouble{
+	pixel_x = 10;
+	pixel_y = -2
+	},
+/obj/structure/bed/double/padded{
+	pixel_x = 10;
+	pixel_y = -2
+	},
+/turf/simulated/floor/carpet/blue2,
+/area/shadekin)
+"aak" = (
+/obj/item/bedsheet/mimedouble{
+	pixel_y = -2
+	},
+/obj/structure/bed/double/padded{
+	pixel_y = -2
+	},
+/turf/simulated/floor/carpet/blue2,
+/area/shadekin)
 "aal" = (
 /obj/machinery/computer/arcade,
 /turf/unsimulated/floor{
@@ -189,7 +209,6 @@
 /area/centcom/medical)
 "aaU" = (
 /obj/machinery/honey_extractor,
-/turf/space,
 /turf/unsimulated/floor{
 	icon_state = "steel"
 	},
@@ -4543,15 +4562,7 @@
 /area/shadekin)
 "dBP" = (
 /obj/structure/bed/double/padded{
-	pixel_x = 10;
-	pixel_y = 25
-	},
-/obj/structure/bed/double/padded{
 	pixel_x = 10
-	},
-/obj/item/bedsheet/mimedouble{
-	pixel_x = 10;
-	pixel_y = 27
 	},
 /obj/item/bedsheet/mimedouble{
 	pixel_x = 10
@@ -5127,7 +5138,6 @@
 /area/centcom/bar)
 "dZT" = (
 /obj/machinery/biogenerator,
-/turf/space,
 /turf/unsimulated/floor{
 	icon_state = "steel"
 	},
@@ -5904,7 +5914,7 @@
 /obj/item/bedsheet/orange,
 /turf/unsimulated/floor{
 	icon = 'icons/turf/flooring/wood.dmi';
-	icon_state = "wood_broken1"
+	icon_state = "wood-broken1"
 	},
 /area/skipjack_station)
 "ePF" = (
@@ -5944,7 +5954,6 @@
 /obj/item/storage/box/donkpockets,
 /obj/item/storage/box/donkpockets,
 /obj/machinery/computer/security/telescreen/entertainment{
-	icon_state = "frame";
 	pixel_x = 30
 	},
 /obj/effect/floor_decal/corner/orange{
@@ -8310,13 +8319,7 @@
 	},
 /area/wizard_station)
 "hbJ" = (
-/obj/structure/bed/double/padded{
-	pixel_y = 25
-	},
 /obj/structure/bed/double/padded,
-/obj/item/bedsheet/mimedouble{
-	pixel_y = 26
-	},
 /obj/item/bedsheet/mimedouble,
 /turf/simulated/floor/carpet/blue2,
 /area/shadekin)
@@ -8737,12 +8740,6 @@
 /obj/machinery/chemical_dispenser/bar_alc/full,
 /turf/simulated/shuttle/floor/black,
 /area/shuttle/merchant)
-"hpw" = (
-/turf/space,
-/turf/unsimulated/floor{
-	icon_state = "steel"
-	},
-/area/centcom/bar)
 "hqg" = (
 /obj/structure/bed/chair/holochair{
 	dir = 1
@@ -8798,7 +8795,7 @@
 "hrC" = (
 /turf/unsimulated/floor{
 	icon = 'icons/turf/flooring/wood.dmi';
-	icon_state = "wood_broken3"
+	icon_state = "wood-broken3"
 	},
 /area/skipjack_station)
 "hrS" = (
@@ -9494,7 +9491,7 @@
 	},
 /turf/unsimulated/floor{
 	icon = 'icons/turf/flooring/wood.dmi';
-	icon_state = "wood_broken2"
+	icon_state = "wood-broken2"
 	},
 /area/skipjack_station)
 "hUU" = (
@@ -10274,7 +10271,7 @@
 "iCl" = (
 /turf/unsimulated/floor{
 	icon = 'icons/turf/flooring/wood.dmi';
-	icon_state = "wood_broken1"
+	icon_state = "wood-broken1"
 	},
 /area/ninja_dojo/dojo)
 "iCF" = (
@@ -12588,9 +12585,7 @@
 	},
 /area/ninja_dojo/dojo)
 "kwC" = (
-/turf/unsimulated/floor{
-	icon_state = "sandwater"
-	},
+/turf/unsimulated/floor,
 /area/beach)
 "kwM" = (
 /obj/structure/flora/ausbushes/reedbush,
@@ -14456,12 +14451,6 @@
 	},
 /obj/structure/lattice,
 /turf/space,
-/area/space)
-"mcF" = (
-/turf/unsimulated/wall{
-	icon = 'icons/misc/title.dmi';
-	icon_state = "title"
-	},
 /area/space)
 "mcT" = (
 /obj/effect/floor_decal/corner/red/full,
@@ -16720,7 +16709,6 @@
 "ofa" = (
 /obj/structure/table/woodentable/holotable,
 /obj/effect/landmark/costume/elpresidente,
-/turf/space,
 /turf/simulated/floor/holofloor/wood,
 /area/holodeck/source_game_room)
 "ofD" = (
@@ -17243,7 +17231,6 @@
 /obj/machinery/vending/hydronutrients{
 	dir = 1
 	},
-/turf/space,
 /turf/unsimulated/floor{
 	icon_state = "steel"
 	},
@@ -18864,10 +18851,6 @@
 "qoU" = (
 /turf/simulated/floor/carpet/blucarpet,
 /area/shadekin)
-"qoX" = (
-/turf/space,
-/turf/simulated/shuttle/wall/dark,
-/area/shuttle/merchant)
 "qoY" = (
 /obj/effect/overlay/coconut,
 /turf/simulated/floor/holofloor/beach/sand,
@@ -19050,7 +19033,6 @@
 	dir = 8
 	},
 /obj/machinery/computer/security/telescreen/entertainment{
-	icon_state = "frame";
 	pixel_x = 32
 	},
 /turf/simulated/floor/carpet,
@@ -21636,13 +21618,6 @@
 	icon_state = "vault"
 	},
 /area/centcom/specops)
-"sHT" = (
-/obj/item/stool/padded,
-/turf/space,
-/turf/unsimulated/floor{
-	icon_state = "steel"
-	},
-/area/centcom/bar)
 "sIZ" = (
 /obj/structure/flora/tree/pine/holo,
 /turf/simulated/floor/holofloor/snow,
@@ -23093,10 +23068,6 @@
 /obj/structure/window/reinforced/full,
 /turf/simulated/shuttle/plating,
 /area/shuttle/syndicate)
-"tTm" = (
-/turf/space,
-/turf/simulated/shuttle/wall/dark/hard_corner,
-/area/shuttle/merchant)
 "tTO" = (
 /obj/structure/table/steel_reinforced,
 /obj/machinery/recharger,
@@ -23716,10 +23687,6 @@
 	},
 /turf/simulated/floor/tiled/milspec/sterile,
 /area/shadekin)
-"uyi" = (
-/turf/space,
-/turf/space,
-/area/space)
 "uyy" = (
 /obj/machinery/atmospherics/unary/freezer{
 	icon_state = "freezer"
@@ -23936,7 +23903,7 @@
 	pixel_x = 15;
 	pixel_y = -4
 	},
-/obj/item/toy/plushie/squid/green{
+/obj/item/toy/plushie/squid{
 	pixel_x = -10;
 	pixel_y = 6
 	},
@@ -24511,11 +24478,6 @@
 /obj/item/clothing/head/pin/flower/blue,
 /obj/item/clothing/head/pin/flower/orange,
 /obj/item/clothing/head/pin/flower/pink,
-/obj/item/clothing/head/justice,
-/obj/item/clothing/head/justice/blue,
-/obj/item/clothing/head/justice/green,
-/obj/item/clothing/head/justice/pink,
-/obj/item/clothing/head/justice/yellow,
 /obj/item/clothing/head/philosopher_wig,
 /obj/item/clothing/head/plaguedoctorhat,
 /obj/item/clothing/head/xenos,
@@ -25711,7 +25673,6 @@
 /obj/machinery/seed_storage/garden{
 	dir = 1
 	},
-/turf/space,
 /turf/unsimulated/floor{
 	icon_state = "steel"
 	},
@@ -27216,10 +27177,6 @@
 "xMU" = (
 /obj/structure/shuttle/engine/heater{
 	dir = 4
-	},
-/obj/machinery/turretid{
-	pixel_x = 32;
-	req_access = list(150)
 	},
 /obj/machinery/turretid{
 	pixel_x = 32;
@@ -37216,7 +37173,7 @@ spk
 spk
 ssG
 xUf
-sHT
+qCw
 wbS
 spk
 vFi
@@ -37474,7 +37431,7 @@ spk
 lkV
 ssG
 ssG
-hpw
+ssG
 kZe
 spk
 vFi
@@ -39022,7 +38979,7 @@ kwj
 ssG
 ssG
 ssG
-hpw
+ssG
 ssG
 wTS
 kAf
@@ -50771,7 +50728,7 @@ vwH
 lnu
 ffE
 vfc
-xbZ
+aaj
 dBP
 bMy
 xom
@@ -51029,7 +50986,7 @@ aLm
 bOS
 ffE
 vfc
-xbZ
+aak
 hbJ
 bMy
 cWu
@@ -53654,7 +53611,7 @@ vFi
 vFi
 vFi
 vFi
-uyi
+vFi
 vFi
 vFi
 vFi
@@ -53912,7 +53869,7 @@ vFi
 vFi
 vFi
 vFi
-uyi
+vFi
 vFi
 vFi
 vFi
@@ -54170,7 +54127,7 @@ vFi
 vFi
 vFi
 vFi
-uyi
+vFi
 vFi
 vFi
 vFi
@@ -54428,7 +54385,7 @@ vFi
 vFi
 vFi
 vFi
-uyi
+vFi
 vFi
 vFi
 vFi
@@ -88477,7 +88434,7 @@ wOF
 iYC
 iYC
 iYC
-tTm
+uvs
 eVq
 uvs
 vFi
@@ -88735,7 +88692,7 @@ uvs
 aga
 aga
 eVq
-qoX
+eVq
 eVq
 vFi
 vFi
@@ -89889,7 +89846,7 @@ dtV
 dtV
 dtV
 dtV
-mcF
+dtV
 vFi
 dtV
 sun
