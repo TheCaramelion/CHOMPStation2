@@ -49,7 +49,9 @@
 
 	var/unique_identifier //Define this for objs that we want to be able to rename. Needed to avoid compiler errors if not included.
 
-/obj/effect/overmap/visitable/Initialize(mapload, dyn_poi) // CHOMPEdit
+	var/mob_announce_cooldown = 0 //Define this to make it so when visited, the ATC will announce their arrival. Only used if you have a Crossed/Uncrossed that calls announce_atc w/ announce_atc being redefined.
+
+/obj/effect/overmap/visitable/Initialize(mapload, dyn_poi) //CHOMPEdit - dyn_poi
 	. = ..()
 	if(. == INITIALIZE_HINT_QDEL)
 		return
@@ -93,7 +95,7 @@
 
 	if(known)
 		plane = PLANE_LIGHTING_ABOVE
-		for(var/obj/machinery/computer/ship/helm/H in global.machines)
+		for(var/obj/machinery/computer/ship/helm/H in GLOB.machines)
 			H.get_known_sectors()
 	else
 		real_appearance = image(icon, src, icon_state)
@@ -145,7 +147,7 @@
 
 /obj/effect/overmap/visitable/proc/register_z_levels()
 	for(var/zlevel in map_z)
-		map_sectors["[zlevel]"] = src
+		GLOB.map_sectors["[zlevel]"] = src
 
 	global.using_map.player_levels |= map_z
 	if(!in_space)
@@ -158,7 +160,7 @@
 	*/
 
 /obj/effect/overmap/visitable/proc/unregister_z_levels()
-	map_sectors -= map_z
+	GLOB.map_sectors -= map_z
 
 	global.using_map.player_levels -= map_z
 	if(!in_space)
@@ -249,6 +251,8 @@
 	icon_state = "sector"
 	anchored = TRUE
 
+/obj/effect/overmap/visitable/sector/proc/announce_atc(var/atom/movable/AM, var/going = FALSE) //Base proc. Used for virgo3b at this time.
+	return
 // Because of the way these are spawned, they will potentially have their invisibility adjusted by the turfs they are mapped on
 // prior to being moved to the overmap. This blocks that. Use set_invisibility to adjust invisibility as needed instead.
 /obj/effect/overmap/visitable/sector/hide()

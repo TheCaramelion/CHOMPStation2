@@ -64,7 +64,7 @@
 		if(LAZYLEN(SS.breaches))
 			to_chat(user, span_warning("You should probably repair that before you start tinkering with it."))
 			return
-	if(O.blood_DNA || O.contaminated) //check if we're bloody or gooey or whatever, so modkits can't be used to hide crimes easily.
+	if(O.forensic_data?.has_blooddna() || O.contaminated) //check if we're bloody or gooey or whatever, so modkits can't be used to hide crimes easily.
 		to_chat(user, span_warning("You should probably clean that up before you start tinkering with it."))
 		return
 	//we have to check that it's not the original type first, because otherwise it might convert wrong based on pathing; the subtype can still count as the basetype
@@ -107,11 +107,9 @@
 	var/obj/N = new to_type(O.loc)
 	user.visible_message(span_notice("[user] opens \the [src] and modifies \the [O] into \the [N]."),span_notice("You open \the [src] and modify \the [O] into \the [N]."))
 
-	//crude, but transfer prints and fibers to avoid forensics abuse, same as the bloody/gooey check above
-	N.fingerprints = O.fingerprints
-	N.fingerprintshidden = O.fingerprintshidden
-	N.fingerprintslast = O.fingerprintslast
-	N.suit_fibers = O.suit_fibers
+	// Transfer forensics to, lets avoid CRIME exploits
+	O.transfer_fingerprints_to(N)
+	O.transfer_fibres_to(N)
 
 	//transfer logic could technically be made more thorough and handle stuff like helmet/boots/tank vars for suits, but in those cases you should be removing the items first anyway
 	if(skip_content_check && transfer_contents)
@@ -1162,22 +1160,21 @@
 
 //RadiantAurora: Tiemli Kroto
 /obj/item/clothing/glasses/welding/tiemgogs
-   name = "custom-fitted welding goggles"
-   desc = "A pair of thick, custom-fitted goggles with LEDs above the lenses. Ruggedly engraved below the lenses is the name 'Tiemli Kroto'."
+	name = "custom-fitted welding goggles"
+	desc = "A pair of thick, custom-fitted goggles with LEDs above the lenses. Ruggedly engraved below the lenses is the name 'Tiemli Kroto'."
 
-   icon = 'icons/vore/custom_items_vr.dmi'
-   icon_state = "tiemgogs"
+	icon = 'icons/vore/custom_items_vr.dmi'
+	icon_state = "tiemgogs"
 
-   icon_override = 'icons/vore/custom_clothes_vr.dmi'
-   icon_state = "tiemgogs"
+	icon_override = 'icons/vore/custom_clothes_vr.dmi'
+	icon_state = "tiemgogs"
 
 /obj/item/clothing/glasses/welding/tiemgogs/mob_can_equip(var/mob/living/carbon/human/H, slot, disable_warning = 0)
-   if(..())
-      if(H.ckey != "radiantaurora")
-         to_chat(H, span_warning("These don't look like they were made to fit you..."))
-         return 0
-      else
-         return 1
+	if(..())
+		if(H.ckey != "radiantaurora")
+			to_chat(H, span_warning("These don't look like they were made to fit you..."))
+			return 0
+		return 1
 
 //Ryumi - Nikki Yumeno
 /obj/item/rig/nikki
@@ -1203,12 +1200,7 @@
 	glove_type = null
 	boot_type = null
 
-	allowed = list(
-		/obj/item/flashlight,
-		/obj/item/tank,
-		/obj/item/suit_cooling_unit,
-		/obj/item/storage,
-		)
+	allowed = list(POCKET_GENERIC, POCKET_EMERGENCY, POCKET_SUIT_REGULATORS, POCKET_STORAGE)
 
 /obj/item/rig/nikki/attackby(obj/item/W, mob/living/user)
 	//This thing accepts ONLY mounted sizeguns. That's IT. Nothing else!
@@ -1227,11 +1219,11 @@
 
 //Nickcrazy - Damon Bones Xrim
 /obj/item/clothing/suit/storage/toggle/bomber/bombersec
-    name = "Security Bomber Jacket"
-    desc = "A black bomber jacket with the security emblem sewn onto it."
-    icon = 'icons/vore/custom_items_vr.dmi'
-    icon_override = 'icons/vore/custom_items_vr.dmi'
-    icon_state = "bombersec"
+	name = "Security Bomber Jacket"
+	desc = "A black bomber jacket with the security emblem sewn onto it."
+	icon = 'icons/vore/custom_items_vr.dmi'
+	icon_override = 'icons/vore/custom_items_vr.dmi'
+	icon_state = "bombersec"
 
 
 //pimientopyro - Scylla Casmus
@@ -1484,21 +1476,21 @@ End CHOMP Removal*/
 
 //Bricker98:Nettie Stough
 /obj/item/modular_computer/tablet/preset/custom_loadout/nettie
-  name = "Remodeled Tablet"
-  desc = "A tablet computer, looks quite high-tech and has some emblems on the back."
-  icon = 'icons/obj/modular_tablet.dmi'
-  icon_state = "elite"
-  icon_state_unpowered = "elite"
+	name = "Remodeled Tablet"
+	desc = "A tablet computer, looks quite high-tech and has some emblems on the back."
+	icon = 'icons/obj/modular_tablet.dmi'
+	icon_state = "elite"
+	icon_state_unpowered = "elite"
 
 /obj/item/modular_computer/tablet/preset/custom_loadout/nettie/install_default_hardware()
-  ..()
-  processor_unit = new/obj/item/computer_hardware/processor_unit/small(src)
-  tesla_link = new/obj/item/computer_hardware/tesla_link(src)
-  hard_drive = new/obj/item/computer_hardware/hard_drive/(src)
-  network_card = new/obj/item/computer_hardware/network_card/advanced(src)
-  nano_printer = new/obj/item/computer_hardware/nano_printer(src)
-  battery_module = new/obj/item/computer_hardware/battery_module(src)
-  battery_module.charge_to_full()
+	..()
+	processor_unit = new/obj/item/computer_hardware/processor_unit/small(src)
+	tesla_link = new/obj/item/computer_hardware/tesla_link(src)
+	hard_drive = new/obj/item/computer_hardware/hard_drive/(src)
+	network_card = new/obj/item/computer_hardware/network_card/advanced(src)
+	nano_printer = new/obj/item/computer_hardware/nano_printer(src)
+	battery_module = new/obj/item/computer_hardware/battery_module(src)
+	battery_module.charge_to_full()
 
 
 //Stobarico - Kyu Comet
@@ -1579,3 +1571,12 @@ End CHOMP Removal*/
 	icon = 'icons/vore/custom_items_vr.dmi'
 	icon_state = "evelynn"
 	pointer_icon_state = "purple_laser"
+
+//sixberry: Thistle
+/obj/item/clothing/glasses/fluff/kintacts_aquamarine
+	name = "Aquamarine KINtacts"
+	desc = "A blueish-green pair of borosilicate glass contact lenses, designed solely for Shadekin. They seem to have some degree of iridescence to them."
+	icon = 'icons/vore/custom_clothes_vr.dmi'
+	icon_override = 'icons/vore/custom_clothes_vr.dmi'
+	icon_state = "kintacts"
+	item_state = "kintacts_mob"

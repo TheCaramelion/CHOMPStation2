@@ -506,7 +506,9 @@ I think I covered everything.
 ///	My thanks to Raeschen for these descriptions
 
 /mob/living/simple_mob/vore/bigdragon/init_vore()
-	if(!voremob_loaded || LAZYLEN(vore_organs))
+	if(!voremob_loaded)
+		return
+	if(LAZYLEN(vore_organs))
 		return
 	var/obj/belly/B = new /obj/belly/dragon/maw(src)
 	B.affects_vore_sprites = FALSE
@@ -567,11 +569,11 @@ I think I covered everything.
 /obj/belly/dragon
 	autotransferchance = 50
 	autotransferwait = 150
-	autotransfer_enabled = 1 //ChompEDIT
-	escapable = 1
+	autotransfer_enabled = TRUE // CHOMPAdd
+	escapable = TRUE
 	escapechance = 100
 	escapetime = 15
-	fancy_vore = 1
+	fancy_vore = TRUE
 	contamination_color = "grey"
 	contamination_flavor = "Wet"
 	vore_verb = "slurp"
@@ -936,7 +938,7 @@ I think I covered everything.
 				return
 			if(P.suiciding)
 				return
-			if(P.health <= (P.maxHealth * 0.95))	//Nom em'
+			if(P.health <= (P.getMaxHealth() * 0.95))	//Nom em'
 				if(vocal)
 					if(last_speak + 30 SECONDS < world.time)
 						var/message_options = list(

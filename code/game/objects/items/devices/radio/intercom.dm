@@ -21,7 +21,11 @@
 	. = ..()
 	var/area/A = get_area(src)
 	if(A)
-		RegisterSignal(A, COMSIG_OBSERVER_APC, /atom/proc/update_icon)
+		RegisterSignal(A, COMSIG_OBSERVER_APC, PROC_REF(on_observer_apc))
+	update_icon()
+
+/obj/item/radio/intercom/proc/on_observer_apc()
+	SIGNAL_HANDLER
 	update_icon()
 
 /obj/item/radio/intercom/Destroy()
@@ -218,7 +222,7 @@
 		to_chat(user, span_notice("\The [src]'s frequency is now set to [span_pink(span_bold("AI Private"))]."))
 //VOREStation Add End
 /obj/item/radio/intercom/locked
-    var/locked_frequency
+	var/locked_frequency
 
 /obj/item/radio/intercom/locked/set_frequency(var/frequency)
 	if(frequency == locked_frequency)

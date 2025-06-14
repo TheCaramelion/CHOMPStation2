@@ -14,8 +14,8 @@
 	pickup_sound = 'sound/items/pickup/device.ogg'
 	drop_sound = 'sound/items/drop/device.ogg'
 
-/obj/item/tvcamera/New()
-	..()
+/obj/item/tvcamera/Initialize(mapload)
+	. = ..()
 	listening_objects += src
 
 /obj/item/tvcamera/Destroy()
@@ -24,7 +24,7 @@
 	qdel(radio)
 	camera = null
 	radio = null
-	..()
+	. = ..()
 
 /obj/item/tvcamera/examine()
 	. = ..()
@@ -178,8 +178,8 @@
 	var/datum/weakref/showing
 	var/showing_name
 
-/obj/item/clothing/accessory/bodycam/New()
-	..()
+/obj/item/clothing/accessory/bodycam/Initialize(mapload)
+	. = ..()
 	listening_objects += src
 
 /obj/item/clothing/accessory/bodycam/Destroy()

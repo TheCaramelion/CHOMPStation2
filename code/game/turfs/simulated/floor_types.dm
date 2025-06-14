@@ -14,9 +14,11 @@
 	var/image/turf_image
 	var/list/decals
 
-/obj/landed_holder/New(var/location = null, var/turf/simulated/shuttle/turf)
-	..(null)
-	my_turf = turf
+/obj/landed_holder/Initialize(mapload)
+	. = ..()
+	if(loc)
+		my_turf = get_turf(src)
+		moveToNullspace()
 
 /obj/landed_holder/proc/land_on(var/turf/T)
 	//Gather destination information
@@ -94,7 +96,7 @@
 	. = ..()
 	if(!antilight_cache)
 		antilight_cache = list()
-		for(var/diag in cornerdirs)
+		for(var/diag in GLOB.cornerdirs)
 			var/image/I = image(LIGHTING_ICON, null, icon_state = "diagonals", layer = 10, dir = diag)
 			I.plane = PLANE_LIGHTING
 			antilight_cache["[diag]"] = I
@@ -108,13 +110,13 @@
 
 // For joined corners touching static lighting turfs, add an overlay to cancel out that part of our lighting overlay.
 /turf/simulated/shuttle/proc/update_breaklights()
-	if(join_flags in cornerdirs) //We're joined at an angle
-		//Dynamic lighting dissolver
-		var/turf/T = get_step(src, turn(join_flags,180))
-		if(!T || !T.dynamic_lighting || !get_area(T).dynamic_lighting)
-			add_overlay(antilight_cache["[join_flags]"], TRUE)
-			return
 	cut_overlay(antilight_cache["[join_flags]"], TRUE)
+	if(!(join_flags in GLOB.cornerdirs)) //We're not joined at an angle
+		return
+	//Dynamic lighting dissolver
+	var/turf/T = get_step(src, turn(join_flags,180))
+	if(!T || !T.dynamic_lighting || !get_area(T).dynamic_lighting)
+		add_overlay(antilight_cache["[join_flags]"], TRUE)
 
 /turf/simulated/shuttle/proc/underlay_update()
 	if(!takes_underlays)

@@ -100,7 +100,7 @@ var/global/datum/emergency_shuttle_controller/emergency_shuttle = new
 		if(istype(A, /area/hallway))
 			A.readyalert()
 
-	atc.reroute_traffic(yes = 1)
+	SSatc.reroute_traffic(yes = 1)
 
 //calls the shuttle for a routine crew transfer
 /datum/emergency_shuttle_controller/proc/call_transfer()
@@ -116,7 +116,7 @@ var/global/datum/emergency_shuttle_controller/emergency_shuttle = new
 	var/estimated_time = round(estimate_arrival_time()/60,1)
 
 	priority_announcement.Announce(replacetext(replacetext(using_map.shuttle_called_message, "%dock_name%", "[using_map.dock_name]"),  "%ETA%", "[estimated_time] minute\s")) //CHOMP Reversion
-	atc.shift_ending()
+	SSatc.shift_ending()
 
 //recalls the shuttle
 /datum/emergency_shuttle_controller/proc/recall()
@@ -136,7 +136,7 @@ var/global/datum/emergency_shuttle_controller/emergency_shuttle = new
 		priority_announcement.Announce(using_map.shuttle_recall_message)
 
 /datum/emergency_shuttle_controller/proc/can_call()
-	if (!universe.OnShuttleCall(null))
+	if (!GLOB.universe.OnShuttleCall(null))
 		return 0
 	if (deny_shuttle)
 		return 0
@@ -271,10 +271,10 @@ var/global/datum/emergency_shuttle_controller/emergency_shuttle = new
 			return
 
 /obj/effect/starender
-	invisibility = 101
+	invisibility = INVISIBILITY_ABSTRACT
 
 /obj/effect/starspawner
-	invisibility = 101
+	invisibility = INVISIBILITY_ABSTRACT
 	var/spawndir = SOUTH
 	var/spawning = 0
 

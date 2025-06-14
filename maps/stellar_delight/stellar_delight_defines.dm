@@ -23,12 +23,12 @@
 /datum/map/stellar_delight/New()
 	..()
 	var/choice = pickweight(list(
-		"logo1" = 50,
-		"logo2" = 50,
-		"gateway" = 5,
-		"youcanttaketheskyfromme" = 200,
-		"intothedark" = 200,
-		"above3b" = 200
+		'html/lobby/logo1.png' = 50,
+		'html/lobby/logo2.png' = 50,
+		'html/lobby/gateway.png' = 5,
+		'html/lobby/youcanttaketheskyfromme.png' = 200,
+		'html/lobby/intothedark.png' = 200,
+		'html/lobby/above3b.png' = 200,
 	))
 	if(choice)
 		lobby_screens = list(choice)
@@ -46,8 +46,7 @@
 
 	zlevel_datum_type = /datum/map_z_level/stellar_delight
 
-	lobby_icon = 'icons/misc/title_vr.dmi'
-	lobby_screens = list("youcanttaketheskyfromme")
+	lobby_screens = list('html/lobby/youcanttaketheskyfromme.png') //set back to youcanttaketheskyfromme
 	id_hud_icons = 'icons/mob/hud_jobs_vr.dmi'
 
 
@@ -199,7 +198,7 @@
 	belter_docked_z = 		list(Z_LEVEL_SPACE_LOW)
 	belter_transit_z =	 	list(Z_LEVEL_MISC)
 	belter_belt_z = 		list(Z_LEVEL_ROGUEMINE_1,
-						 		 Z_LEVEL_ROGUEMINE_2)
+									Z_LEVEL_ROGUEMINE_2)
 
 	mining_station_z =		list(Z_LEVEL_SPACE_LOW)
 	mining_outpost_z =		list(Z_LEVEL_SURFACE_MINE)
@@ -277,7 +276,7 @@
 
 // We have a bunch of stuff common to the station z levels
 /datum/map_z_level/stellar_delight
-	flags = MAP_LEVEL_STATION|MAP_LEVEL_CONTACT|MAP_LEVEL_PLAYER|MAP_LEVEL_CONSOLES|MAP_LEVEL_XENOARCH_EXEMPT|MAP_LEVEL_PERSIST
+	flags = MAP_LEVEL_STATION|MAP_LEVEL_CONTACT|MAP_LEVEL_PLAYER|MAP_LEVEL_CONSOLES|MAP_LEVEL_XENOARCH_EXEMPT|MAP_LEVEL_PERSIST|MAP_LEVEL_VORESPAWN
 	holomap_legend_x = 220
 	holomap_legend_y = 160
 
@@ -410,7 +409,7 @@
 	. = ..()
 	announce_atc(AM,going = TRUE)
 
-/obj/effect/overmap/visitable/sector/virgo3b/proc/announce_atc(var/atom/movable/AM, var/going = FALSE)
+/obj/effect/overmap/visitable/sector/virgo3b/announce_atc(var/atom/movable/AM, var/going = FALSE)
 	if(istype(AM, /obj/effect/overmap/visitable/ship/simplemob))
 		if(world.time < mob_announce_cooldown)
 			return
@@ -422,11 +421,11 @@
 		var/obj/effect/overmap/visitable/ship/landable/SL = AM //Phew
 		var/datum/shuttle/autodock/multi/shuttle = SSshuttles.shuttles[SL.shuttle]
 		if(!istype(shuttle) || !shuttle.cloaked) //Not a multishuttle (the only kind that can cloak) or not cloaked
-			atc.msg(message)
+			SSatc.msg(message)
 
 	//For ships, it's safe to assume they're big enough to not be sneaky
 	else if(istype(AM, /obj/effect/overmap/visitable/ship))
-		atc.msg(message)
+		SSatc.msg(message)
 
 /obj/effect/overmap/visitable/sector/virgo3b/get_space_zlevels()
 	return list(Z_LEVEL_SPACE_ROCKS)

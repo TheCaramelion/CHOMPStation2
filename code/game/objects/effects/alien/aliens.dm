@@ -145,7 +145,7 @@
 	if(get_dist(linked_node, src) > linked_node.node_range)
 		return
 
-	for(var/dirn in cardinal)
+	for(var/dirn in GLOB.cardinal)
 		var/turf/T1 = get_turf(src)
 		var/turf/T2 = get_step(src, dirn)
 
@@ -277,8 +277,8 @@
 	var/ticks = 0
 	var/target_strength = 0
 
-/obj/effect/alien/acid/New(loc, target)
-	..(loc)
+/obj/effect/alien/acid/Initialize(mapload, target)
+	. = ..()
 	src.target = target
 
 	if(isturf(target)) // Turf take twice as long to take down.
