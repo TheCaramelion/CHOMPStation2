@@ -91,7 +91,7 @@
 
 	if(client?.prefs?.species == "Riftwalker" && !client?.prefs?.nickname)
 		pass = FALSE
-		to_chat(src, "<span class='warning'>Riftwalkers need a set nickname! This will be your true name, so don't make it the same name as your character name, as this could make you a very easy target.</span>")
+		to_chat(src, span_warning("Riftwalkers need a set nickname! This will be your true name, so don't make it the same name as your character name, as this could make you a very easy target."))
 	//CHOMP Addition End
 
 	//Went into negatives

@@ -49,7 +49,7 @@
 	heat_level_2 = 100 //Default 400
 	heat_level_3 = 1150 //Default 1000
 
-	flags =  NO_SCAN | NO_MINOR_CUT | NO_INFECT
+	flags = NO_MINOR_CUT | NO_INFECT
 	spawn_flags = SPECIES_CAN_JOIN | SPECIES_IS_WHITELISTED | SPECIES_WHITELIST_SELECTABLE
 
 	vision_flags = SEE_SELF|SEE_MOBS
@@ -72,8 +72,7 @@
 	poison_type = null
 	water_breather = TRUE
 
-	move_trail = /obj/effect/decal/cleanable/blood/tracks/claw/riftwalker
-	digi_allowed = TRUE
+	move_trail = /obj/effect/decal/cleanable/blood/tracks/claw
 
 	has_organ = list(
 		O_HEART =		/obj/item/organ/internal/heart,

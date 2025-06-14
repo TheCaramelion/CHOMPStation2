@@ -376,6 +376,7 @@
 #define SPECIES_REPLICANT_CREW	"Gamma Replicant"
 #define SPECIES_WEREBEAST		"Werebeast"
 #define SPECIES_SHADEKIN		"Shadekin"
+#define SPECIES_RIFTWALKER		"Riftwalker" // CHOMPAdd
 
 // Custom species base
 #define SPECIES_FENNEC			"Fennec"

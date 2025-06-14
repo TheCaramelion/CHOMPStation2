@@ -390,7 +390,6 @@ var/list/species_sound_map = list(
 	"Vox" = vox_sounds,
 	"Vulpine" = vulpine_sounds,
 	"Xeno" = xeno_sounds,
-	"Riftwalker" = rift_sounds,
 	"None" = no_sounds,
 	"Unset" = use_default
 )

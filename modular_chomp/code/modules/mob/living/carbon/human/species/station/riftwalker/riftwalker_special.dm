@@ -9,11 +9,11 @@
 
 	if(!istype(RIFT) || RIFT.state & RW_BLOODCRAWLING || !T.CanPass(src, T) || loc != T || !(ability_flags & AB_PHASE_SHIFTED))
 		return FALSE
-
+/*
 	if(dephaser)
 		log_admin("[key_name_admin(src)] was stunned out of phase at [T.x],[T.y],[T.z] by [dephaser.name], last touched by [dephaser.fingerprintslast].")
 		message_admins("[key_name_admin(src)] was stunned out of phase at [T.x],[T.y],[T.z] by [dephaser.name], last touched by [dephaser.fingerprintslast]. (<A HREF='?_src_=holder;[HrefToken()];adminplayerobservecoodjump=1;X=[T.x];Y=[T.y];Z=[T.z]'>JMP</a>)", 1)
-
+*/
 	riftwalker_phase_out(T)
 
 	src.Weaken(3)

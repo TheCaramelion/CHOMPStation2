@@ -5053,7 +5053,6 @@
 #include "modular_chomp\code\modules\mob\living\carbon\human\species\station\riftwalker\riftwalker_abilities.dm"
 #include "modular_chomp\code\modules\mob\living\carbon\human\species\station\riftwalker\riftwalker_actions.dm"
 #include "modular_chomp\code\modules\mob\living\carbon\human\species\station\riftwalker\riftwalker_attacks.dm"
-#include "modular_chomp\code\modules\mob\living\carbon\human\species\station\riftwalker\riftwalker_hud.dm"
 #include "modular_chomp\code\modules\mob\living\carbon\human\species\station\riftwalker\riftwalker_special.dm"
 #include "modular_chomp\code\modules\mob\living\carbon\human\species\station\riftwalker\riftwalker_species.dm"
 #include "modular_chomp\code\modules\mob\living\carbon\human\species\station\traits\negative.dm"
