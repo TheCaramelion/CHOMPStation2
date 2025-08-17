@@ -43,6 +43,7 @@
 	var/vore_sound = 'sound/effects/metalscrape2.ogg'
 
 /obj/structure/closet/Initialize(mapload)
+	ADD_TRAIT(src, TRAIT_ALT_CLICK_BLOCKER, ROUNDSTART_TRAIT)
 	..()
 	return INITIALIZE_HINT_LATELOAD
 
@@ -72,7 +73,7 @@
 	update_icon()
 
 /obj/structure/closet/Destroy()
-	qdel_null(door_obj)
+	QDEL_NULL(door_obj)
 	closet_appearance = null
 	return ..()
 
@@ -359,6 +360,9 @@
 	if(!isturf(user.loc)) // are you in a container/closet/pod/etc?
 		return
 	if(!opened)
+		// Attempt to climb if not opened!
+		if(O == user)
+			SEND_SIGNAL(src, COMSIG_CLIMBABLE_START_CLIMB, user)
 		return
 	if(istype(O, /obj/structure/closet))
 		return
@@ -585,4 +589,5 @@
 	playsound(src, vore_sound, 25)
 
 	var/mob/living/M = usr
-	M.perform_the_nom(usr,target,usr,usr.vore_selected,-1)
+	if(isliving(M))
+		M.begin_instant_nom(M,target,M,M.vore_selected)

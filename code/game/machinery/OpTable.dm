@@ -81,6 +81,8 @@
 	if(C.client)
 		C.client.perspective = EYE_PERSPECTIVE
 		C.client.eye = src
+	if(C.pulledby)
+		C.pulledby.stop_pulling()
 	C.resting = 1
 	C.loc = src.loc
 	for(var/obj/O in src)
@@ -105,7 +107,7 @@
 
 	take_victim(target, user)
 
-/obj/machinery/optable/verb/climb_on()
+/obj/machinery/optable/verb/climb_onto()
 	set name = "Climb On Table"
 	set category = "Object"
 	set src in oview(1)

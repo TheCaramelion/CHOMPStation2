@@ -91,7 +91,7 @@
 	throwforce_absorb_threshold = 10
 	genders = list(MALE, FEMALE, PLURAL, NEUTER)
 
-	min_age = 18
+	min_age = 32
 	max_age = 260
 
 	economic_modifier = 10
@@ -710,6 +710,7 @@
 		//traumatic_shock is updated every tick, incrementing that is pointless - shock_stage is the counter.
 		//Not that it matters much for diona, who have NO_PAIN.
 		H.shock_stage++
+	..()
 
 
 
@@ -883,7 +884,7 @@
 /datum/species/hi_zoxxen
 	name = SPECIES_ZORREN_HIGH
 	name_plural = "Zorren"
-	icobase = 'icons/mob/human_races/r_fox_vr.dmi'
+	icobase = 'icons/mob/human_races/r_fox_light_vr.dmi'
 	deform = 'icons/mob/human_races/r_def_fox.dmi'
 	tail = "tail"
 	icobase_tail = 1
@@ -896,7 +897,7 @@
 		/mob/living/proc/shred_limb,
 		/mob/living/carbon/human/proc/tie_hair)
 
-	min_age = 18
+	min_age = 20
 	max_age = 80
 
 	blurb = "The fennec-like, blue-blooded Zorren are native to Virgo 4/Menhir and are descendants of a precursor species \
@@ -919,6 +920,9 @@
 	blood_reagents = REAGENT_ID_COPPER
 	reagent_tag = IS_ZORREN
 	color_mult = 1
+	default_custom_base = SPECIES_ZORREN_HIGH
+
+	selects_bodytype = SELECTS_BODYTYPE_ZORREN
 
 	genders = list(MALE, FEMALE, PLURAL, NEUTER)
 
@@ -927,6 +931,15 @@
 		"You feel uncomfortably warm.",
 		"Your overheated skin itches."
 		)
+
+/datum/species/hi_zoxxen/get_race_key()
+	var/datum/species/real = GLOB.all_species[base_species]
+	return real.race_key
+
+/datum/species/hi_zoxxen/dark    //alternate sprite base for zorren
+	name = SPECIES_ZORREN_DARK
+	icobase = 'icons/mob/human_races/r_fox_vr.dmi'
+	spawn_flags = SPECIES_IS_RESTRICTED
 
 /datum/species/vulpkanin
 	name = SPECIES_VULPKANIN
@@ -999,7 +1012,7 @@
 	icobase = 'icons/mob/human_races/r_skrell_vr.dmi'
 	deform = 'icons/mob/human_races/r_def_skrell_vr.dmi'
 	color_mult = 1
-	min_age = 18
+	min_age = 20
 	inherent_verbs = list(/mob/living/carbon/human/proc/tie_hair, /mob/living/carbon/human/proc/water_stealth, /mob/living/carbon/human/proc/underwater_devour)
 	reagent_tag = null
 	allergens = null
@@ -1580,7 +1593,7 @@
 			coldshock = 16
 			H.eye_blurry = 5
 		H.shock_stage = min(H.shock_stage + coldshock, 160) //cold hurts and gives them pain messages, eventually weakening and paralysing, but doesn't damage.
-		return
+	..()
 
 /datum/species/werebeast
 	name = SPECIES_WEREBEAST
@@ -1743,6 +1756,7 @@
 	if(temp_diff >= 50)
 		H.shock_stage = min(H.shock_stage + (temp_diff/20), 160) // Divided by 20 is the same as previous numbers, but a full scale
 		H.eye_blurry = max(5,H.eye_blurry)
+	..()
 
 /datum/species/xenochimera/get_race_key()
 	var/datum/species/real = GLOB.all_species[base_species]

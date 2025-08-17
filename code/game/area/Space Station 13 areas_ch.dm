@@ -32,6 +32,9 @@
 /area/crew_quarters/coffee_shop
 	flags = RAD_SHIELDED | AREA_ALLOW_CLOCKOUT
 
+/area/crew_quarters/coffee_shop/lib
+	name = "\improper Coffee Shop Lib"
+
 /area/crew_quarters/kitchen
 	flags = RAD_SHIELDED
 
@@ -72,13 +75,6 @@
 /area/rnd/research/particleaccelerator
 	name = "\improper Particle Accelerator Lab"
 	icon_state = "toxlab"
-
-/area/shadekin
-	name = "\improper Shadekin Retreat"
-	icon_state = "blue"
-	requires_power = 0
-	ambience = AMBIENCE_OTHERWORLDLY
-	flags = RAD_SHIELDED | AREA_FLAG_IS_NOT_PERSISTENT | BLUE_SHIELDED | AREA_ALLOW_LARGE_SIZE | AREA_LIMIT_DARK_RESPITE | AREA_ALLOW_CLOCKOUT
 
 /area/security/nuke_storage
 	flags = PHASE_SHIELDED

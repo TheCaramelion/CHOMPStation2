@@ -432,7 +432,7 @@
 				tab_data["set_action"] = DIGEST_OWNER
 				tab_data["tooltip"] = "Displayed to you when your prey gets digested."
 				return tab_data
-		if(message_subtab == ABSORBED_MESSAGE)
+		if(message_subtab == ABSORB_MESSAGE)
 			tab_data["possible_messages"] = list(TO_PREY, TO_YOU)
 			if(!selected_message)
 				selected_message = TO_PREY
@@ -686,7 +686,14 @@
 	return autotransfer_data
 
 /datum/vore_look/proc/compile_liquid_interact_data(obj/belly/selected)
-	var/list/liq_interacts = list()
+	var/list/liquid_composition = list()
+	for(var/datum/reagent/reagent in selected.reagents.reagent_list)
+		UNTYPED_LIST_ADD(liquid_composition, list("name" = reagent.name, "volume" = reagent.volume))
+
+	var/list/liq_interacts = list(
+									"current_reagents" = liquid_composition,
+									"total_volume" = selected.reagents.total_volume
+								)
 	if(selected.show_liquids)
 		var/list/liquid_addon_list = list()
 		for(var/flag_name in selected.reagent_mode_flag_list)

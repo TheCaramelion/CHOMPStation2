@@ -172,7 +172,7 @@
 	suit_type = "hazmat hardsuit"
 	desc = "An Anomalous Material Interaction hardsuit that protects against the strangest energies the universe can throw at it."
 	icon_state = "science_rig"
-	armor = list(melee = 45, bullet = 5, laser = 45, energy = 80, bomb = 60, bio = 100, rad = 100)
+	armor = list(melee = 45, bullet = 5, laser = 45, energy = 80, bomb = 100, bio = 100, rad = 100)
 	slowdown = 0.5
 	offline_vision_restriction = 1
 	siemens_coefficient= 0.75
@@ -320,8 +320,6 @@
 	sprite_sheets = null
 
 /obj/item/clothing/shoes/magboots/rig/ce/focalpoint
-	icon = 'icons/inventory/feet/item_vr.dmi'
-	default_worn_icon = 'icons/inventory/feet/mob_vr.dmi'
 	icon_state = "techno_rig"
 	// No animal people sprites for these yet, sad times
 	species_restricted = list("exclude", SPECIES_TESHARI, SPECIES_VOX, SPECIES_DIONA)
@@ -380,8 +378,6 @@
 	sprite_sheets = null
 
 /obj/item/clothing/shoes/magboots/rig/hephaestus
-	icon = 'icons/inventory/feet/item_vr.dmi'
-	default_worn_icon = 'icons/inventory/feet/mob_vr.dmi'
 	icon_state = "ihs_rig"
 	// No animal people sprites for these yet, sad times
 	species_restricted = list("exclude", SPECIES_TESHARI, SPECIES_VOX, SPECIES_DIONA)
@@ -491,8 +487,6 @@
 	sprite_sheets_obj = ALL_VR_SPRITE_SHEETS_SUIT_ITEM
 
 /obj/item/clothing/shoes/magboots/rig/ce/baymed
-	icon = 'icons/inventory/feet/item_vr.dmi'
-	default_worn_icon = 'icons/inventory/feet/mob_vr.dmi'
 	icon_state = "medical_rig_bay"
 	item_state = null
 	sprite_sheets = null
@@ -557,8 +551,6 @@
 	sprite_sheets_obj = ALL_VR_SPRITE_SHEETS_SUIT_ITEM
 
 /obj/item/clothing/shoes/magboots/rig/ce/bayeng
-	icon = 'icons/inventory/feet/item_vr.dmi'
-	default_worn_icon = 'icons/inventory/feet/mob_vr.dmi'
 	icon_state = "engineering_rig_bay"
 	item_state = null
 	sprite_sheets = null
@@ -621,8 +613,6 @@
 	sprite_sheets_obj = ALL_VR_SPRITE_SHEETS_SUIT_ITEM
 
 /obj/item/clothing/shoes/magboots/rig/pathfinder
-	icon = 'icons/inventory/feet/item_vr.dmi'
-	default_worn_icon = 'icons/inventory/feet/mob_vr.dmi'
 	icon_state = "pathfinder_rig_bay"
 	item_state = null
 	sprite_sheets = null

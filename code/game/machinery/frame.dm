@@ -216,6 +216,57 @@ GLOBAL_LIST(construction_frame_floor)
 	circuit = /obj/machinery/atmospheric_field_generator
 	frame_size = 3
 
+// Refinery machines
+/datum/frame/frame_types/industrial_reagent_grinder
+	name = "Industrial Chemical Grinder"
+	icon_override = 'icons/obj/stock_parts_refinery.dmi'
+	frame_class = FRAME_CLASS_MACHINE
+
+/datum/frame/frame_types/industrial_reagent_pump
+	name = "Industrial Chemical Pump"
+	icon_override = 'icons/obj/stock_parts_refinery.dmi'
+	frame_class = FRAME_CLASS_MACHINE
+
+/datum/frame/frame_types/industrial_reagent_filter
+	name = "Industrial Chemical Filter"
+	icon_override = 'icons/obj/stock_parts_refinery.dmi'
+	frame_class = FRAME_CLASS_MACHINE
+
+/datum/frame/frame_types/industrial_reagent_vat
+	name = "Industrial Chemical Vat"
+	icon_override = 'icons/obj/stock_parts_refinery.dmi'
+	frame_class = FRAME_CLASS_MACHINE
+
+/datum/frame/frame_types/industrial_reagent_mixer
+	name = "Industrial Chemical Mixer"
+	icon_override = 'icons/obj/stock_parts_refinery.dmi'
+	frame_class = FRAME_CLASS_MACHINE
+
+/datum/frame/frame_types/industrial_reagent_pipe
+	name = "Industrial Chemical Pipe"
+	icon_override = 'icons/obj/stock_parts_refinery.dmi'
+	frame_class = FRAME_CLASS_MACHINE
+
+/datum/frame/frame_types/industrial_reagent_waste_processor
+	name = "Industrial Chemical Waste Processor"
+	icon_override = 'icons/obj/stock_parts_refinery.dmi'
+	frame_class = FRAME_CLASS_MACHINE
+
+/datum/frame/frame_types/industrial_reagent_hub
+	name = "Industrial Chemical Hub"
+	icon_override = 'icons/obj/stock_parts_refinery.dmi'
+	frame_class = FRAME_CLASS_MACHINE
+
+/datum/frame/frame_types/industrial_reagent_reactor
+	name = "Industrial Chemical Reactor"
+	icon_override = 'icons/obj/stock_parts_refinery.dmi'
+	frame_class = FRAME_CLASS_MACHINE
+
+/datum/frame/frame_types/industrial_reagent_furnace
+	name = "Industrial Chemical Sintering Furnace"
+	icon_override = 'icons/obj/stock_parts_refinery.dmi'
+	frame_class = FRAME_CLASS_MACHINE
+
 //////////////////////////////
 // Frame Object (Structure)
 //////////////////////////////
@@ -247,7 +298,7 @@ GLOBAL_LIST(construction_frame_floor)
 /obj/structure/frame/proc/update_desc()
 	var/D
 	if(req_components)
-		var/list/component_list = new
+		var/list/component_list = list()
 		for(var/I in req_components)
 			if(req_components[I] > 0)
 				component_list += "[num2text(req_components[I])] [req_component_names[I]]"
@@ -295,6 +346,8 @@ GLOBAL_LIST(construction_frame_floor)
 		density = TRUE
 
 	update_icon()
+
+	AddElement(/datum/element/climbable)
 
 /obj/structure/frame/attackby(obj/item/P as obj, mob/user as mob)
 	if(P.has_tool_quality(TOOL_WRENCH))

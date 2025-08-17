@@ -3,7 +3,6 @@
 /////////////////////////////
 ////    WEAPONS BELOW    ////
 /////////////////////////////
-/* //CHOMPedit commented micromech stuff, because fuck this trash
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/microlaser
 	w_class = ITEMSIZE_LARGE
 	desc = "A mounted micro laser-carbine for micro mechs." //CHOMPedit
@@ -51,7 +50,7 @@
 	icon_state = "micromech_shotgun"
 	equip_cooldown = 15
 	var/mode = 0 //0 - buckshot, 1 - beanbag, 2 - slug.
-	projectile = /obj/item/projectile/bullet/pellet/shotgun
+	projectile = /obj/item/projectile/scatter/shotgun
 	fire_sound = 'sound/weapons/gunshot_shotgun.ogg'
 	fire_volume = 80
 	projectiles = 6
@@ -68,7 +67,7 @@
 		switch(mode)
 			if(0)
 				occupant_message("Now firing buckshot.")
-				projectile = /obj/item/projectile/bullet/pellet/shotgun
+				projectile = /obj/item/projectile/scatter/shotgun
 			if(1)
 				occupant_message("Now firing beanbags.")
 				projectile = /obj/item/projectile/bullet/shotgun/beanbag
@@ -133,7 +132,7 @@
 				else
 					log_message("Drilled through [target]")
 					target.ex_act(2)
-			else if(istype(target, /turf/simulated/mineral))
+			else if(ismineralturf(target))
 				for(var/turf/simulated/mineral/M in range(chassis,1))
 					if(get_dir(chassis,M)&chassis.dir)
 						M.GetDrilled()
@@ -225,4 +224,4 @@
 		O.loc = src.loc
 	to_chat(usr, span_info("You empty the ore box"))
 
-	return */
+	return

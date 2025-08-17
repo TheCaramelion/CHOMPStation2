@@ -184,13 +184,6 @@
 			L.resize(new_size/100, uncapped = has_large_resize_bounds(), ignore_prefs = TRUE)
 		//CHOMPEDIT - I don't need to be informed every time a prommie changes sizes
 
-/*
-//Add the set_size() proc to usable verbs. By commenting this out, we can leave the proc and hand it to species that need it.
-/hook/living_new/proc/resize_setup(mob/living/H)
-	add_verb(H, /mob/living/proc/set_size)
-	return 1
-*/
-
 /**
  * Attempt to scoop up this mob up into M's hands, if the size difference is large enough.
  * @return false if normal code should continue, 1 to prevent normal code.
@@ -210,6 +203,8 @@
 	if(isanimal(M))
 		var/mob/living/simple_mob/SA = M
 		if(!SA.has_hands)
+			return 0
+		if(mob_size < MOB_SMALL && src == M)
 			return 0
 	if(size_diff >= 0.50 || mob_size < MOB_SMALL || size_diff >= get_effective_size() || ignore_size)
 		if(buckled)

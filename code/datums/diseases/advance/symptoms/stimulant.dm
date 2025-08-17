@@ -34,12 +34,17 @@ Bonus
 		"Stage 8" = "The virus causes extreme nervousness and paranoia, resulting in occasional hallucinations, and extreme restlessness, but great overall energy."
 	)
 
+	prefixes = list("Gray ", "Amped ", "Nervous ")
+	bodies = list("Hyper")
+
 /datum/symptom/stimulant/severityset(datum/disease/advance/A)
 	. = ..()
 	if(A.resistance >= 8)
 		severity -= 1
 	if(A.stage_rate >= 8)
 		severity -= 1
+		prefixes = list("Gray ", "Amped ", "Paranoid ")
+		suffixes = list(" Madness", " Insanity")
 
 /datum/symptom/stimulant/Start(datum/disease/advance/A)
 	if(!..())
@@ -60,7 +65,7 @@ Bonus
 	switch(A.stage)
 		if(2 to 3)
 			if(prob(power) && H.stat)
-				H.jitteriness += (2 * power)
+				H.make_jittery(2 * power)
 				H.emote("twitch")
 				to_chat(H, span_notice("[pick("you feel energetic!", "You feel well-rested.", "You feel great!")]"))
 		if(4 to 5)

@@ -1,4 +1,4 @@
-import { type BooleanLike } from 'tgui-core/react';
+import type { BooleanLike } from 'tgui-core/react';
 
 export type BodyMarking = Record<
   string,
@@ -181,6 +181,7 @@ export type BodyData = {
   body_markings: Record<string, BodyMarking>;
 
   tail_style: string;
+  tail_layering: string;
   tail_color1: string;
   tail_color2: string;
   tail_color3: string;
@@ -236,10 +237,10 @@ export type AntagonismData = {
   uplink_type: string;
   record_banned: BooleanLike;
   exploitable_record?: string;
-  pai_name: string;
-  pai_desc: string;
-  pai_role: string;
-  pai_comments: string;
+  pai_name?: string;
+  pai_desc?: string;
+  pai_role?: string;
+  pai_comments?: string;
   syndicate_ban: BooleanLike;
   special_roles: SpecialRole[];
 };
@@ -381,7 +382,7 @@ export type Species = {
   species_language: string;
   icobase: string;
   rarity: number;
-  has_organ: string;
+  has_organ: Record<string, string>;
   flags: SpeciesFlags;
   spawn_flags: SpawnFlags;
   appearance_flags: AppearanceFlags;

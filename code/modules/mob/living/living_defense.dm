@@ -98,6 +98,12 @@
 	if(istype(L) && L.a_intent != I_HELP)
 		if(ai_holder) // Using disarm, grab, or harm intent is considered a hostile action to the mob's AI.
 			ai_holder.react_to_attack(L)
+	if(touch_reaction_flags & SPECIES_TRAIT_THORNS)
+		if(src != L)
+			L.apply_damage(3, BRUTE)
+			L.visible_message( \
+				span_warning("[L] is hurt by sharp body parts when touching [src]!"), \
+				span_warning("[src] is covered in sharp bits and it hurt when you touched them!"), )
 
 /mob/living/bullet_act(var/obj/item/projectile/P, var/def_zone)
 	//CHOMPedit begin, re-adds stealth removed feature
@@ -269,8 +275,8 @@
 		var/obj/O = AM
 		if(stat != DEAD && istype(O,/obj/item) && trash_catching && vore_selected) //ported from chompstation
 			var/obj/item/I = O
-			if(adminbus_trash || is_type_in_list(I,edible_trash) && I.trash_eatable && !is_type_in_list(I,item_vore_blacklist))
-				visible_message(span_vwarning("[I] is thrown directly into [src]'s [lowertext(vore_selected.name)]!")) //CHOMPEdit
+			if(adminbus_trash || is_type_in_list(I, GLOB.edible_trash) && I.trash_eatable && !is_type_in_list(I, GLOB.item_vore_blacklist))
+				visible_message(span_vwarning("[I] is thrown directly into [src]'s [lowertext(vore_selected.name)]!"))
 				I.throwing = 0
 				I.forceMove(vore_selected)
 				return
@@ -396,6 +402,15 @@
 // End BS12 momentum-transfer code.
 
 /mob/living/attack_generic(var/mob/user, var/damage, var/attack_message)
+	if(istype(user,/mob/living))
+		var/mob/living/L = user
+		if(touch_reaction_flags & SPECIES_TRAIT_THORNS)
+			if((src != L))
+				L.apply_damage(3, BRUTE)
+				L.visible_message( \
+					span_warning("[L] is hurt by sharp body parts when touching [src]!"), \
+					span_warning("[src] is covered in sharp bits and it hurt when you touched them!"), )
+
 	if(!damage)
 		return
 
@@ -601,7 +616,6 @@
 
 // damage ONE external organ, organ gets randomly selected from damaged ones.
 /mob/living/proc/take_organ_damage(var/brute, var/burn, var/emp=0)
-	if(status_flags & GODMODE)	return 0	//godmode
 	adjustBruteLoss(brute)
 	adjustFireLoss(burn)
 	src.updatehealth()
@@ -614,7 +628,6 @@
 
 // damage MANY external organs, in random order
 /mob/living/proc/take_overall_damage(var/brute, var/burn, var/used_weapon = null)
-	if(status_flags & GODMODE)	return 0	//godmode
 	adjustBruteLoss(brute)
 	adjustFireLoss(burn)
 	src.updatehealth()

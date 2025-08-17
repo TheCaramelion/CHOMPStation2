@@ -10,6 +10,8 @@ export type Data = {
   persist_edit_mode: BooleanLike;
   host_mobtype: hostMob | null;
   our_bellies?: bellyData[] | null;
+  min_belly_name: number;
+  max_belly_name: number;
   selected?: selectedData | null;
   prefs?: prefData | null;
   soulcatcher?: soulcatcherData | null;
@@ -124,13 +126,17 @@ export type bellyOptionData = {
   selective_preference: string;
   save_digest_mode: BooleanLike;
   eating_privacy_local: string;
+  vore_death_privacy: string;
   vorespawn_blacklist: BooleanLike;
   vorespawn_whitelist: string[];
   vorespawn_absorbed: number;
   private_struggle: BooleanLike;
+  absorbedrename_enabled: BooleanLike;
+  absorbedrename_name: string;
+  absorbedrename_name_max: number;
+  absorbedrename_name_min: number;
   drainmode_options: string[];
   drainmode: string;
-  mob_belly_controls: siliconeBellyControls;
 };
 
 export type bellySoundData = {
@@ -178,6 +184,7 @@ export type bellyVisualData = {
   tail_option_shown: BooleanLike;
   tail_to_change_to: BooleanLike | string;
   tail_sprite_options: string[];
+  mob_belly_controls: siliconeBellyControls;
 };
 
 export type bellyInteractionData = {
@@ -251,6 +258,8 @@ export type autoTransferOption = {
   autotransfer_blacklist_items: checkBoxEntry[];
 };
 
+type bellyReagent = { name: string; volume: number };
+
 export type liqInteractData = {
   liq_reagent_gen: BooleanLike;
   liq_reagent_type: string;
@@ -279,6 +288,8 @@ export type liqInteractData = {
   max_ingested: number;
   custom_ingested_color: string;
   custom_ingested_alpha: number;
+  total_volume: number;
+  current_reagents: bellyReagent[];
 };
 
 export type prefData = {
@@ -322,6 +333,7 @@ export type prefData = {
   food_vore: BooleanLike;
   digest_pain: BooleanLike;
   eating_privacy_global: BooleanLike;
+  vore_death_privacy: BooleanLike;
   allow_mimicry: BooleanLike;
   soulcatcher_allow_capture: BooleanLike;
   soulcatcher_allow_transfer: BooleanLike;
@@ -426,6 +438,7 @@ export type localPrefs = {
   mind_transfer: preferenceData;
   strippref: preferenceData;
   eating_privacy_global: preferenceData;
+  vore_death_privacy: preferenceData;
   allow_mimicry: preferenceData;
   autotransferable: preferenceData;
   liquid_receive: preferenceData;

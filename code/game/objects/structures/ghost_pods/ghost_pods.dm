@@ -44,17 +44,14 @@
 		if(delay_to_try_again)
 			addtimer(CALLBACK(src, PROC_REF(trigger)), delay_to_try_again)
 	UnregisterSignal(Q, COMSIG_GHOST_QUERY_COMPLETE)
-	qdel_null(Q) //get rid of the query
+	QDEL_NULL(Q) //get rid of the query
 	if(deletion_candidate)
 		qdel(src)
 
 // Override this to create whatever mob you need. Be sure to call ..() if you don't want it to make infinite mobs.
 /obj/structure/ghost_pod/proc/create_occupant(var/mob/M)
 	used = TRUE
-	//VOREStation Addition Start
-	if(src in active_ghost_pods)
-		active_ghost_pods -= src
-	//VOREStation Addition End
+	GLOB.active_ghost_pods -= src
 	return TRUE
 
 
