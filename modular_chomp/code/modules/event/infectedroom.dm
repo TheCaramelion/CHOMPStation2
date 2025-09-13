@@ -14,7 +14,8 @@
 		/area/maintenance,
 		/area/medical,
 		/area/rnd/test_area,
-		/area/solar
+		/area/solar,
+		/area/hallway/secondary
 		)
 
 /datum/event/disease_outbreak/floor/setup()
@@ -74,6 +75,6 @@
 			V = new(pick_n_take(target_turfs))
 			V.viruses |= chosen_disease
 		else
-			var/mob/living/simple_mob/vore/aggressive/macrophage/M
+			var/mob/living/carbon/human/ai_controlled/monkey/M
 			M = new(pick_n_take(target_turfs))
-			M.infections |= chosen_disease
+			M.ForceContractDisease(chosen_disease)
