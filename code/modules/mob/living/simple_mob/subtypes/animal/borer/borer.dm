@@ -44,7 +44,7 @@
 	var/used_dominate							// world.time when the dominate power was last used.
 	var/datum/ghost_query/Q						// Used to unregister our signal
 
-	can_be_drop_prey = FALSE //CHOMP Add
+	can_be_drop_prey = FALSE
 
 /mob/living/simple_mob/animal/borer/roundstart
 	roundstart = TRUE
@@ -215,6 +215,12 @@
 
 /mob/living/simple_mob/animal/borer/cannot_use_vents()
 	return
+
+/mob/living/simple_mob/animal/borer/UnarmedAttack(var/atom/A, var/proximity)
+	if(ismob(loc))
+		to_chat(src, span_warning("You cannot interact with that from inside a host!"))
+		return
+	. = ..()
 
 // This is awful but its literally say code.
 /mob/living/simple_mob/animal/borer/say(var/message, var/datum/language/speaking = null, var/whispering = 0)

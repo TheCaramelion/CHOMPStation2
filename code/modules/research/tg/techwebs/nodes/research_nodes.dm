@@ -52,6 +52,13 @@
 		"beacon",
 		"beacon_locator",
 		"chameleon",
+		"shelter_capsule",
+		"shelter_capsule_luxury",
+		"shelter_capsule_recroom",
+		"shelter_capsule_sauna",
+		"shelter_capsule_luxurybar",
+		"shelter_capsule_luxurycabin",
+		"shelter_capsule_cafe",
 		// "ore_silo",
 		// "plumbing_receiver",
 		// "adv_watering_can",
@@ -104,6 +111,7 @@
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 	announce_channels = list(CHANNEL_SCIENCE)
 
+// Decided that we were not keen on this being able to be printed freely as we immediately saw undesirable behaviour //CHOMPEdit - Re-enable
 /datum/techweb_node/telekinetics
 	id = TECHWEB_NODE_TELEKINETIC_RESEARCH
 	display_name = "Applied Telekinetics Research"
@@ -114,3 +122,4 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 	announce_channels = list(CHANNEL_SCIENCE)
+// //CHOMPEdit - Re-enable

@@ -34,6 +34,7 @@
 	var/autotransferable = TRUE // Toggle for autotransfer mechanics.
 	var/recursive_listeners
 	var/listening_recursive = NON_LISTENING_ATOM
+	var/unacidable = TRUE
 
 /atom/movable/Initialize(mapload)
 	. = ..()
@@ -48,7 +49,7 @@
 			render_target = ref(src)
 			em_block = new(src, render_target)
 			add_overlay(list(em_block), TRUE)
-			RegisterSignal(em_block, COMSIG_PARENT_QDELETING, PROC_REF(emblocker_gc))
+			RegisterSignal(em_block, COMSIG_QDELETING, PROC_REF(emblocker_gc))
 	if(opacity)
 		AddElement(/datum/element/light_blocking)
 	if(icon_scale_x != DEFAULT_ICON_SCALE_X || icon_scale_y != DEFAULT_ICON_SCALE_Y || icon_rotation != DEFAULT_ICON_ROTATION)
@@ -67,7 +68,7 @@
 /atom/movable/Destroy()
 	if(em_block)
 		cut_overlay(em_block)
-		UnregisterSignal(em_block, COMSIG_PARENT_QDELETING)
+		UnregisterSignal(em_block, COMSIG_QDELETING)
 		QDEL_NULL(em_block)
 	. = ..()
 
@@ -265,6 +266,10 @@
 // Make sure you know what you're doing if you call this, this is intended to only be called by byond directly.
 // You probably want CanPass()
 /atom/movable/Cross(atom/movable/AM)
+	if(SEND_SIGNAL(src, COMSIG_MOVABLE_CROSS, AM) & COMPONENT_BLOCK_CROSS)
+		return FALSE
+	if(SEND_SIGNAL(AM, COMSIG_MOVABLE_CROSS_OVER, src) & COMPONENT_BLOCK_CROSS)
+		return FALSE
 	return CanPass(AM, loc)
 
 /atom/movable/CanPass(atom/movable/mover, turf/target)
@@ -658,7 +663,7 @@
 
 /atom/movable/proc/emblocker_gc(var/datum/source)
 	SIGNAL_HANDLER
-	UnregisterSignal(source, COMSIG_PARENT_QDELETING)
+	UnregisterSignal(source, COMSIG_QDELETING)
 	cut_overlay(source)
 	if(em_block == source)
 		em_block = null
@@ -716,9 +721,6 @@
 		LAZYOR(location.recursive_listeners, arrived.recursive_listeners)
 
 /atom/movable/proc/show_message(msg, type, alt, alt_type)//Message, type of message (1 or 2), alternative message, alt message type (1 or 2)
-	return
-
-/atom/movable/proc/Bump_vr(var/atom/A, yes)
 	return
 
 /atom/movable/vv_get_dropdown()

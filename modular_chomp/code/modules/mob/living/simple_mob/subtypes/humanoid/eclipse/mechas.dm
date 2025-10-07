@@ -14,16 +14,11 @@
 	shock_resist = -0.2
 	deflect_chance = 0
 	movement_cooldown = 10
+	status_flags = null
 	var/specialattackprojectile = /obj/item/projectile/energy/phase/bolt
 	var/attackcycle = 1
 	var/artidrop = /obj/effect/artillery_attack
-
-/mob/living/simple_mob/mechanical/mecha/eclipse/handle_special()
-	if(stat != DEAD)
-		src.SetStunned(0)
-		src.SetWeakened(0)
-		src.SetParalysis(0)
-	..()
+	var/rng_cycle = 0
 
 /mob/living/simple_mob/mechanical/mecha/eclipse/do_special_attack(atom/A)
 	bullet_heck(A, 3, 3)
@@ -61,7 +56,6 @@
 	wreckage = /obj/structure/loot_pile/mecha/odd_gygax
 
 /mob/living/simple_mob/mechanical/mecha/eclipse/antipersonal_unit/do_special_attack(atom/A)
-	var/rng_cycle
 	switch(a_intent)
 		if(I_DISARM) //phase3
 			if(attackcycle == 1)
@@ -306,7 +300,6 @@
 		visible_message(span_cult("[P] has been adapted too!."))
 
 /mob/living/simple_mob/mechanical/mecha/eclipse/darkmatter_assualt/armored/do_special_attack(atom/A)
-	var/rng_cycle
 	switch(a_intent)
 		if(I_DISARM) //phase3
 			if(attackcycle == 1)
@@ -383,7 +376,6 @@
 	icon_state = "eclipse_janus"
 
 /mob/living/simple_mob/mechanical/mecha/eclipse/darkmatter_assualt/phasetwo/do_special_attack(atom/A)
-	var/rng_cycle
 	if(attackcycle == 1)
 		attackcycle = rand(4,6)
 		addtimer(CALLBACK(src, PROC_REF(random_firing), A, 14, attackcycle, 5), 0.5 SECONDS, TIMER_DELETE_ME)
@@ -501,8 +493,7 @@
 	icon_state = "cursor_guard"
 	icon_living = "cursor_guard"
 	armor = list(melee = 80, bullet = 80, laser = 80, energy = 80, bomb = 80, bio = 100, rad = 100)
-	pilot_type = /obj/item/prop/tyrlore/stolenbreacher
-	wreckage = /obj/item/pickaxe/diamonddrill/alien
+	wreckage = /obj/item/prop/tyrlore/stolenbreacher
 	specialattackprojectile = /obj/item/projectile/energy/eclipse/mining
 	desc = "A being wearing what appears to be a modified breacher outfit."
 	projectiletype = /obj/item/projectile/arc/explosive_rocket
@@ -571,10 +562,13 @@
 	health = 1000
 	maxHealth = 1000 //I don't like four digits, but the intended weapon has 30 damage, and desired player count is 3 with a length of 3 mins, doing the math adds up to 1080 but going to do 1k
 	faction = FACTION_TYR
+	armor = list(melee = 30, bullet = 30, laser = 30, energy = 30, bomb = 30, bio = 100, rad = 100)
 	movement_cooldown = 40
+	icon = 'modular_chomp/icons/mob/tyr.dmi'
+	size_multiplier = 2
 	swallowTime = 0.5 SECONDS
 	vore_active = 1
-	vore_capacity = 1
+	vore_capacity = 5
 	vore_bump_chance = 10
 	vore_stomach_name = "Stomach"
 	vore_default_item_mode = IM_DIGEST
@@ -605,29 +599,41 @@
 		/obj/item/stock_parts/capacitor/hyper = 80,
 		/obj/item/stock_parts/manipulator/hyper = 80,
 		/obj/item/stock_parts/matter_bin/hyper = 80,
+		/obj/item/reagent_containers/food/snacks/meat = 100
 		)
 
-/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/load_default_bellies()
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chambera //poison boss
+	name = "experiment 20"
+	desc = "A strange furball fused with plant life."
+	icon_state = "poison_boss"
+	icon_living = "poison_boss"
+	wreckage = /obj/item/prop/tyrlore/basicflora
+	size_multiplier = 0.8
+
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chambera/load_default_bellies()
 	. = ..()
 	var/obj/belly/B = vore_selected
-	B.name = "stomach"
-	B.mode_flags = DM_FLAG_THICKBELLY | DM_FLAG_NUMBING
+	B.name = "flora gut"
+	B.desc = "You have been devoured by the vulpakin like plant beast. A mix of flesh and flora surrond you, purple bubbling fluid soaking into your body. The beast effortlessly carrying your body, it's motions seemingly exaggerated, alien words spoken, the beast trying to taunt you."
 	B.digest_brute = 1
 	B.digest_burn = 1
 	B.digestchance = 0
 	B.absorbchance = 0
-	B.escapechance = 25
+	B.escapechance = 15
 
-/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chambera //poison boss
-	name = "expirement 20"
-	specialattackprojectile = /obj/item/projectile/energy/eclipse/poisonwind
-	icon_state = "poison_boss"
-	icon_living = "poison_boss"
-
-/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chambera/apply_melee_effects(var/atom/A)
-	if(isliving(A))
-		var/mob/living/L = A
-		L.add_modifier(/datum/modifier/poisoned, 120 SECONDS)
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chamberc/bullet_act(obj/item/projectile/P)
+	if(istype(P,/obj/item/projectile/beam) || istype(P, /obj/item/projectile/energy))
+		nutrition += 5
+		if(size_multiplier > 1.95)
+			visible_message(span_boldwarning(span_orange("[P] heals the beast!.")))
+			adjustBruteLoss(-nutrition)
+			adjustFireLoss(-nutrition)
+			nutrition -= 5
+		else
+			size_multiplier += 0.05
+			..()
+	else
+		..()
 
 /mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chambera/do_special_attack(atom/A)
 	var/rng_cycle = rand(1,6)
@@ -651,17 +657,30 @@
 		attackcycle = 0
 
 /mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chamberb //knock back boss
-	name = "expirement 3"
+	name = "experiment 3"
+	desc = "A strange furball, the air vibrating around it."
 	specialattackprojectile = /obj/item/projectile/knockback/slow
 	icon_state = "sonic_boss"
 	icon_living = "sonic_boss"
 	projectiletype = /obj/item/projectile/knockback/slow
+	wreckage = /obj/item/prop/tyrlore/basicsonic
+
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chamberb/load_default_bellies()
+	. = ..()
+	var/obj/belly/B = vore_selected
+	B.name = "alien gut"
+	B.desc = "Your ears ring as the stomach groans to life around you. The constant ringing mixing with acidic gurgling, and gutteral groans. Silver flesh kneading at your figure, whilst the beast ignores you stewing in it's gut."
+	B.digest_brute = 1.5
+	B.digest_burn = 0.5
+	B.digestchance = 0
+	B.absorbchance = 0
+	B.escapechance = 15
 
 /obj/item/projectile/knockback/slow
 	speed = 10
 
 /mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chamberb/do_special_attack(atom/A)
-	var/rng_cycle = rand(1,6)
+	rng_cycle = rand(1,6)
 	if(attackcycle == 1)
 		addtimer(CALLBACK(src, PROC_REF(quad_random_firing), A, 20, rng_cycle, 10), 0.5 SECONDS, TIMER_DELETE_ME)
 		attackcycle = 0
@@ -682,17 +701,30 @@
 		attackcycle = 0
 
 /mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chamberc //wierd shields
-	name = "expirement 7"
+	name = "experiment 7"
+	desc = "A strange furball gaurded by a transparent barrier."
 	specialattackprojectile = /obj/item/projectile/energy/eclipse/tyrjavelin
 	health = 400
 	maxHealth = 400 //shield mechanic
 	icon_state = "UPshield_boss"
 	icon_living = "UPshield_boss"
 	projectiletype = /obj/item/projectile/energy/eclipse/tyrjavelin
+	wreckage = /obj/item/prop/tyrlore/basicshield
 	var/fullshield = 300
 	var/shieldrage = 3
 
-/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chamberc/bullet_act(obj/item/projectile/P) //Projectiles will be absorbed by the shield. Note to self do funky sprite. 4 hits to remove
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chamberc/load_default_bellies()
+	. = ..()
+	var/obj/belly/B = vore_selected
+	B.name = "alien gut"
+	B.desc = "You are dunked into a multi-colored, or maybe multi-fluid, stew. Blues, purples, oranges, and greens, all swishing around you as the alien creature contunies it's mindless guarding.."
+	B.digest_brute = 0.5
+	B.digest_burn = 1.5
+	B.digestchance = 0
+	B.absorbchance = 0
+	B.escapechance = 15
+
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chamberc/bullet_act(obj/item/projectile/P)
 	if(fullshield > 0)
 		fullshield -= P.damage
 		if(P == /obj/item/projectile/ion)
@@ -714,7 +746,7 @@
 			icon_state = "UPshield_boss"
 
 /mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chamberc/do_special_attack(atom/A)
-	var/rng_cycle = rand(1,5)
+	rng_cycle = rand(1,5)
 	if(attackcycle == 1)
 		addtimer(CALLBACK(src, PROC_REF(quad_random_firing), A, 20, rng_cycle, 20), 0.5 SECONDS, TIMER_DELETE_ME)
 		attackcycle = 0
@@ -731,34 +763,195 @@
 		attackcycle = 0
 		addtimer(CALLBACK(src, PROC_REF(gattlingfire), A, rng_cycle, 8, 7), 0.5 SECONDS, TIMER_DELETE_ME)
 
-/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chamberd //the wall
-	name = "expirement 12"
-	health = 600 //summoner boss so reduced health
-	maxHealth = 600 //summoner boss so reduced health
-	specialattackprojectile = /obj/item/projectile/arc/explosive_rocket/big
-	artidrop = /mob/living/simple_mob/mechanical/hivebot/tyr
-	icon_state = "spawn_boss"
-	icon_living = "spawn_boss"
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chambere
+	name = "defense automaton"
+	desc = "A large, very important looking ai. Plating appears similiar to albative plating."
+	icon = 'modular_chomp/icons/mob/hivebot.dmi'
+	icon_state = "cyan"
+	icon_living = "cyan"
+	size_multiplier = 3
+	projectiletype = /obj/item/projectile/arc/blue_energy
+	wreckage = /obj/item/prop/tyrlore/ants
+	specialattackprojectile = /obj/item/projectile/energy/eclipse/tyrjavelin
 
-/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chamberd/do_special_attack(atom/A)
-	var/rng_cycle = rand(1,5)
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chambere/do_special_attack(atom/A)
+	rng_cycle = rand(1,6)
 	if(attackcycle == 1)
-		specialattackprojectile = /obj/item/projectile/arc/explosive_rocket/big
-		addtimer(CALLBACK(src, PROC_REF(singleproj), A, rng_cycle), 1 SECOND, TIMER_DELETE_ME)
+		addtimer(CALLBACK(src, PROC_REF(quad_random_firing), A, 20, rng_cycle, 20), 0.5 SECONDS, TIMER_DELETE_ME)
 		attackcycle = 0
 	else if(attackcycle == 2)
-		specialattackprojectile = /obj/item/projectile/arc/explosive_rocket/big
-		addtimer(CALLBACK(src, PROC_REF(cross_spin), A, rng_cycle, 15), 0.5 SECONDS, TIMER_DELETE_ME)
+		addtimer(CALLBACK(src, PROC_REF(dual_spin), A, rng_cycle, 15), 0.5 SECONDS, TIMER_DELETE_ME)
 		attackcycle = 0
 	else if(attackcycle == 3)
-		artidrop = /mob/living/simple_mob/mechanical/hivebot/tyr
-		addtimer(CALLBACK(src, PROC_REF(bomb_chaos), A, rng_cycle), 1.5 SECONDS, TIMER_DELETE_ME)
+		addtimer(CALLBACK(src, PROC_REF(hole_in_wall), A, rng_cycle, 15), 0.5 SECONDS, TIMER_DELETE_ME)
 		attackcycle = 0
 	else if(attackcycle == 4)
-		artidrop = /obj/item/material/barbedwire/plastic/active
-		addtimer(CALLBACK(src, PROC_REF(bomb_chaos), A, rng_cycle), 1.5 SECONDS, TIMER_DELETE_ME)
+		addtimer(CALLBACK(src, PROC_REF(rising_star), A, rng_cycle, 15), 0.5 SECONDS, TIMER_DELETE_ME)
 		attackcycle = 0
+	else if(attackcycle == 4)
+		attackcycle = 0
+		addtimer(CALLBACK(src, PROC_REF(gattlingfire), A, rng_cycle, 8, 7), 0.5 SECONDS, TIMER_DELETE_ME)
 	else if(attackcycle == 5)
-		specialattackprojectile = /obj/item/projectile/energy/eclipse/tyrjavelin
-		addtimer(CALLBACK(src, PROC_REF(quad_random_firing), A, 20, rng_cycle, 25), 0.5 SECONDS, TIMER_DELETE_ME)
 		attackcycle = 0
+		addtimer(CALLBACK(src, PROC_REF(cutoff), A, rng_cycle, 5, 15), 0.5 SECONDS, TIMER_DELETE_ME)
+	else if(attackcycle == 6)
+		attackcycle = 0
+		addtimer(CALLBACK(src, PROC_REF(cutoff_ulti), A, rng_cycle, 5, 15), 0.5 SECONDS, TIMER_DELETE_ME)
+
+
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chamberf
+	name = "engineering automaton"
+	desc = "A large important looking robot, crackling with lighting."
+	icon = 'modular_chomp/icons/mob/hivebot.dmi'
+	icon_state = "yellow"
+	icon_living = "yellow"
+	size_multiplier = 3
+	wreckage = /obj/item/prop/tyrlore/basicpower
+	specialattackprojectile = /obj/item/projectile/energy/lightingspark/nanoweave
+	projectiletype = /obj/item/projectile/energy/lightingspark/nanoweave
+
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chamberf/do_special_attack(atom/A)
+	rng_cycle = rand(1,6)
+	if(attackcycle == 1)
+		addtimer(CALLBACK(src, PROC_REF(quad_random_firing), A, 20, rng_cycle, 20), 0.5 SECONDS, TIMER_DELETE_ME)
+		attackcycle = 0
+	else if(attackcycle == 2)
+		addtimer(CALLBACK(src, PROC_REF(dual_spin), A, rng_cycle, 15), 0.5 SECONDS, TIMER_DELETE_ME)
+		attackcycle = 0
+	else if(attackcycle == 3)
+		addtimer(CALLBACK(src, PROC_REF(hole_in_wall), A, rng_cycle, 15), 0.5 SECONDS, TIMER_DELETE_ME)
+		attackcycle = 0
+	else if(attackcycle == 4)
+		addtimer(CALLBACK(src, PROC_REF(rising_star), A, rng_cycle, 15), 0.5 SECONDS, TIMER_DELETE_ME)
+		attackcycle = 0
+	else if(attackcycle == 4)
+		attackcycle = 0
+		addtimer(CALLBACK(src, PROC_REF(gattlingfire), A, rng_cycle, 8, 7), 0.5 SECONDS, TIMER_DELETE_ME)
+	else if(attackcycle == 5)
+		attackcycle = 0
+		addtimer(CALLBACK(src, PROC_REF(cutoff), A, rng_cycle, 5, 15), 0.5 SECONDS, TIMER_DELETE_ME)
+	else if(attackcycle == 6)
+		attackcycle = 0
+		addtimer(CALLBACK(src, PROC_REF(cutoff_ulti), A, rng_cycle, 5, 15), 0.5 SECONDS, TIMER_DELETE_ME)
+
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chamberg //wierd shields
+	name = "expirement 28"
+	desc = "A strange furball gaurded by a transparent barrier."
+	specialattackprojectile = /obj/item/projectile/energy/eclipse/tyrjavelin
+	resistance = 10
+	icon_state = "UPshield_boss"
+	icon_living = "UPshield_boss"
+	color = "#FF0000"
+	wreckage = /obj/item/prop/tyrlore/advanceshield
+	projectiletype = /obj/item/projectile/energy/eclipse/tyrjavelin
+
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chamberg/do_special_attack(atom/A)
+	rng_cycle = rand(1,6)
+	if(attackcycle == 1)
+		addtimer(CALLBACK(src, PROC_REF(quad_random_firing), A, 20, rng_cycle, 20), 0.5 SECONDS, TIMER_DELETE_ME)
+		attackcycle = 0
+	else if(attackcycle == 2)
+		addtimer(CALLBACK(src, PROC_REF(dual_spin), A, rng_cycle, 15), 0.5 SECONDS, TIMER_DELETE_ME)
+		attackcycle = 0
+	else if(attackcycle == 3)
+		addtimer(CALLBACK(src, PROC_REF(hole_in_wall), A, rng_cycle, 15), 0.5 SECONDS, TIMER_DELETE_ME)
+		attackcycle = 0
+	else if(attackcycle == 4)
+		addtimer(CALLBACK(src, PROC_REF(rising_star), A, rng_cycle, 15), 0.5 SECONDS, TIMER_DELETE_ME)
+		attackcycle = 0
+	else if(attackcycle == 4)
+		attackcycle = 0
+		addtimer(CALLBACK(src, PROC_REF(gattlingfire), A, rng_cycle, 8, 7), 0.5 SECONDS, TIMER_DELETE_ME)
+	else if(attackcycle == 5)
+		attackcycle = 0
+		addtimer(CALLBACK(src, PROC_REF(cutoff), A, rng_cycle, 5, 15), 0.5 SECONDS, TIMER_DELETE_ME)
+	else if(attackcycle == 6)
+		attackcycle = 0
+		addtimer(CALLBACK(src, PROC_REF(cutoff_ulti), A, rng_cycle, 5, 15), 0.5 SECONDS, TIMER_DELETE_ME)
+	else if(attackcycle == 7)
+		addtimer(CALLBACK(src, PROC_REF(bomb_chaos), A, rng_cycle), 2.5 SECONDS, TIMER_DELETE_ME)
+		attackcycle = 0
+	else if(attackcycle == 8)
+		addtimer(CALLBACK(src, PROC_REF(bomb_lines), A, rng_cycle), 2.5 SECONDS, TIMER_DELETE_ME)
+		attackcycle = 0
+
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/chamberg/bullet_act(obj/item/projectile/P)
+	if((P == /obj/item/projectile/ion) && (resistance > 0))
+		resistance = 0
+		say("Shields destroyed, rerouting power")
+		specialattackprojectile = /obj/item/projectile/energy/eclipse/tyrjavelin/speed
+		projectiletype = /obj/item/projectile/energy/eclipse/tyrjavelin/speed
+		icon_state = "shield_boss"
+		icon_living = "shield_boss"
+	..()
+
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/massswarm
+	name = "swarm controler"
+	desc = "A massive hivebot that has shifting bits of metal upon it's body."
+	health = 600
+	maxHealth = 600
+	icon_state = "bright_green"
+	icon_living = "bright_green"
+	icon = 'modular_chomp/icons/mob/hivebot.dmi'
+	size_multiplier = 3
+	wreckage = /obj/item/prop/tyrlore/drones
+	special_attack_min_range = 1
+	special_attack_max_range = 7
+	special_attack_cooldown = 5 SECONDS
+	melee_damage_lower = 25
+	melee_damage_upper = 25
+	attack_armor_pen = 50
+	grab_resist = 100
+	movement_cooldown = 3
+
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/massswarm/bullet_act(obj/item/projectile/P)
+	for(var/i =1 to 3)
+		new /mob/living/simple_mob/mechanical/hivebot/nanoevent/bright_green/tyr(src.loc)
+	..()
+
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/massswarm/attackby(var/obj/item/O as obj, var/mob/user as mob)
+	for(var/i =1 to 3)
+		new /mob/living/simple_mob/mechanical/hivebot/nanoevent/bright_green/tyr(src.loc)
+	..()
+
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/massswarm/do_special_attack(atom/A)
+	rng_cycle = rand(1,2)
+	if(attackcycle == 1)
+		addtimer(CALLBACK(src, PROC_REF(bomb_chaos), A, rng_cycle), 2.5 SECONDS, TIMER_DELETE_ME)
+		attackcycle = 0
+	else if(attackcycle == 2)
+		addtimer(CALLBACK(src, PROC_REF(bomb_lines), A, rng_cycle), 2.5 SECONDS, TIMER_DELETE_ME)
+		attackcycle = 0
+
+/*
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/finale //finale
+	name = "guardian program"
+	health = 1200
+	maxHealth = 1200
+	specialattackprojectile = /obj/item/projectile/bullet/astral_blade
+	icon_state = "guardian"
+	icon_living = "guardian"
+	wreckage = /obj/item/prop/tyrlore/drones
+
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/finale/bullet_act(obj/item/projectile/P)
+	if(P == /obj/item/projectile/bullet/astral_blade) //no friendly fire
+		return
+	else
+		..()
+
+
+/mob/living/simple_mob/mechanical/mecha/eclipse/tankyboss/finale/do_special_attack(atom/A)
+	rng_cycle = rand(1,4)
+	if(attackcycle == 1)
+		addtimer(CALLBACK(src, PROC_REF(quad_random_firing), A, 20, rng_cycle, 10), 0.5 SECONDS, TIMER_DELETE_ME)
+		attackcycle = 0
+	else if(attackcycle == 2)
+		addtimer(CALLBACK(src, PROC_REF(dual_spin), A, rng_cycle, 5), 0.5 SECONDS, TIMER_DELETE_ME)
+		attackcycle = 0
+	else if(attackcycle == 3)
+		addtimer(CALLBACK(src, PROC_REF(bomb_chaos), A, rng_cycle), 2.5 SECONDS, TIMER_DELETE_ME)
+		attackcycle = 0
+	else if(attackcycle == 4)
+		addtimer(CALLBACK(src, PROC_REF(bomb_lines), A, rng_cycle), 2.5 SECONDS, TIMER_DELETE_ME)
+		attackcycle = 0
+*/

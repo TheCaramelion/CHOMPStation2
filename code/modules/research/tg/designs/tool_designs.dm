@@ -875,6 +875,7 @@
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE
 
+// Decided that we were not keen on this being able to be printed freely as we immediately saw undesirable behaviour //CHOMPEdit - Re-enable
 /datum/design_techweb/telekinetic_gloves
 	name = "Kinesis Assistance Module"
 	id = "tk_gloves"
@@ -886,6 +887,7 @@
 		RND_CATEGORY_TOOLS + RND_SUBCATEGORY_TOOLS_ENGINEERING_ADVANCED
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
+//CHOMPEDit - Re-enable
 
 /datum/design_techweb/mail_scanner
 	name = "Mail Scanner"
@@ -894,7 +896,7 @@
 	build_path = /obj/item/mail_scanner
 	build_type = PROTOLATHE
 	category = list(
-		RND_CATEGORY_MACHINE
+		RND_CATEGORY_TOOLS
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_CARGO
 
@@ -905,7 +907,7 @@
 	build_path = /obj/item/holosign_creator/combifan
 	build_type = PROTOLATHE
 	category = list(
-		RND_CATEGORY_MACHINE
+		RND_CATEGORY_TOOLS
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
 
@@ -929,7 +931,7 @@
 	build_path = /obj/item/floor_painter
 	build_type = PROTOLATHE
 	category = list(
-		RND_CATEGORY_MACHINE
+		RND_CATEGORY_TOOLS
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_SERVICE
 
@@ -940,6 +942,6 @@
 	build_path = /obj/item/holosign_creator/medical
 	build_type = PROTOLATHE
 	category = list(
-		RND_CATEGORY_MACHINE
+		RND_CATEGORY_TOOLS
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_MEDICAL

@@ -2448,11 +2448,7 @@
 /turf/simulated/wall,
 /area/maintenance/firstdeck/foreport)
 "akp" = (
-/turf/simulated/shuttle/wall/no_join{
-	base_state = "orange";
-	icon = 'icons/turf/shuttle_orange.dmi';
-	icon_state = "orange"
-	},
+/turf/simulated/shuttle/wall/no_join/orange,
 /area/shuttle/escape_pod1/station)
 "akw" = (
 /obj/structure/bed/chair{
@@ -2469,11 +2465,7 @@
 /turf/simulated/shuttle/floor,
 /area/shuttle/escape_pod2/station)
 "akx" = (
-/turf/simulated/shuttle/wall/no_join{
-	base_state = "orange";
-	icon = 'icons/turf/shuttle_orange.dmi';
-	icon_state = "orange"
-	},
+/turf/simulated/shuttle/wall/no_join/orange,
 /area/shuttle/escape_pod2/station)
 "aky" = (
 /obj/machinery/embedded_controller/radio/airlock/airlock_controller{
@@ -7857,11 +7849,7 @@
 /turf/simulated/floor/tiled,
 /area/expoutpost/stationshuttle)
 "aPF" = (
-/turf/simulated/shuttle/wall/no_join{
-	base_state = "orange";
-	icon = 'icons/turf/shuttle_orange.dmi';
-	icon_state = "orange"
-	},
+/turf/simulated/shuttle/wall/no_join/orange,
 /area/shuttle/escape_pod5/station)
 "aPL" = (
 /obj/structure/cable{
@@ -8014,11 +8002,7 @@
 /turf/simulated/wall/r_wall,
 /area/quartermaster/mininglockerroom)
 "aQY" = (
-/turf/simulated/shuttle/wall/no_join{
-	base_state = "orange";
-	icon = 'icons/turf/shuttle_orange.dmi';
-	icon_state = "orange"
-	},
+/turf/simulated/shuttle/wall/no_join/orange,
 /area/shuttle/escape_pod6/station)
 "aRa" = (
 /obj/effect/floor_decal/borderfloor/corner{
@@ -10364,11 +10348,7 @@
 /turf/simulated/floor/tiled/steel,
 /area/hangar/three)
 "bYO" = (
-/turf/simulated/shuttle/wall/no_join{
-	base_state = "orange";
-	icon = 'icons/turf/shuttle_orange.dmi';
-	icon_state = "orange"
-	},
+/turf/simulated/shuttle/wall/no_join/orange,
 /area/shuttle/escape_pod3/station)
 "bZv" = (
 /obj/structure/table/standard,
@@ -15723,11 +15703,7 @@
 /turf/simulated/floor/tiled/dark,
 /area/hallway/primary/firstdeck/elevator)
 "fBA" = (
-/turf/simulated/shuttle/wall/no_join{
-	base_state = "orange";
-	icon = 'icons/turf/shuttle_orange.dmi';
-	icon_state = "orange"
-	},
+/turf/simulated/shuttle/wall/no_join/orange,
 /area/shuttle/escape_pod4/station)
 "fBB" = (
 /obj/structure/table/glass,
@@ -22711,11 +22687,12 @@
 	dir = 8;
 	pixel_x = -24
 	},
+/obj/machinery/vending/exploration_fieldmedic,
 /turf/simulated/floor/tiled/steel,
 /area/hangar/lockerroomthree)
 "nrb" = (
-/obj/structure/frame/computer,
 /obj/effect/floor_decal/steeldecal/steel_decals_central6,
+/obj/machinery/vending/exploration_pilot,
 /turf/simulated/floor/tiled/monotile,
 /area/hangar/lockerroomthree)
 "nrg" = (
@@ -24385,9 +24362,6 @@
 /turf/simulated/floor/tiled,
 /area/hangar/lockerroomthree)
 "pvA" = (
-/obj/structure/bed/chair{
-	dir = 1
-	},
 /obj/machinery/atmospherics/pipe/simple/hidden/scrubbers{
 	dir = 6
 	},
@@ -25594,11 +25568,7 @@
 	dir = 4
 	},
 /obj/effect/floor_decal/rust,
-/obj/structure/closet/secure_closet/guncabinet{
-	desc = "It's an immobile card-locked storage unit. For storing weapons and other items when station side.";
-	name = "Secure Locker";
-	req_one_access = list(67,43,3)
-	},
+/obj/machinery/vending/exploration_misc,
 /turf/simulated/floor/tiled,
 /area/hangar/lockerroomthree)
 "qGt" = (
@@ -25615,6 +25585,7 @@
 	dir = 1
 	},
 /obj/machinery/light,
+/obj/machinery/vending/exploration_weapons,
 /turf/simulated/floor/tiled,
 /area/hangar/lockerroomthree)
 "qGK" = (
@@ -25634,6 +25605,7 @@
 	pixel_y = -24
 	},
 /obj/effect/floor_decal/steeldecal/steel_decals_central6,
+/obj/machinery/vending/exploration_armor,
 /turf/simulated/floor/tiled,
 /area/hangar/lockerroomthree)
 "qGO" = (

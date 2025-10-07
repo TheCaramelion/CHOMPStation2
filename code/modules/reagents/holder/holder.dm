@@ -101,10 +101,9 @@
 	while(reaction_occurred)
 	for(var/decl/chemical_reaction/C as anything in effect_reactions)
 		C.post_reaction(src)
-		#ifdef UNIT_TESTS
-		SEND_SIGNAL(src, COMSIG_UNITTEST_DATA, list(C))
-		#endif
 	update_total()
+	SEND_SIGNAL(src, COMSIG_REAGENTS_HOLDER_REACTED, effect_reactions)
+	return effect_reactions.len
 
 /* Holder-to-chemical */
 
@@ -284,10 +283,6 @@
 //If for some reason touch effects are bypassed (e.g. injecting stuff directly into a reagent container or person),
 //call the appropriate trans_to_*() proc.
 /datum/reagents/proc/trans_to(var/atom/target, var/amount = 1, var/multiplier = 1, var/copy = 0, var/force_open_container = FALSE)
-	//CHOMPEdit Start, do not splash brains!
-	if(ismob(target) && !isbrain(target))
-		return splash_mob(target, amount * multiplier, copy)
-	//CHOMPEdit End
 	touch(target, amount * multiplier) //First, handle mere touch effects
 
 	if(ismob(target))

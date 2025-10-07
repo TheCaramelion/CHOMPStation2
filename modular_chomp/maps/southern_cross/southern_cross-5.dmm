@@ -5351,10 +5351,6 @@
 	},
 /turf/simulated/floor/wood,
 /area/surface/outpost/main/dorms/dorm_1)
-"kr" = (
-/obj/structure/prop/weather_signal,
-/turf/simulated/floor/outdoors/rocks/sif/planetuse,
-/area/surface/outside/plains/normal)
 "ks" = (
 /obj/structure/closet/hydrant{
 	pixel_x = -32
@@ -5937,11 +5933,7 @@
 /turf/simulated/floor/plating,
 /area/surface/outpost/security/maa)
 "lA" = (
-/turf/simulated/wall/dungeon{
-	icon = 'icons/obj/doors/shuttledoors.dmi';
-	icon_state = "door_locked";
-	name = "Wall Gate"
-	},
+/turf/simulated/wall/dungeon/gate,
 /area/surface/outpost/wall)
 "lB" = (
 /obj/structure/cable/blue{
@@ -77134,7 +77126,7 @@ uz
 Ol
 uz
 mZ
-mZ
+kT
 XE
 XE
 XE
@@ -77392,7 +77384,7 @@ uz
 uz
 uz
 mZ
-kT
+mZ
 XE
 XE
 XE
@@ -88136,7 +88128,7 @@ WP
 WP
 WP
 WP
-kr
+WP
 WP
 WP
 WP
