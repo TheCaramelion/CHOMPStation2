@@ -217,3 +217,4 @@
 	ckeys_that_took[user.ckey] = TRUE
 	var/obj/item/box = pick(costumes)
 	new box(loc)
+	user.put_in_any_hand_if_possible(box)
