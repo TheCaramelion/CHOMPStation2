@@ -21,7 +21,7 @@
 	movement_sound = 'sound/effects/houndstep.ogg'
 	// To promote a more diverse weapon selection.
 	armor = list(melee = 25, bullet = 25, laser = -20, bio = 100, rad = 100)
-	hovering = FALSE
+	// DQEdit — dq_get_hovering(src) type-default moved to GLOB.dq_hovering_by_type
 
 	say_list_type = /datum/say_list/cyber_horror
 
@@ -136,7 +136,7 @@
 
 // You do NOT Want to get in touchy range of this thing.
 	armor = list(melee = 75, bullet = -10, laser = -25, bio = 100, rad = 100)
-	hovering = FALSE
+	// DQEdit — dq_get_hovering(src) type-default moved to GLOB.dq_hovering_by_type
 
 
 // Leaping is a special attack, so these values determine when leap can happen.
@@ -248,17 +248,17 @@
 	threaten_sound = 'sound/mob/robots/Cyber_Horror_Tajaran.ogg'
 
 /mob/living/simple_mob/mechanical/cyber_horror/tajaran/cloak()
-	if(cloaked)
+	if(dq_get_cloaked(src))
 		return
 	animate(src, alpha = cloaked_alpha, time = 1 SECOND)
-	cloaked = TRUE
+	dq_set_cloaked(src, TRUE)
 
 /mob/living/simple_mob/mechanical/cyber_horror/tajaran/uncloak()
 	last_uncloak = world.time
-	if(!cloaked)
+	if(!dq_get_cloaked(src))
 		return
 	animate(src, alpha = initial(alpha), time = 1 SECOND)
-	cloaked = FALSE
+	dq_set_cloaked(src, FALSE)
 
 /mob/living/simple_mob/mechanical/cyber_horror/tajaran/proc/can_cloak()
 	if(stat)
@@ -272,19 +272,19 @@
 	uncloak()
 
 /mob/living/simple_mob/mechanical/cyber_horror/tajaran/is_cloaked()
-	return cloaked
+	return dq_get_cloaked(src)
 
 /mob/living/simple_mob/mechanical/cyber_horror/tajaran/handle_special()
-	if(!cloaked && can_cloak())
+	if(!dq_get_cloaked(src) && can_cloak())
 		cloak()
 
 /mob/living/simple_mob/mechanical/cyber_horror/tajaran/apply_bonus_melee_damage(atom/A, damage_amount)
-	if(cloaked)
+	if(dq_get_cloaked(src))
 		return damage_amount + cloaked_bonus_damage
 	return ..()
 
 /mob/living/simple_mob/mechanical/cyber_horror/tajaran/apply_melee_effects(atom/A)
-	if(cloaked)
+	if(dq_get_cloaked(src))
 		if(isliving(A))
 			var/mob/living/L = A
 			L.Weaken(cloaked_weaken_amount)

@@ -780,7 +780,7 @@
 
 /obj/item/clothing/shoes/wash()
 	. = ..()
-	blood_color = null
+	dq_set_blood_color(src, null)
 	track_blood = 0
 	update_icon()
 

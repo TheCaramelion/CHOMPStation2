@@ -146,10 +146,6 @@
 	..()
 	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
-/datum/gear/gloves/siren
-	display_name = "gloves, Siren"
-	path = /obj/item/clothing/gloves/fluff/siren
-
 /datum/gear/gloves/maid_arms
 	display_name = "maid arm covers"
 	path = /obj/item/clothing/accessory/maid_arms

@@ -225,8 +225,9 @@
 		if(get_turf(R))
 			for(var/turf/T in R.can_broadcast_to())
 				for (var/atom/movable/hearing in T)
-					if (hearing.recursive_listeners)
-						. |= hearing.recursive_listeners
+					var/list/hearing_listeners = dq_get_recursive_listeners(hearing)
+					if (hearing_listeners)
+						. |= hearing_listeners
 
 	for (var/mob/M as anything in .)
 		if (!istype(M) || !M.client)

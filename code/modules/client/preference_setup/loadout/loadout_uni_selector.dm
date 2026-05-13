@@ -32,12 +32,6 @@
 /datum/gear/uniform/general_command_selector/New()
 	..()
 	var/list/selector_uniforms = list(
-		"neocorporate uniform"=/obj/item/clothing/under/rank/khi/cmd,
-		"ST: Original Series Command"=/obj/item/clothing/under/rank/trek/command,
-		"ST: Next Generation Command"=/obj/item/clothing/under/rank/trek/command/next,
-		"ST: Voyager Command"=/obj/item/clothing/under/rank/trek/command/voy,
-		"ST: DS9 Command"=/obj/item/clothing/under/rank/trek/command/ds9,
-		"ST: Enterprise Command"=/obj/item/clothing/under/rank/trek/command/ent,
 		"TG&C utility suit"=/obj/item/clothing/under/rank/neo_commandutil,
 		"TG&C gorka suit"=/obj/item/clothing/under/rank/neo_gorka/command,
 		"TG&C black command gorka"=/obj/item/clothing/under/rank/neo_gorka/black_command
@@ -57,12 +51,6 @@
 	..()
 	var/list/selector_uniforms = list(
 		"uniform w/ dress"=/obj/item/clothing/under/dress/dress_cap,
-		"GE uniform"=/obj/item/clothing/under/rank/khi/cmd, //CHOMPEdit, KHI becomes GE
-		"ST: Original Series Command"=/obj/item/clothing/under/rank/trek/command,
-		"ST: Next Generation Command"=/obj/item/clothing/under/rank/trek/command/next,
-		"ST: Voyager Command"=/obj/item/clothing/under/rank/trek/command/voy,
-		"ST: DS9 Command"=/obj/item/clothing/under/rank/trek/command/ds9,
-		"ST: Enterprise Command"=/obj/item/clothing/under/rank/trek/command/ent,
 		"voidsuit underlayer"=/obj/item/clothing/under/undersuit/command,
 		"TG&C jumpsuit"=/obj/item/clothing/under/rank/neo_captain,
 		"TG&C jumpskirt"=/obj/item/clothing/under/rank/neo_captain_skirt,
@@ -89,12 +77,6 @@
 	var/list/selector_uniforms = list(
 		"uniform w/ dress"=/obj/item/clothing/under/dress/dress_hop,
 		"HR director"=/obj/item/clothing/under/dress/dress_hr,
-		"GE uniform"=/obj/item/clothing/under/rank/khi/cmd, //CHOMPEdit, KHI becomes GE
-		"ST: Original Series Command"=/obj/item/clothing/under/rank/trek/command,
-		"ST: Next Generation Command"=/obj/item/clothing/under/rank/trek/command/next,
-		"ST: Voyager Command"=/obj/item/clothing/under/rank/trek/command/voy,
-		"ST: DS9 Command"=/obj/item/clothing/under/rank/trek/command/ds9,
-		"ST: Enterprise Command"=/obj/item/clothing/under/rank/trek/command/ent,
 		"voidsuit underlayer"=/obj/item/clothing/under/undersuit/command,
 		"TG&C command utility"=/obj/item/clothing/under/rank/neo_commandutil,
 		"TG&C jumpsuit"=/obj/item/clothing/under/rank/neo_hop,
@@ -157,7 +139,6 @@
 /datum/gear/uniform/civvie_uniform_selector/New()
 	..()
 	var/list/selector_uniforms = list(
-		"GE uniform"=/obj/item/clothing/under/rank/khi/civ, //CHOMPEdit, KHI becomes GE
 		"TG&C plain turtleneck"=/obj/item/clothing/under/rank/neo_suspect_turtleneck,
 		"TG&C plain turtleneck w/ skirt"=/obj/item/clothing/under/rank/neo_suspect_turtleskirt,
 		"TG&C blue turtleneck"=/obj/item/clothing/under/rank/neo_suspect_turtleneck_blue,
@@ -249,11 +230,6 @@
 		"corrections officer"=/obj/item/clothing/under/rank/neo_corrections,
 		"corrections officer w/ skirt"=/obj/item/clothing/under/rank/neo_corrections_skirt,
 		"runner's turtleneck"=/obj/item/clothing/under/rank/neo_runner,
-		"ST: Original Series Ops"=/obj/item/clothing/under/rank/trek/sec, //CHOMPedit start: we splitterk engsec into eng and sec
-		"ST: Next Generation Ops"=/obj/item/clothing/under/rank/trek/sec/next,
-		"ST: Voyager Ops"=/obj/item/clothing/under/rank/trek/sec/voy,
-		"ST: DS9 Ops"=/obj/item/clothing/under/rank/trek/sec/ds9,
-		"ST: Enterprise Ops"=/obj/item/clothing/under/rank/trek/sec/ent, //CHOMPedit end
 		"TG&C bodyguard's suit"=/obj/item/clothing/under/rank/bodyguard_suit,
 		"TG&C bodyguard's skirt"=/obj/item/clothing/under/rank/bodyguard_skirt,
 		"TG&C bodyguard's turtleneck"=/obj/item/clothing/under/rank/bodyguard_turtleneck,
@@ -330,12 +306,6 @@
 		"TG&C blue turtleneck & skirt"=/obj/item/clothing/under/rank/neo_hos_blackblue_skirt,
 		"TG&C blue parade uniform"=/obj/item/clothing/under/rank/neo_hos_parade_blue,
 		"TG&C blue parade uniform, feminine"=/obj/item/clothing/under/rank/neo_hos_parade_blue_fem,
-		"GE uniform, command"=/obj/item/clothing/under/rank/khi/cmd, //CHOMPEdit, KHI becomes GE
-		"ST: Original Series Command"=/obj/item/clothing/under/rank/trek/command,
-		"ST: Next Generation Command"=/obj/item/clothing/under/rank/trek/command/next,
-		"ST: Voyager Command"=/obj/item/clothing/under/rank/trek/command/voy,
-		"ST: DS9 Command"=/obj/item/clothing/under/rank/trek/command/ds9,
-		"ST: Enterprise Command"=/obj/item/clothing/under/rank/trek/command/ent,
 		"TG&C gorka suit"=/obj/item/clothing/under/rank/neo_gorka/hos
 	)
 	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(selector_uniforms))
@@ -357,7 +327,6 @@
 		"skirt"=/obj/item/clothing/under/rank/cargo/skirt,
 		"jeans"=/obj/item/clothing/under/rank/cargo/jeans,
 		"jeans, feminine cut"=/obj/item/clothing/under/rank/cargo/jeans/female,
-		"GE uniform, command"=/obj/item/clothing/under/rank/khi/cmd, //CHOMPEdit, KHI becomes GE
 		"TG&C jumpsuit"=/obj/item/clothing/under/rank/neo_qm,
 		"TG&C jumpskirt"=/obj/item/clothing/under/rank/neo_qm_skirt,
 		"TG&C casualwear"=/obj/item/clothing/under/rank/neo_qm_jacket,
@@ -366,11 +335,6 @@
 		"TG&C turtleneck"=/obj/item/clothing/under/rank/neo_qm_turtle,
 		"TG&C turtleneck w/ skirt"=/obj/item/clothing/under/rank/neo_qm_turtle_skirt,
 		"TG&C gorka suit"=/obj/item/clothing/under/rank/neo_gorka/qm,
-		"ST: Original Series Command"=/obj/item/clothing/under/rank/trek/command,
-		"ST: Next Generation Command"=/obj/item/clothing/under/rank/trek/command/next,
-		"ST: Voyager Command"=/obj/item/clothing/under/rank/trek/command/voy,
-		"ST: DS9 Command"=/obj/item/clothing/under/rank/trek/command/ds9,
-		"ST: Enterprise Command"=/obj/item/clothing/under/rank/trek/command/ent
 	)
 	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(selector_uniforms))
 
@@ -389,7 +353,6 @@
 		"skirt"=/obj/item/clothing/under/rank/cargotech/skirt,
 		"jeans"=/obj/item/clothing/under/rank/cargotech/jeans,
 		"jeans, feminine cut"=/obj/item/clothing/under/rank/cargotech/jeans/female,
-		"GE uniform"=/obj/item/clothing/under/rank/khi/crg, //CHOMPEdit, KHI becomes GE
 		"TG&C shorts"=/obj/item/clothing/under/rank/neo_cargo_shorts,
 		"TG&C skirt"=/obj/item/clothing/under/rank/neo_cargo_skirt,
 		"TG&C jumpsuit"=/obj/item/clothing/under/rank/neo_cargo,
@@ -435,12 +398,6 @@
 	..()
 	var/list/selector_uniforms = list(
 		"skirt"=/obj/item/clothing/under/rank/chief_engineer/skirt,
-		"GE uniform, command"=/obj/item/clothing/under/rank/khi/cmd, //CHOMPEdit, KHI becomes GE
-		"ST: Original Series Command"=/obj/item/clothing/under/rank/trek/command,
-		"ST: Next Generation Command"=/obj/item/clothing/under/rank/trek/command/next,
-		"ST: Voyager Command"=/obj/item/clothing/under/rank/trek/command/voy,
-		"ST: DS9 Command"=/obj/item/clothing/under/rank/trek/command/ds9,
-		"ST: Enterprise Command"=/obj/item/clothing/under/rank/trek/command/ent,
 		"TG&C jumpsuit"=/obj/item/clothing/under/rank/neo_chiefengi,
 		"TG&C jumpskirt"=/obj/item/clothing/under/rank/neo_chiefengi_skirt,
 		"TG&C gorka suit"=/obj/item/clothing/under/rank/neo_gorka/ce
@@ -461,12 +418,6 @@
 	var/list/selector_uniforms = list(
 		"skirt"=/obj/item/clothing/under/rank/engineer/skirt,
 		"turtleneck"=/obj/item/clothing/under/rank/engineer/turtleneck,
-		"GE uniform"=/obj/item/clothing/under/rank/khi/eng, //CHOMPEdit, KHI becomes GE
-		"ST: Original Series Ops"=/obj/item/clothing/under/rank/trek/eng, //CHOMPedit start: we split trek engsec into eng and sec
-		"ST: Next Generation Ops"=/obj/item/clothing/under/rank/trek/eng/next,
-		"ST: Voyager Ops"=/obj/item/clothing/under/rank/trek/eng/voy,
-		"ST: DS9 Ops"=/obj/item/clothing/under/rank/trek/eng/ds9,
-		"ST: Enterprise Ops"=/obj/item/clothing/under/rank/trek/eng/ent, //CHOMPedit end
 		"voidsuit underlayer"=/obj/item/clothing/under/undersuit/hazard,
 		"TG&C jumpsuit"=/obj/item/clothing/under/rank/neo_engi,
 		"TG&C jumpskirt"=/obj/item/clothing/under/rank/neo_engi_skirt,
@@ -511,12 +462,6 @@
 		"virologist skirt"=/obj/item/clothing/under/rank/virologist/skirt,
 		"turtleneck"=/obj/item/clothing/under/rank/medical/turtleneck,
 		"vey-medical jumpsuit"=/obj/item/clothing/under/corp/veymed,
-		"GE uniform"=/obj/item/clothing/under/rank/khi/med, //CHOMPEdit, KHI becomes GE
-		"ST: Original Series Med-Sci"=/obj/item/clothing/under/rank/trek/medsci,
-		"ST: Next Generation Med-Sci"=/obj/item/clothing/under/rank/trek/medsci/next,
-		"ST: Voyager Med-Sci"=/obj/item/clothing/under/rank/trek/medsci/voy,
-		"ST: DS9 Med-Sci"=/obj/item/clothing/under/rank/trek/medsci/ds9,
-		"ST: Enterprise Med-Sci"=/obj/item/clothing/under/rank/trek/medsci/ent,
 		"TG&C jumpsuit"=/obj/item/clothing/under/rank/neo_med,
 		"TG&C jumpskirt"=/obj/item/clothing/under/rank/neo_med_skirt,
 		"TG&C virology jumpsuit"=/obj/item/clothing/under/rank/neo_viro,
@@ -584,12 +529,6 @@
 	..()
 	var/list/selector_uniforms = list(
 		"skirt"=/obj/item/clothing/under/rank/chief_medical_officer/skirt,
-		"GE uniform, command"=/obj/item/clothing/under/rank/khi/cmd, //CHOMPEdit, KHI becomes GE
-		"ST: Original Series Command"=/obj/item/clothing/under/rank/trek/command,
-		"ST: Next Generation Command"=/obj/item/clothing/under/rank/trek/command/next,
-		"ST: Voyager Command"=/obj/item/clothing/under/rank/trek/command/voy,
-		"ST: DS9 Command"=/obj/item/clothing/under/rank/trek/command/ds9,
-		"ST: Enterprise Command"=/obj/item/clothing/under/rank/trek/command/ent,
 		"TG&C jumpsuit"=/obj/item/clothing/under/rank/neo_cmo,
 		"TG&C jumpskirt"=/obj/item/clothing/under/rank/neo_cmo_skirt,
 		"TG&C turtleneck"=/obj/item/clothing/under/rank/neo_cmo_turtle,
@@ -612,12 +551,6 @@
 /datum/gear/uniform/research_director_selector/New()
 	..()
 	var/list/selector_uniforms = list(
-		"GE uniform, command"=/obj/item/clothing/under/rank/khi/cmd, //CHOMPEdit, KHI becomes GE
-		"ST: Original Series Command"=/obj/item/clothing/under/rank/trek/command,
-		"ST: Next Generation Command"=/obj/item/clothing/under/rank/trek/command/next,
-		"ST: Voyager Command"=/obj/item/clothing/under/rank/trek/command/voy,
-		"ST: DS9 Command"=/obj/item/clothing/under/rank/trek/command/ds9,
-		"ST: Enterprise Command"=/obj/item/clothing/under/rank/trek/command/ent,
 		"TG&C jumpsuit"=/obj/item/clothing/under/rank/neo_rd_suit,
 		"TG&C jumpskirt"=/obj/item/clothing/under/rank/neo_rd_suit_skirt,
 		"TG&C turtleneck"=/obj/item/clothing/under/rank/neo_rd_turtle,
@@ -641,12 +574,6 @@
 		"TG&C jumpsuit"=/obj/item/clothing/under/rank/neo_science,
 		"TG&C jumpskirt"=/obj/item/clothing/under/rank/neo_science_skirt,
 		"TG&C utility"=/obj/item/clothing/under/rank/neo_util_sci,
-		"GE uniform"=/obj/item/clothing/under/rank/khi/sci, //CHOMPEdit, KHI becomes GE
-		"ST: Original Series Med-Sci"=/obj/item/clothing/under/rank/trek/medsci,
-		"ST: Next Generation Med-Sci"=/obj/item/clothing/under/rank/trek/medsci/next,
-		"ST: Voyager Med-Sci"=/obj/item/clothing/under/rank/trek/medsci/voy,
-		"ST: DS9 Med-Sci"=/obj/item/clothing/under/rank/trek/medsci/ds9,
-		"ST: Enterprise Med-Sci"=/obj/item/clothing/under/rank/trek/medsci/ent,
 		"TG&C gorka suit"=/obj/item/clothing/under/rank/neo_gorka/sci
 	)
 	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(selector_uniforms))

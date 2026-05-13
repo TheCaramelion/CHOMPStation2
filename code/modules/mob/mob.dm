@@ -1410,12 +1410,12 @@ GLOBAL_LIST_EMPTY_TYPED(living_players_by_zlevel, /list)
 
 /mob/cloak()
 	. = ..()
-	if(client && cloaked_selfimage)
-		client.images += cloaked_selfimage
+	if(client && dq_get_cloaked_selfimage(src))
+		client.images += dq_get_cloaked_selfimage(src)
 
 /mob/uncloak()
-	if(client && cloaked_selfimage)
-		client.images -= cloaked_selfimage
+	if(client && dq_get_cloaked_selfimage(src))
+		client.images -= dq_get_cloaked_selfimage(src)
 	return ..()
 
 /mob/get_cloaked_selfimage()

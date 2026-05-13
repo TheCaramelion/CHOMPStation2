@@ -66,7 +66,7 @@
 	if(H)
 		var/datum/robolimb/company = H.isSynthetic()
 		if(company)
-			return company.blood_color
+			return dq_get_blood_color(company)
 		else
 			return blood_color
 

@@ -859,27 +859,6 @@
 	character_name = list("Daniel Fisher")
 
 //  N CKEYS
-/datum/gear/fluff/awen_hat
-	path = /obj/item/clothing/head/fluff/wolfgirl
-	display_name = "Awen's Hat"
-	slot = slot_head
-	ckeywhitelist = list("natje")
-	character_name = list("Awen Henry")
-
-/datum/gear/fluff/awen_shoes
-	path = /obj/item/clothing/shoes/fluff/wolfgirl
-	display_name = "Awen's Shoes"
-	slot = slot_shoes
-	ckeywhitelist = list("natje")
-	character_name = list("Awen Henry")
-
-/datum/gear/fluff/awen_uniform
-	path = /obj/item/clothing/under/fluff/wolfgirl
-	display_name = "Awen's Uniform"
-	slot = slot_w_uniform
-	ckeywhitelist = list("natje")
-	character_name = list("Awen Henry")
-
 /datum/gear/fluff/pumila_vines
 	path = /obj/item/clothing/under/fluff/aluranevines
 	display_name = "Pumila's Vines"
@@ -1216,13 +1195,6 @@
 	ckeywhitelist = list("stobarico")
 	character_name = list("Kyu Comet")
 
-/datum/gear/fluff/roiz_coat
-	path = /obj/item/clothing/suit/storage/hooded/wintercoat/roiz
-	display_name = "Roiz's Coat"
-	slot = slot_wear_suit
-	ckeywhitelist = list("spoopylizz")
-	character_name = list("Roiz Lizden")
-
 /datum/gear/fluff/lilith_medal
 	path = /obj/item/clothing/accessory/medal/silver/valor
 	display_name = "Lilith's Valor Medal"
@@ -1391,25 +1363,11 @@
 	ckeywhitelist = list("vitoras")
 	character_name = list("Verie")
 
-/datum/gear/fluff/cameron_glasses
-	path = /obj/item/clothing/glasses/fluff/science_proper
-	display_name = "Cameron's Science Glasses"
-	slot = slot_glasses
-	ckeywhitelist = list("verkister")
-	character_name = list("Cameron Eggbert")
-
 /datum/gear/fluff/cameron_disk
 	path = /obj/item/disk/limb/eggnerdltd
 	display_name = "Cameron's Eggnerd Disk"
 	ckeywhitelist = list("verkister")
 	character_name = list("Cameron Eggbert")
-
-/datum/gear/fluff/opie_glasses
-	path = /obj/item/clothing/glasses/fluff/spiffygogs
-	display_name = "Opie's Goggles"
-	slot = slot_glasses
-	ckeywhitelist = list("verkister")
-	character_name = list("Opie Eggbert")
 
 /datum/gear/fluff/verin_hazardvest
 	path = /obj/item/clothing/suit/storage/hazardvest/fluff/verin

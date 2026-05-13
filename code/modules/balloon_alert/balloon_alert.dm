@@ -87,12 +87,12 @@
 		easing = CUBIC_EASING | EASE_IN,
 	)
 
-	LAZYADD(update_on_z, balloon_alert)
+	dq_add_z_update_image(src, balloon_alert) // DQEdit
 	addtimer(CALLBACK(balloon_alert.loc, PROC_REF(forget_balloon_alert), balloon_alert), BALLOON_TEXT_TOTAL_LIFETIME(length_mult))
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_image_from_client), balloon_alert, viewer_client), BALLOON_TEXT_TOTAL_LIFETIME(length_mult))
 
 /atom/proc/forget_balloon_alert(image/balloon_alert)
-	LAZYREMOVE(update_on_z, balloon_alert)
+	dq_remove_z_update_image(src, balloon_alert) // DQEdit
 
 #undef BALLOON_TEXT_FADE_TIME
 #undef BALLOON_TEXT_FULLY_VISIBLE_TIME

@@ -342,7 +342,7 @@
 	base_turf = /turf/space
 
 /area/shuttle/shuttle1/sky
-	name = "hovering over skies of Thor"
+	name = "dq_get_hovering(src) over skies of Thor"
 	icon_state = "shuttlegrn"
 	base_turf = /turf/simulated/sky
 
@@ -391,7 +391,7 @@
 	base_turf = /turf/space
 
 /area/shuttle/shuttle2/sky
-	name = "hovering over skies of Thor"
+	name = "dq_get_hovering(src) over skies of Thor"
 	icon_state = "shuttlegrn"
 	base_turf = /turf/simulated/sky
 
@@ -441,7 +441,7 @@
 	base_turf = /turf/space
 
 /area/shuttle/shuttle3/sky
-	name = "hovering over skies of sif"
+	name = "dq_get_hovering(src) over skies of sif"
 	icon_state = "shuttlegrn"
 	base_turf = /turf/simulated/sky
 

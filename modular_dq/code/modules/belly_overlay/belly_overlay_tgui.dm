@@ -38,7 +38,7 @@
 	if(!owner?.client)
 		return
 	var/client/C = owner.client
-	winset(C, "mapwindow.belly_overlay", "is-visible=true")
+	winset(C, "mapwindow.belly_overlay", "is-visible=true;inner-background-color=#00000000")
 	if(!active_ui)
 		var/datum/tgui_window/win = new(C, "mapwindow.belly_overlay")
 		active_ui = new /datum/tgui(owner, src, "BellyOverlay", "Belly Overlay", null, null, null, win)
@@ -49,7 +49,8 @@
 		return
 	var/list/layers = list()
 	if(B && B.belly_fullscreen)
-		var/datum/belly_overlays/lookup_path = text2path("/datum/belly_overlays/[lowertext(B.belly_fullscreen)]")
+		var/lookup_slug = lowertext(B.belly_fullscreen)
+		var/datum/belly_overlays/lookup_path = text2path("/datum/belly_overlays/[lookup_slug]")
 		var/icon/dmi = lookup_path ? initial(lookup_path.belly_icon) : null
 		if(dmi)
 			var/alpha = B.belly_fullscreen_alpha
@@ -64,10 +65,10 @@
 			for(var/list/pair in states)
 				var/icon_state = pair[1]
 				var/color = pair[2]
-				var/url = dq_get_belly_state_url(dmi, icon_state)
-				if(url)
+				var/list/frames = dq_get_belly_state_frames(dmi, icon_state)
+				if(length(frames))
 					layers += list(list(
-						"url"    = url,
+						"frames" = frames,
 						"color"  = color || "#ffffff",
 						"alpha"  = alpha,
 						"pixelY" = 0,
@@ -86,10 +87,10 @@
 					var/pixel_y = -450 + (450 / max(B.max_mush, 1) * max(min(B.max_mush, mush_content), 1))
 					if(pixel_y < -450 + (450 / 100 * B.min_mush))
 						pixel_y = -450 + (450 / 100 * B.min_mush)
-					var/mush_url = dq_get_belly_state_url(bubbles, "mush")
-					if(mush_url)
+					var/list/mush_frames = dq_get_belly_state_frames(bubbles, "mush")
+					if(length(mush_frames))
 						layers += list(list(
-							"url"    = mush_url,
+							"frames" = mush_frames,
 							"color"  = B.mush_color || "#ffffff",
 							"alpha"  = mush_alpha,
 							"pixelY" = pixel_y,
@@ -102,10 +103,10 @@
 						liquid_alpha = B.custom_reagentalpha
 					var/liquid_color = B.custom_reagentcolor || B.reagentcolor
 					var/pixel_y = -450 + min((450 / max(B.custom_max_volume, 1) * B.reagents.total_volume), 450 / 100 * B.max_liquid_level)
-					var/liquid_url = dq_get_belly_state_url(bubbles, liquid_state)
-					if(liquid_url)
+					var/list/liquid_frames = dq_get_belly_state_frames(bubbles, liquid_state)
+					if(length(liquid_frames))
 						layers += list(list(
-							"url"    = liquid_url,
+							"frames" = liquid_frames,
 							"color"  = liquid_color || "#ffffff",
 							"alpha"  = liquid_alpha,
 							"pixelY" = pixel_y,
@@ -120,12 +121,17 @@
 		active_ui.send_update()
 
 /datum/belly_overlay_tgui/proc/hide()
-	state = list("visible" = FALSE)
+	// Don't tear down active_ui here — closing the tgui window means the
+	// BROWSER reloads the entire bundle the next time we re-show, which
+	// blanks for hundreds of ms while the new bundle re-fetches every
+	// belly frame. Just push an empty layer set so the React side renders
+	// nothing, and hide the BROWSER widget. The window stays alive in the
+	// background, ready to re-render the next belly instantly.
+	state = list("visible" = FALSE, "layers" = list())
+	if(active_ui)
+		active_ui.send_update()
 	if(owner?.client)
 		winset(owner.client, "mapwindow.belly_overlay", "is-visible=false")
-	if(active_ui)
-		active_ui.close()
-		active_ui = null
 
 // Helper: get or lazily create the overlay datum for a mob.
 /proc/get_belly_overlay_tgui(mob/M)
@@ -145,34 +151,3 @@
 		belly_overlay_tgui = null
 	return ..()
 
-// Debug verb so the human can open the overlay on themselves.
-// Builds a 4-layer composited test using VBO_belly9 icon_states with
-// distinct tint colors so we can visually verify compositing fidelity.
-/client/verb/dq_test_belly_overlay()
-	set name = "DQ Test Belly Overlay"
-	set category = "OOC"
-	set desc = "Open the proof-of-concept TGUI belly overlay."
-	if(!mob)
-		return
-	var/datum/belly_overlay_tgui/poc = get_belly_overlay_tgui(mob)
-	var/icon/test_dmi = 'icons/mob/vore_fullscreens/VBO_belly9.dmi'
-	var/list/layers = list()
-	var/list/states = list(
-		list("belly",   "#883333"),
-		list("belly-2", "#338833"),
-		list("belly-3", "#333388"),
-		list("belly-4", "#888833"),
-	)
-	for(var/list/pair in states)
-		var/url = dq_get_belly_state_url(test_dmi, pair[1])
-		if(url)
-			layers += list(list(
-				"url"   = url,
-				"color" = pair[2],
-				"alpha" = 200,
-			))
-	dq_send_belly_state_assets(src)
-	poc.state = list("visible" = length(layers) > 0, "layers" = layers)
-	poc.open_window()
-	if(poc.active_ui)
-		poc.active_ui.send_update()

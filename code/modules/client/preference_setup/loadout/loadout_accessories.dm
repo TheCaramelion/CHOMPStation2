@@ -210,8 +210,6 @@
 	..()
 	var/list/sweaters = list()
 	for(var/sweater in typesof(/obj/item/clothing/accessory/sweater))
-		if(sweater in typesof(/obj/item/clothing/accessory/sweater/fluff))	//VOREStation addition
-			continue														//VOREStation addition
 		var/obj/item/clothing/suit/sweater_type = sweater
 		sweaters[initial(sweater_type.name)] = sweater_type
 	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(sweaters))
@@ -433,25 +431,10 @@
 	display_name = "collar, holo (indigestible)"
 	path = /obj/item/clothing/accessory/collar/holo/indigestible
 
-/datum/gear/accessory/khcrystal
-	display_name = "KH Life Crystal"
-	path = /obj/item/storage/box/khcrystal
-	description = "A small necklace device that will notify an offsite cloning facility should you expire after activating it."
-
-/datum/gear/accessory/tronket
-	display_name = "metal necklace"
-	description = "A shiny steel chain with a vague metallic object dangling off it."
-	path = /obj/item/clothing/accessory/tronket
-
 /datum/gear/accessory/pilotpin
 	display_name = "pilot qualification pin"
 	description = "An iron pin denoting the qualification to fly spacecraft in most areas of civilized space."
 	path = /obj/item/clothing/accessory/solgov/specialty/pilot
-
-/datum/gear/accessory/flops
-	display_name = "drop straps"
-	description = "Wearing suspenders over shoulders? That's been so out for centuries and you know better."
-	path = /obj/item/clothing/accessory/flops
 
 /datum/gear/accessory/flops/New()
 	..()

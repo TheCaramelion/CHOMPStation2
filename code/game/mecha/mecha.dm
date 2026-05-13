@@ -2027,8 +2027,8 @@
 		update_damage_alerts()
 		set_dir(dir_in)
 		playsound(src, 'sound/machines/door/windowdoor.ogg', 50, 1)
-		if(occupant.client && cloaked_selfimage)
-			occupant.client.images += cloaked_selfimage
+		if(occupant.client && dq_get_cloaked_selfimage(src))
+			occupant.client.images += dq_get_cloaked_selfimage(src)
 		play_entered_noise(occupant)
 		return 1
 	else
@@ -2103,8 +2103,8 @@
 	if(mob_container.forceMove(src.loc))//ejecting mob container
 		src.mecha_log_message("[mob_container] moved out.")
 		occupant << browse(null, "window=exosuit")
-		if(occupant.client && cloaked_selfimage)
-			occupant.client.images -= cloaked_selfimage
+		if(occupant.client && dq_get_cloaked_selfimage(src))
+			occupant.client.images -= dq_get_cloaked_selfimage(src)
 		if(istype(mob_container, /obj/item/mmi))
 			var/obj/item/mmi/mmi = mob_container
 			if(mmi.brainmob)
@@ -2838,12 +2838,12 @@
 /////////////
 /obj/mecha/cloak()
 	. = ..()
-	if(occupant && occupant.client && cloaked_selfimage)
-		occupant.client.images += cloaked_selfimage
+	if(occupant && occupant.client && dq_get_cloaked_selfimage(src))
+		occupant.client.images += dq_get_cloaked_selfimage(src)
 
 /obj/mecha/uncloak()
-	if(occupant && occupant.client && cloaked_selfimage)
-		occupant.client.images -= cloaked_selfimage
+	if(occupant && occupant.client && dq_get_cloaked_selfimage(src))
+		occupant.client.images -= dq_get_cloaked_selfimage(src)
 	return ..()
 
 

@@ -39,7 +39,7 @@
 	base_turf = /turf/space
 
 /area/skipjack_station/sky
-	name = "hovering over skies of sif"
+	name = "dq_get_hovering(src) over skies of sif"
 	icon_state = "shuttlegrn"
 	base_turf = /turf/simulated/sky/north
 

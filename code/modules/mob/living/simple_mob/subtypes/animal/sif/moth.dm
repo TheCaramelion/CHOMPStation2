@@ -39,7 +39,7 @@
 	maxHealth = 80
 	health = 80
 
-	hovering = TRUE
+	// DQEdit — dq_get_hovering(src) type-default moved to GLOB.dq_hovering_by_type
 
 	movement_cooldown = -1
 

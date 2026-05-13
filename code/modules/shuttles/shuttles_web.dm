@@ -279,7 +279,7 @@
 		"travel_progress" = between(0, percent_finished, 100),
 		"time_left" = round( (total_time - elapsed_time) / 10),
 		"can_cloak" = shuttle.can_cloak ? 1 : 0,
-		"cloaked" = shuttle.cloaked ? 1 : 0,
+		"dq_get_cloaked(src)" = dq_get_cloaked(shuttle) ? 1 : 0,
 		"can_autopilot" = shuttle.can_autopilot ? 1 : 0,
 		"autopilot" = shuttle.autopilot ? 1 : 0,
 		"can_rename" = shuttle.can_rename ? 1 : 0,
@@ -322,8 +322,8 @@
 		if("toggle_cloaking")
 			if(!WS.can_cloak)
 				return
-			WS.cloaked = !WS.cloaked
-			if(WS.cloaked)
+			dq_set_cloaked(WS, !dq_get_cloaked(WS))
+			if(dq_get_cloaked(WS))
 				to_chat(ui.user, span_danger("Ship stealth systems have been activated. The station will not be warned of our arrival."))
 			else
 				to_chat(ui.user, span_danger("Ship stealth systems have been deactivated. The station will be warned of our arrival."))

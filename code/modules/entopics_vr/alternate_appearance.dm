@@ -1,15 +1,14 @@
 /*
 	Alternate Appearances! By RemieRichards
 	A framework for replacing an atom (and it's overlays) with an override = 1 image, that's less shit!
-	Example uses:
-		* hallucinating all mobs looking like skeletons
-		* people wearing cardborg suits appearing as Standard Cyborgs to the other Silicons
-		* !!use your imagination!!
 
+	DQEdit — alternate_appearances and viewing_alternate_appearances vars previously
+	on /atom have been moved to /datum/component/alt_appearances_owner and
+	/datum/component/alt_appearances_viewer in modular_dq/.../components/.
+	Helpers (dq_get_alt_appearances, etc.) are global procs so we don't bloat
+	/atom's proc-table with new instance methods.
 */
 
-//This datum is built on-the-fly by some of the procs below
-//no need to instantiate it
 /datum/alternate_appearance
 	var/key = ""
 	var/image/img
@@ -17,25 +16,17 @@
 	var/atom/owner = null
 
 
-/*
-	Displays the alternate_appearance
-	displayTo - a list of MOBS to show this appearance to
-*/
 /datum/alternate_appearance/proc/display_to(list/displayTo)
 	if(!displayTo || !displayTo.len)
 		return
 	for(var/mob/M as anything in displayTo)
-		if(!M.viewing_alternate_appearances)
-			M.viewing_alternate_appearances = list()
+		var/list/viewing = dq_get_viewing_alt_appearances(M, create = TRUE)
 		viewers |= M
-		M.viewing_alternate_appearances |= src
+		viewing |= src
 		if(M.client)
 			M.client.images |= img
 
-/*
-	Hides the alternate_appearance
-	hideFrom - optional list of MOBS to hide it from the list's mobs specifically
-*/
+
 /datum/alternate_appearance/proc/hide(list/hideFrom)
 	var/list/hiding = viewers
 	if(hideFrom)
@@ -44,18 +35,22 @@
 	for(var/mob/M as anything in hiding)
 		if(M.client)
 			M.client.images -= img
-		if(M.viewing_alternate_appearances && M.viewing_alternate_appearances.len)
-			M.viewing_alternate_appearances -= src
+		var/list/viewing = dq_get_viewing_alt_appearances(M)
+		if(viewing && viewing.len)
+			viewing -= src
+			if(!viewing.len)
+				dq_clear_viewing_alt_appearances_component(M)
 		viewers -= M
 
 
-/*
-	Removes the alternate_appearance from its owner's alternate_appearances list, hiding it also
-*/
 /datum/alternate_appearance/proc/remove()
 	hide()
-	if(owner && owner.alternate_appearances)
-		owner.alternate_appearances -= key
+	if(owner)
+		var/list/owned = dq_get_alt_appearances(owner)
+		if(owned)
+			owned -= key
+			if(!owned.len)
+				dq_clear_alt_appearances_component(owner)
 
 
 /datum/alternate_appearance/Destroy()
@@ -64,27 +59,6 @@
 	return ..()
 
 
-
-/atom
-	var/list/alternate_appearances //the alternate appearances we own
-	var/list/viewing_alternate_appearances //the alternate appearances we're viewing, stored here to reestablish them after Logout()s
-	//these lists are built as necessary, so atoms aren't all lugging around empty lists
-
-/*
-	Builds an alternate_appearance datum for the supplied args, optionally displaying it straight away
-	key - the key to the assoc list of key = /datum/alternate_appearances
-	img - the image file to be the "alternate appearance"
-	WORKS BEST IF:
-		* it has override = 1 set
-		* the image's loc is the atom that will use the appearance (otherwise... it's not exactly an alt appearance of this atom is it?)
-	displayTo - optional list of MOBS to display to immediately
-
-	Example:
-	var/image/I = image(icon = 'disguise.dmi', icon_state = "disguise", loc = src)
-	I.override = 1
-	add_alt_appearance("super_secret_disguise", I, players)
-
-*/
 /atom/Destroy()
 	. = ..()
 	remove_all_alt_appearances()
@@ -92,65 +66,50 @@
 /atom/proc/add_alt_appearance(key, img, list/displayTo = list())
 	if(!key || !img)
 		return
-	if(!alternate_appearances)
-		alternate_appearances = list()
+	var/list/owned = dq_get_alt_appearances(src, create = TRUE)
 
 	var/datum/alternate_appearance/AA = new()
 	AA.img = img
 	AA.key = key
 	AA.owner = src
 
-	if(alternate_appearances[key])
-		qdel(alternate_appearances[key])
-	alternate_appearances[key] = AA
+	if(owned[key])
+		qdel(owned[key])
+	owned[key] = AA
 	if(displayTo && displayTo.len)
 		display_alt_appearance(key, displayTo)
 
 
-//////////////
-// WRAPPERS //
-//////////////
-
-/*
-	Removes an alternate_appearance from src's alternate_appearances list
-	Wrapper for: alternate_appearance/remove()
-	key - the key to the assoc list of key = /datum/alternate_appearance
-*/
 /atom/proc/remove_alt_appearance(key)
-	if(alternate_appearances)
-		if(alternate_appearances[key])
-			qdel(alternate_appearances[key])
+	var/list/owned = dq_get_alt_appearances(src)
+	if(owned && owned[key])
+		qdel(owned[key])
 
 /atom/proc/remove_all_alt_appearances()
-	for(var/key in alternate_appearances)
-		if(alternate_appearances[key])
-			qdel(alternate_appearances[key])
-			alternate_appearances.Remove(key)
-/*
-	Displays an alternate appearance from src's alternate_appearances list
-	Wrapper for: alternate_appearance/display_to()
-	key - the key to the assoc list of key = /datum/alternate_appearance
-	displayTo - a list of MOBS to show this appearance to
-*/
-/atom/proc/display_alt_appearance(key, list/displayTo)
-	if(!alternate_appearances || !key)
+	var/list/owned = dq_get_alt_appearances(src)
+	if(!owned)
 		return
-	var/datum/alternate_appearance/AA = alternate_appearances[key]
+	for(var/key in owned)
+		if(owned[key])
+			qdel(owned[key])
+			owned.Remove(key)
+	dq_clear_alt_appearances_component(src)
+
+/atom/proc/display_alt_appearance(key, list/displayTo)
+	var/list/owned = dq_get_alt_appearances(src)
+	if(!owned || !key)
+		return
+	var/datum/alternate_appearance/AA = owned[key]
 	if(!AA || !AA.img)
 		return
 	AA.display_to(displayTo)
 
 
-/*
-	Hides an alternate appearance from src's alternate_appearances list
-	Wrapper for: alternate_appearance/hide()
-	key - the key to the assoc list of key = /datum/alternate_appearance
-	hideFrom - optional list of MOBS to hide it from the list's mobs specifically
-*/
 /atom/proc/hide_alt_appearance(key, list/hideFrom)
-	if(!alternate_appearances || !key)
+	var/list/owned = dq_get_alt_appearances(src)
+	if(!owned || !key)
 		return
-	var/datum/alternate_appearance/AA = alternate_appearances[key]
+	var/datum/alternate_appearance/AA = owned[key]
 	if(!AA)
 		return
 	AA.hide(hideFrom)

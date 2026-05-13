@@ -207,7 +207,6 @@
 /datum/supply_pack/hydro/sobaka
 	name = "Sobaka crate"
 	desc = "Sobaka cubes! Instant sobaka, just add water! DO NOT INGEST."
-	contains = list (/obj/item/storage/box/monkeycubes/sobakacubes)
 	cost = 20
 	containertype = /obj/structure/closet/crate/freezer
 	containername = "Sobaka crate"
@@ -215,7 +214,6 @@
 /datum/supply_pack/hydro/saru
 	name = "Saru crate"
 	desc = "Saru cubes! Instant saru, just add water! DO NOT INGEST."
-	contains = list (/obj/item/storage/box/monkeycubes/sarucubes)
 	cost = 20
 	containertype = /obj/structure/closet/crate/freezer
 	containername = "Saru crate"
@@ -223,7 +221,6 @@
 /datum/supply_pack/hydro/sparra
 	name = "Sparra crate"
 	desc = "Sparra cubes! Instant sparra, just add water! DO NOT INGEST."
-	contains = list (/obj/item/storage/box/monkeycubes/sparracubes)
 	cost = 20
 	containertype = /obj/structure/closet/crate/freezer
 	containername = "Sparra crate"
@@ -231,7 +228,6 @@
 /datum/supply_pack/hydro/wolpin
 	name = "Wolpin crate"
 	desc = "Wolpin cubes! Instant wolpin, just add water! DO NOT INGEST."
-	contains = list (/obj/item/storage/box/monkeycubes/wolpincubes)
 	cost = 20
 	containertype = /obj/structure/closet/crate/freezer
 	containername = "Wolpin crate"

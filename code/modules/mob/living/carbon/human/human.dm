@@ -1129,7 +1129,7 @@
 	//if this blood isn't already in the list, add it
 	if(istype(M))
 		add_blooddna(M.dna,M)
-	hand_blood_color = blood_color
+	hand_blood_color = dq_get_blood_color(src)
 	update_bloodied()
 	add_verb(src, /mob/living/carbon/human/proc/bloody_doodle)
 	return 1 //we applied blood to the item

@@ -268,18 +268,7 @@
 		do_teleport(ROI, destination, asoundin = 'sound/weapons/emitter2.ogg', asoundout = 'sound/weapons/emitter2.ogg') // CHOMPEdit - Noisy
 
 /obj/machinery/power/quantumpad/proc/can_traverse_gateway()
-	// Well, if there's no gateway map we're definitely not on it
-	if(!GLOB.gateway_away)
-		return TRUE
-
-	// Traverse!
-	if(GLOB.gateway_away.calibrated)
-		return TRUE
-
-	var/list/gateway_zs = GetConnectedZlevels(GLOB.gateway_away.z)
-	if(z in gateway_zs)
-		return FALSE // It's not calibrated and we're in a connected z
-
+	// DQEdit — gateway feature removed; always allow traversal
 	return TRUE
 
 /obj/machinery/power/quantumpad/proc/gateway_scatter(mob/user)

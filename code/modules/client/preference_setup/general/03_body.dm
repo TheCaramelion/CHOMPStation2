@@ -773,7 +773,7 @@
 				var/min_age = get_min_age()
 				var/max_age = get_max_age()
 				pref.update_preference_by_type(/datum/preference/numeric/human/age, max(min(pref.read_preference(/datum/preference/numeric/human/age), max_age), min_age))
-				pref.blood_color = setting_species.blood_color
+				dq_set_blood_color(pref, dq_get_blood_color(setting_species))
 
 				update_static_data_for_all_viewers()
 				return TOPIC_REFRESH_UPDATE_PREVIEW

@@ -78,8 +78,6 @@
 	..()
 	var/list/skirts = list()
 	for(var/skirt in (typesof(/obj/item/clothing/under/skirt)))
-		if((skirt in typesof(/obj/item/clothing/under/skirt/fluff)) || (skirt in typesof(/obj/item/clothing/under/skirt/outfit/fluff)))	//VOREStation addition
-			continue												//VOREStation addition
 		var/obj/item/clothing/under/skirt/skirt_type = skirt
 		skirts[initial(skirt_type.name)] = skirt_type
 	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(skirts))
@@ -125,8 +123,6 @@
 	..()
 	var/list/msuits = list()
 	for(var/msuit in typesof(/obj/item/clothing/under/suit_jacket))
-		if(msuit in typesof(/obj/item/clothing/under/suit_jacket/female/fluff))	//VOREStation addition
-			continue															//VOREStation addition
 		var/obj/item/clothing/suit/msuit_type = msuit
 		msuits[initial(msuit_type.name)] = msuit_type
 	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(msuits))
@@ -675,64 +671,15 @@
 	path = /obj/item/clothing/under/solgov/pt/sifguard
 
 //Federation jackets
-/datum/gear/suit/job_fed/sec
-	display_name = "fed uniform, sec"
-	path = /obj/item/clothing/suit/storage/fluff/fedcoat
-	allowed_roles = list(JOB_HEAD_OF_SECURITY, JOB_WARDEN, JOB_DETECTIVE, JOB_SECURITY_OFFICER, JOB_BLUESHIELD_GUARD, JOB_SECURITY_PILOT) //YW ADDITIONS
-	cost = 2
-
-/datum/gear/suit/job_fed/medsci
-	display_name = "fed uniform, med/sci"
-	path = /obj/item/clothing/suit/storage/fluff/fedcoat/fedblue
-	allowed_roles = list(JOB_CHIEF_MEDICAL_OFFICER,JOB_MEDICAL_DOCTOR,JOB_CHEMIST,JOB_PARAMEDIC,JOB_GENETICIST,JOB_RESEARCH_DIRECTOR,JOB_SCIENTIST, JOB_ROBOTICIST, JOB_XENOBIOLOGIST,JOB_XENOBOTANIST, JOB_FIELD_MEDIC) //CHOMP keep explo
-
-/datum/gear/suit/job_fed/eng
-	display_name = "fed uniform, eng"
-	path = /obj/item/clothing/suit/storage/fluff/fedcoat/fedeng
-	allowed_roles = list(JOB_CHIEF_ENGINEER,JOB_ATMOSPHERIC_TECHNICIAN,JOB_ENGINEER)
 //DS9
 
-/datum/gear/suit/job_trek/ds9_coat
-	display_name = "DS9 Overcoat (use uniform)"
-	path = /obj/item/clothing/suit/storage/trek/ds9
-	allowed_roles = list(JOB_HEAD_OF_SECURITY,JOB_SITE_MANAGER,JOB_HEAD_OF_PERSONNEL,JOB_CHIEF_ENGINEER,JOB_RESEARCH_DIRECTOR,
-						JOB_CHIEF_MEDICAL_OFFICER,JOB_MEDICAL_DOCTOR,JOB_CHEMIST,JOB_PARAMEDIC,JOB_GENETICIST,
-						JOB_SCIENTIST,JOB_ROBOTICIST,JOB_XENOBIOLOGIST,JOB_XENOBOTANIST,JOB_ATMOSPHERIC_TECHNICIAN,
-						JOB_ENGINEER,JOB_WARDEN,JOB_DETECTIVE,JOB_SECURITY_OFFICER,
-						JOB_PATHFINDER,JOB_EXPLORER,JOB_FIELD_MEDIC,JOB_BLUESHIELD_GUARD,JOB_SECURITY_PILOT) //YW ADDITIONS  //CHOMP keep explo
 /*
 Swimsuits
 */
 
-/datum/gear/uniform/swimsuits
-	display_name = "swimsuits selection"
-	path = /obj/item/storage/box/fluff/swimsuit
-
-/datum/gear/uniform/swimsuits/New()
-	..()
-	var/list/swimsuits = list()
-	for(var/obj/item/storage/box/fluff/swimsuit/swimsuit_type as anything in typesof(/obj/item/storage/box/fluff/swimsuit))
-		swimsuits[initial(swimsuit_type.name)] = swimsuit_type
-	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(swimsuits))
-
-/datum/gear/uniform/suit/gnshorts
-	display_name = "GN shorts"
-	path = /obj/item/clothing/under/fluff/gnshorts
 
 //Latex maid dress
-/datum/gear/uniform/latexmaid
-	display_name = "latex maid dress"
-	path = /obj/item/clothing/under/fluff/latexmaid
-
 //Tron Siren outfit
-/datum/gear/uniform/siren
-	display_name = "jumpsuit, Siren"
-	path = /obj/item/clothing/under/fluff/siren
-
-/datum/gear/uniform/suit/v_nanovest
-	display_name = "Varmacorp nanovest"
-	path = /obj/item/clothing/under/fluff/v_nanovest
-
 /*
 Qipao
 */

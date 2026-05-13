@@ -17,7 +17,7 @@
 	src.wet=_wet
 
 /obj/effect/decal/cleanable/blood/tracks/reveal_blood()
-	if(!fluorescent)
+	if(!dq_get_fluorescent(src))
 		if(stack && stack.len)
 			for(var/datum/fluidtrack/track in stack)
 				track.basecolor = COLOR_LUMINOL

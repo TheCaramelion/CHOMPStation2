@@ -223,7 +223,5 @@
 				// whenever we change this, we update our mob
 				var/mob/pref_mob = preference_mob()
 				if(pref_mob)
-					pref_mob.chat_color = new_runechat_color
-					pref_mob.chat_color_darkened = new_runechat_color
-					pref_mob.chat_color_name = pref_mob.name
+					dq_set_chat_color_cache(pref_mob, new_runechat_color, pref_mob.name, new_runechat_color) // DQEdit
 				return TOPIC_REFRESH

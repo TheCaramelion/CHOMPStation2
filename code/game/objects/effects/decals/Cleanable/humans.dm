@@ -23,14 +23,14 @@
 	var/delete_me = FALSE
 
 /obj/effect/decal/cleanable/blood/reveal_blood()
-	if(!fluorescent)
-		fluorescent = 1
+	if(!dq_get_fluorescent(src))
+		dq_set_fluorescent(src, 1)
 		basecolor = COLOR_LUMINOL
 		update_icon()
 
 /obj/effect/decal/cleanable/blood/wash(clean_types)
 	. = ..()
-	fluorescent = 0
+	dq_set_fluorescent(src, 0)
 	if(invisibility != INVISIBILITY_MAXIMUM)
 		invisibility = INVISIBILITY_MAXIMUM
 		amount = 0
@@ -80,7 +80,7 @@
 		return
 	if(!istype(perp))
 		return
-	if(perp.flying || perp.hovering || perp.is_floating) //if the perp isn't on the ground, they shouldn't be affected by the stuff on the floor.
+	if(perp.flying || dq_get_hovering(perp) || perp.is_floating) //if the perp isn't on the ground, they shouldn't be affected by the stuff on the floor.
 		return
 	if(amount < 1)
 		return
@@ -93,7 +93,7 @@
 	if(perp.shoes && !perp.buckled)//Adding blood to shoes
 		var/obj/item/clothing/shoes/S = perp.shoes
 		if(istype(S))
-			S.blood_color = basecolor
+			dq_set_blood_color(S, basecolor)
 			S.track_blood = max(amount,S.track_blood)
 			S.update_icon() // Cut previous overlays
 			if(!S.blood_overlay)

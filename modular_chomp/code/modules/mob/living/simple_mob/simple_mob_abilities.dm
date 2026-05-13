@@ -148,7 +148,7 @@
 				// Do the pounce action
 
 				//flying  = 1		//So we can thunk into things
-				hovering = 1	// So we don't hurt ourselves running off cliffs
+				dq_set_hovering(src, 1)	// So we don't hurt ourselves running off cliffs
 				playsound(src, "sound/weapons/punchmiss.ogg", 50, 1)
 
 				// throw_at returns FALSE if it will not call it's callback - useful to prevent state jamming
@@ -156,7 +156,7 @@
 					if(status_flags & LEAPING)
 						status_flags &= ~LEAPING
 						flying = 0
-						hovering = 0
+						dq_set_hovering(src, 0)
 						if(!foundpt)
 							pass_flags &= ~PASSTABLE
 						if(!foundpm)
@@ -169,7 +169,7 @@
 			if(status_flags & LEAPING)
 				status_flags &= ~LEAPING
 				flying = 0
-				hovering = 0
+				dq_set_hovering(src, 0)
 			pouncing = 0
 		update_icon()
 	else
@@ -180,7 +180,7 @@
 	if(status_flags & LEAPING)
 		status_flags &= ~LEAPING
 		flying = 0
-		hovering = 0
+		dq_set_hovering(src, 0)
 
 		if(!pt)
 			pass_flags &= ~PASSTABLE

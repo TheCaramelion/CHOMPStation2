@@ -416,10 +416,6 @@
 	)
 	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(selector_uniforms))
 
-/datum/gear/head/giantbow	//Public version of Dessa's bow!
-	display_name = "Giant Bow"
-	path = /obj/item/clothing/head/fluff/giantbow
-
 /datum/gear/head/giantbow/New()
 	..()
 	gear_tweaks += GLOB.gear_tweak_free_color_choice
@@ -552,10 +548,6 @@ Talon hats
 	path = /obj/item/clothing/head/eulrhat
 
 //Formerly my custom fluff gear, but free to use for anyone, now.
-/datum/gear/head/purple_tiara
-	display_name = "pink tourmaline tiara"
-	path = /obj/item/clothing/head/fluff/pink_tiara
-
 /datum/gear/head/pirate_hat
 	display_name = "pirate hat"
 	path = /obj/item/clothing/head/pirate

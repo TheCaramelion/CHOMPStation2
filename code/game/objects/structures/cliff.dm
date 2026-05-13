@@ -150,7 +150,7 @@ two tiles on initialization, and which way a cliff is facing may change during m
 /obj/structure/cliff/CanPass(atom/movable/mover, turf/target)
 	if(isliving(mover))
 		var/mob/living/L = mover
-		if(L.hovering || L.flying) // Flying mobs can always pass.
+		if(dq_get_hovering(L) || L.flying) // Flying mobs can always pass.
 			return TRUE
 		return ..()
 
@@ -171,7 +171,7 @@ two tiles on initialization, and which way a cliff is facing may change during m
 	..()
 
 /obj/structure/cliff/proc/should_fall(mob/living/L)
-	if(L.hovering || L.flying)
+	if(dq_get_hovering(L) || L.flying)
 		return FALSE
 
 	var/turf/T = get_turf(L)

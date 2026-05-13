@@ -38,7 +38,6 @@
 /*
  * Plushies
  */
-// HEY FUTURE PLUSHIE CODERS: IF YOU'RE ADDING A SNOWFLAKE PLUSH ITEM USE PATH /obj/item/toy/plushie/fluff
 // the loadout entry shouldn't be able to grab those if everything goes right
 /*
  * Plushies

@@ -197,9 +197,7 @@
 			/obj/item/clothing/accessory/collar/shock,
 			/obj/item/clothing/suit/straight_jacket,
 			/obj/item/handcuffs/legcuffs/fuzzy,
-			/obj/item/melee/fluff/holochain/mass,
 			/obj/item/material/twohanded/riding_crop,
-			/obj/item/clothing/under/fluff/latexmaid,
 			/obj/item/clothing/suit/shibari/pink
 			)
 	containertype = /obj/structure/closet/crate
@@ -210,10 +208,6 @@
 	name = "Wolfgirl Cosplay Crate"
 	desc = "A set of cosplay supplies."
 	contains = list(
-			/obj/item/clothing/head/fluff/wolfgirl = 1,
-			/obj/item/clothing/shoes/fluff/wolfgirl = 1,
-			/obj/item/clothing/under/fluff/wolfgirl = 1,
-			/obj/item/melee/fluffstuff/wolfgirlsword = 1,
 			/obj/item/shield/fluff/wolfgirlshield = 1
 			)
 	cost = 50

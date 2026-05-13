@@ -3,7 +3,7 @@
 /// not in their targets.
 /// Examples include syringes (LMB to inject, RMB to draw) and health analyzers (LMB to scan health/wounds, RMB for chems)
 /// Items can override `add_item_context()`, and call `register_item_context()` in order to easily connect to this.
-/// Called on /obj/item with a mutable screentip context list, the hovered target, and the mob hovering.
+/// Called on /obj/item with a mutable screentip context list, the hovered target, and the mob dq_get_hovering(src).
 /// A screentip context list is a list that has context keys (SCREENTIP_CONTEXT_*, from __DEFINES/screentips.dm)
 /// that map to the action as text.
 /// If you mutate the list in this signal, you must return CONTEXTUAL_SCREENTIP_SET.
@@ -13,7 +13,7 @@
 /// These are atoms that are defined by what happens *to* them. These should define contextual text within themselves, and
 /// not in their operating tools.
 /// Examples include construction objects (LMB with glass to put in screen for computers).
-/// Called on /atom with a mutable screentip context list, the item being used, and the mob hovering.
+/// Called on /atom with a mutable screentip context list, the item being used, and the mob dq_get_hovering(src).
 /// A screentip context list is a list that has context keys (SCREENTIP_CONTEXT_*, from __DEFINES/screentips.dm)
 /// that map to the action as text.
 /// If you mutate the list in this signal, you must return CONTEXTUAL_SCREENTIP_SET.

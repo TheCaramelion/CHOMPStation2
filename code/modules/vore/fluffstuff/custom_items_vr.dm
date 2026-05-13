@@ -197,14 +197,12 @@
 	return 0
 
 //For General use
-/obj/item/sword/fluff/joanaria/scisword
 	name = "Scissor Blade"
 	desc = "A sword that can not only cut down your enemies, it can also cut fabric really neatly"
 	icon = 'icons/vore/custom_items_vr.dmi'
 	icon_state = "scisword"
 
 //john.wayne9392:Harmony Prechtl
-/obj/item/twohanded/fireaxe/fluff/mjollnir
 	name = "Mjollnir"
 	desc = "Large hammer that looks like it can do a great deal of damage if properly used."
 	icon = 'icons/vore/custom_items_vr.dmi'
@@ -384,7 +382,6 @@
 	attack_verb = list("flogged", "whipped", "lashed", "disciplined", "chastised", "flayed")
 
 //General use
-/obj/item/melee/fluff/holochain/mass
 	desc = "A mass produced version of the original. It has faux leather and an aluminium base, but still stings like the original."
 	force = 8
 	attack_verb = list("flogged", "whipped", "lashed", "flayed")
@@ -500,7 +497,6 @@
 
 
 //Cameron653: Diana Kuznetsova
-/obj/item/clothing/suit/fluff/purp_robes
 	name = "purple robes"
 	desc = "Heavy, royal purple robes threaded with silver lining."
 	icon_state = "psyamp"
@@ -526,7 +522,6 @@
 			to_chat(usr, "You button up the coat.")
 	usr.update_inv_wear_suit()
 
-/obj/item/clothing/head/fluff/pink_tiara
 	name = "pink tourmaline tiara"
 	desc = "A small, steel tiara with a large, pink tourmaline gem in the center."
 	icon_state = "amp"
@@ -635,7 +630,6 @@
 	<i>\[AM WARNING\]</i>
 	<p>This device contains antimatter. Please consult all local regulations when travelling to ensure compliance with local laws.</p>"}
 
-/obj/item/storage/box/khcrystal
 	name = "life crystal case"
 	icon = 'icons/vore/custom_items_vr.dmi'
 	icon_state = "khlifebox"
@@ -812,7 +806,6 @@
 	name = DEVELOPER_WARNING_NAME
 
 //General use, Verk felt like sharing.
-/obj/item/clothing/glasses/fluff/science_proper
 	name = "Aesthetic Science Goggles"
 	desc = "The goggles really do nothing this time!"
 	icon_state = "purple"
@@ -820,7 +813,6 @@
 	item_flags = AIRTIGHT
 
 //General use, Verk felt like sharing.
-/obj/item/clothing/glasses/fluff/spiffygogs
 	name = "Orange Goggles"
 	desc = "You can almost feel the raw power radiating off these strange specs."
 	icon = 'icons/vore/custom_items_vr.dmi'
@@ -832,7 +824,6 @@
 	off_state = "spiffygogsup"
 
 //General use
-/obj/item/clothing/accessory/tronket
 	name = "metal necklace"
 	desc = "A shiny steel chain with a vague metallic object dangling off it."
 	icon = 'icons/vore/custom_items_vr.dmi'
@@ -843,7 +834,6 @@
 	slot_flags = SLOT_TIE
 	slot = ACCESSORY_SLOT_DECOR
 
-/obj/item/clothing/accessory/flops
 	name = "drop straps"
 	desc = "Wearing suspenders over shoulders? That's been so out for centuries and you know better."
 	icon = 'icons/vore/custom_items_vr.dmi'
@@ -1100,7 +1090,6 @@
 	add_fingerprint(user)
 	return
 
-/obj/item/melee/fluffstuff/wolfgirlsword
 	name = "Wolfgirl Sword Replica"
 	desc = "A replica of a large, scimitar-like sword with a dull edge. Ceremonial... until it isn't."
 	icon = 'icons/obj/weapons_vr.dmi'

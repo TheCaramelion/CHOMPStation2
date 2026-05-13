@@ -176,7 +176,7 @@
 		has_hands = S.has_hands
 
 	// Don't have means to use a ladder or the space around it, don't use the ladder
-	if(!has_hands && !holder.hovering)
+	if(!has_hands && !dq_get_hovering(holder))
 		return
 
 	var/obj/structure/ladder/L = locate() in get_turf(holder)

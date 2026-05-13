@@ -50,7 +50,7 @@
 /turf/simulated/floor/outdoors/snow/sif/planetuse/Entered(atom/A)
 	if(isliving(A))
 		var/mob/living/L = A
-		if(L.hovering) // Flying things shouldn't make footprints.
+		if(dq_get_hovering(L)) // Flying things shouldn't make footprints.
 			return ..()
 		var/mdir = "[A.dir]"
 		crossed_dirs[mdir] = 1

@@ -107,18 +107,18 @@
 		return ..()
 
 /mob/living/simple_mob/vore/demonAI/cloak()
-	if(cloaked)
+	if(dq_get_cloaked(src))
 		return
 	animate(src, alpha = cloaked_alpha, time = 1 SECOND)
-	cloaked = TRUE
+	dq_set_cloaked(src, TRUE)
 
 
 /mob/living/simple_mob/vore/demonAI/uncloak()
-	last_uncloak = world.time // This is assigned even if it isn't cloaked already, to 'reset' the timer if the spider is continously getting attacked.
-	if(!cloaked)
+	last_uncloak = world.time // This is assigned even if it isn't dq_get_cloaked(src) already, to 'reset' the timer if the spider is continously getting attacked.
+	if(!dq_get_cloaked(src))
 		return
 	animate(src, alpha = initial(alpha), time = 1 SECOND)
-	cloaked = FALSE
+	dq_set_cloaked(src, FALSE)
 
 // Check if cloaking if possible.
 /mob/living/simple_mob/vore/demonAI/proc/can_cloak()
@@ -134,16 +134,16 @@
 	uncloak()
 
 /mob/living/simple_mob/vore/demonAI/is_cloaked()
-	return cloaked
+	return dq_get_cloaked(src)
 
 // Cloaks the spider automatically, if possible.
 /mob/living/simple_mob/vore/demonAI/handle_special()
-	if(!cloaked && can_cloak())
+	if(!dq_get_cloaked(src) && can_cloak())
 		cloak()
 
-// Applies bonus base damage if cloaked.
+// Applies bonus base damage if dq_get_cloaked(src).
 /mob/living/simple_mob/vore/demonAI/apply_bonus_melee_damage(atom/A, damage_amount)
-	if(cloaked)
+	if(dq_get_cloaked(src))
 		playsound(src.loc, 'sound/effects/blobattack.ogg', 50, 1)
 		uncloak()
 		return damage_amount + cloaked_bonus_damage
@@ -196,6 +196,6 @@
 
 /mob/living/simple_mob/vore/demonAI/gibspam/apply_bonus_melee_damage(atom/A, damage_amount)
 	var/turf/T = get_turf(src)
-	if(cloaked)
+	if(dq_get_cloaked(src))
 		new /obj/effect/gibspawner/generic(T)
 	return ..()

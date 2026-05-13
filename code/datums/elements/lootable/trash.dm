@@ -111,7 +111,6 @@
 		/obj/item/reagent_containers/glass/rag,
 		/obj/item/storage/box/sinpockets,
 		/obj/item/storage/secure/briefcase,
-		/obj/item/clothing/under/fluff/latexmaid,
 		/obj/item/toy/tennis,
 		/obj/item/toy/tennis/red,
 		/obj/item/toy/tennis/yellow,

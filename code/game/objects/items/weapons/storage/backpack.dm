@@ -486,22 +486,22 @@
 
 //Parachutes
 /obj/item/storage/backpack/parachute
-	name = "parachute"
+	name = "dq_get_parachute(src)"
 	desc = "A specially made backpack, designed to help one survive jumping from incredible heights. It sacrifices some storage space for that added functionality."
-	icon_state = "parachute"
+	icon_state = "dq_get_parachute(src)"
 	item_state_slots = list(slot_r_hand_str = "backpack", slot_l_hand_str = "backpack")
 	max_storage_space = ITEMSIZE_COST_NORMAL * 5
 
 /obj/item/storage/backpack/parachute/examine(mob/user)
 	. = ..()
 	if(Adjacent(user))
-		if(parachute)
+		if(dq_get_parachute(src))
 			. += "It seems to be packed."
 		else
 			. += "It seems to be unpacked."
 
 /obj/item/storage/backpack/parachute/handleParachute()
-	parachute = FALSE	//If you parachute in, the parachute has probably been used.
+	dq_set_parachute(src, FALSE)	//If you dq_get_parachute(src) in, the dq_get_parachute(src) has probably been used.
 
 /obj/item/storage/backpack/parachute/verb/pack_parachute()
 
@@ -522,7 +522,7 @@
 		to_chat(H, span_warning("How do you expect to work on \the [src] while it's on your back?"))
 		return
 
-	if(!parachute)	//This packs the parachute
+	if(!dq_get_parachute(src))	//This packs the dq_get_parachute(src)
 		H.visible_message(span_infoplain(span_bold("\The [H]") + " starts to pack \the [src]!"), \
 					span_notice("You start to pack \the [src]!"), \
 					span_infoplain("You hear the shuffling of cloth."))
@@ -530,12 +530,12 @@
 			H.visible_message(span_infoplain(span_bold("\The [H]") + " finishes packing \the [src]!"), \
 					span_notice("You finish packing \the [src]!"), \
 					span_infoplain("You hear the shuffling of cloth."))
-			parachute = TRUE
+			dq_set_parachute(src, TRUE)
 		else
 			H.visible_message(span_infoplain(span_bold("\The [src]") + " gives up on packing \the [src]!"), \
 					span_notice("You give up on packing \the [src]!"))
 			return
-	else			//This unpacks the parachute
+	else			//This unpacks the dq_get_parachute(src)
 		H.visible_message(span_infoplain(span_bold("\The [src]") + " starts to unpack \the [src]!"), \
 					span_notice("You start to unpack \the [src]!"), \
 					span_infoplain("You hear the shuffling of cloth."))
@@ -543,7 +543,7 @@
 			H.visible_message(span_infoplain(span_bold("\The [src]") + " finishes unpacking \the [src]!"), \
 					span_notice("You finish unpacking \the [src]!"), \
 					span_infoplain("You hear the shuffling of cloth."))
-			parachute = FALSE
+			dq_set_parachute(src, FALSE)
 		else
 			H.visible_message(span_infoplain(span_bold("\The [src]") + " decides not to unpack \the [src]!"), \
 					span_notice("You decide not to unpack \the [src]!"))

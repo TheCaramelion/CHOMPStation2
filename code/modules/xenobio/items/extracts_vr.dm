@@ -1362,7 +1362,6 @@
 /datum/decl/chemical_reaction/instant/slime/sapphire_plushies/on_reaction(datum/reagents/holder)
 	var/spawn_type
 	var/list/possible_types = subtypesof(/obj/item/toy/plushie)
-	possible_types -= subtypesof(/obj/item/toy/plushie/fluff)
 	possible_types -= subtypesof(/obj/item/toy/plushie/therapy)
 	for(var/i = 1 to rand(3, 5))
 		spawn_type = pickweight(possible_types)

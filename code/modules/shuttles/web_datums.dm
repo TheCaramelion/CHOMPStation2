@@ -58,8 +58,8 @@
 
 	var/radio_announce = 0				// Whether it will make a station announcement (0) or a radio announcement (1).
 	var/announcer = null				// The name of the 'announcer' that will say the arrival/departure messages.  Defaults to the map's boss name if blank.
-//	var/arrival_message = null			// Message said if the ship enters this destination.  Not announced if the ship is cloaked.
-//	var/departure_message = null		// Message said if the ship exits this destination.  Not announced if the ship is cloaked.
+//	var/arrival_message = null			// Message said if the ship enters this destination.  Not announced if the ship is dq_get_cloaked(src).
+//	var/departure_message = null		// Message said if the ship exits this destination.  Not announced if the ship is dq_get_cloaked(src).
 
 	// When this destination is instantiated, it will go and instantiate other destinations in this assoc list and build routes between them.
 	// The list format is '/datum/shuttle_destination/subtype = 1 MINUTES'

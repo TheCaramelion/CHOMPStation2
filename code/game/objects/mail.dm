@@ -467,9 +467,6 @@ ADMIN_VERB(spawn_mail, R_SPAWN, "Spawn Mail", "Spawn mail for a specific player,
 	if(prob(25))
 		special_name = TRUE
 		junk = pick(list(
-			/obj/item/paper/pamphlet/gateway,
-			/obj/item/paper/pamphlet/violent_video_games,
-			/obj/item/paper/pamphlet/radstorm,
 			/obj/item/paper/fluff/junkmail_redpill,
 			/obj/effect/decal/cleanable/ash,
 			/obj/item/paper/fluff/love_letter,
@@ -487,9 +484,6 @@ ADMIN_VERB(spawn_mail, R_SPAWN, "Spawn Mail", "Spawn mail for a specific player,
 		))
 
 	var/list/junk_names = list(
-		/obj/item/paper/pamphlet/gateway = "[initial(name)] for BRAVE adventurers",
-		/obj/item/paper/pamphlet/violent_video_games = "[initial(name)] for the truth about the arcade CentComm doesn't want to hear",
-		/obj/item/paper/pamphlet/radstorm = "[initial(name)] for the threats in space",
 		/obj/item/paper/fluff/junkmail_redpill = "[initial(name)] for those feeling tired working at Nanotrasen",
 		/obj/effect/decal/cleanable/ash = "[initial(name)] with INCREDIBLY IMPORTANT ARTIFACT- DELIVER TO SCIENCE DIVISION. HANDLE WITH CARE.",
 		/obj/item/paper/fluff/love_letter = "[initial(name)] for STUPID CARGO MAILMEN.",

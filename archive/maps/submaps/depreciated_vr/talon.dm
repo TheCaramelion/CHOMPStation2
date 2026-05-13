@@ -406,7 +406,6 @@ Once in open space, consider disabling nonessential power-consuming electronics 
 					/obj/item/reagent_containers/syringe/antiviral = 4,/obj/item/reagent_containers/syringe = 12,
 					/obj/item/healthanalyzer = 5,/obj/item/reagent_containers/glass/beaker = 4, /obj/item/reagent_containers/dropper = 2,
 					/obj/item/stack/medical/advanced/bruise_pack = 6, /obj/item/stack/medical/advanced/ointment = 6, /obj/item/stack/medical/splint = 4,
-					/obj/item/storage/pill_bottle/carbon = 2, /obj/item/storage/box/khcrystal = 4, /obj/item/clothing/glasses/omnihud/med = 4,
 					/obj/item/glasses_kit = 1,  /obj/item/storage/quickdraw/syringe_case = 4)
 	contraband = list(/obj/item/reagent_containers/pill/tox = 3,/obj/item/reagent_containers/pill/stox = 4,/obj/item/reagent_containers/pill/antitox = 6)
 	idle_power_usage = 211 //refrigerator - believe it or not, this is actually the average power consumption of a refrigerated vending machine according to NRCan.

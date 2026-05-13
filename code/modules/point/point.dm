@@ -46,11 +46,11 @@
 	thought_bubble.overlays += point_visual
 
 	add_overlay(thought_bubble)
-	LAZYADD(update_on_z, thought_bubble)
+	dq_add_z_update_image(src, thought_bubble) // DQEdit
 	addtimer(CALLBACK(src, PROC_REF(clear_point_bubble), thought_bubble), POINT_TIME)
 
 /atom/movable/proc/clear_point_bubble(mutable_appearance/thought_bubble)
-	LAZYREMOVE(update_on_z, thought_bubble)
+	dq_remove_z_update_image(src, thought_bubble) // DQEdit
 	cut_overlay(thought_bubble)
 
 /obj/effect/temp_visual/point

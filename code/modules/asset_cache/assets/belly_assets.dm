@@ -7,7 +7,6 @@
 
 /datum/belly_overlays
 	var/belly_icon
-/*
 /datum/belly_overlays/vbo_belly1
 	belly_icon = "icons/mob/vore_fullscreens/VBO_belly1.dmi" // DQEdit — string not icon ref
 
@@ -28,7 +27,6 @@
 
 /datum/belly_overlays/vbo_belly7
 	belly_icon = "icons/mob/vore_fullscreens/VBO_belly7.dmi" // DQEdit — string not icon ref
-*/
 
 /datum/belly_overlays/vbo_belly8
 	belly_icon = "icons/mob/vore_fullscreens/VBO_belly8.dmi" // DQEdit — string not icon ref

@@ -57,7 +57,7 @@
 		)
 	CHOMP Removal End*/
 	catalogue_data = list(/datum/category_item/catalogue/flora/sif_grass)
-	catalogue_delay = 2 SECONDS
+	// DQEdit — catalogue_delay encoded in GLOB.dq_catalogue_delay_by_type
 
 /turf/simulated/floor/outdoors/grass/sif/Initialize(mapload)
 	if(tree_chance && prob(tree_chance) && !check_density())

@@ -142,7 +142,7 @@
 		density = initial(density)
 		can_pull_size = initial(can_pull_size)
 		can_pull_mobs = initial(can_pull_mobs)
-		hovering = initial(hovering)
+		dq_clear_hovering(src)  // DQEdit — reset to type-default
 		update_icon()
 
 		//Cosmetics mostly
@@ -232,7 +232,7 @@
 
 		can_pull_size = 0
 		can_pull_mobs = MOB_PULL_NONE
-		hovering = TRUE
+		dq_set_hovering(src, TRUE)
 		canmove = FALSE
 
 		// change

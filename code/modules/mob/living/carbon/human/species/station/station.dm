@@ -1243,7 +1243,7 @@
 /datum/species/teshari/handle_falling(mob/living/carbon/human/H, atom/hit_atom, damage_min, damage_max, silent, planetary)
 
 	// Tesh can glide to save themselves from some falls. Basejumping bird
-	// without parachute, or falling bird without free wings, goes splat.
+	// without dq_get_parachute(src), or falling bird without free wings, goes splat.
 
 	// Are we landing from orbit, or handcuffed/unconscious/tied to something?
 	if(planetary || !istype(H) || H.incapacitated(INCAPACITATION_DEFAULT|INCAPACITATION_DISABLED))

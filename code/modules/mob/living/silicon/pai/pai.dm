@@ -6,7 +6,7 @@
 	emote_type = 2		// pAIs emotes are heard, not seen, so they can be seen through a container (eg. person)
 	pass_flags = 1
 	mob_size = MOB_SMALL
-	softfall = TRUE
+	// DQEdit — dq_get_softfall(src) type-default moved to GLOB.dq_softfall_by_type
 
 	holder_type = /obj/item/holder/pai
 
@@ -277,9 +277,9 @@
 
 	// Drops you if you change to a non-flying chassis
 	if(chassis_data.flying)
-		hovering = TRUE
+		dq_set_hovering(src, TRUE)
 	else
-		hovering = FALSE
+		dq_set_hovering(src, FALSE)
 		if(isopenspace(loc))
 			fall()
 

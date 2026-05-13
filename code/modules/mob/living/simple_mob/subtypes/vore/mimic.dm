@@ -365,7 +365,7 @@
 	if(!isliving(victim))
 		return
 	var/mob/living/L = victim
-	if(L.hovering)
+	if(dq_get_hovering(L))
 		return
 	awaken(L)
 

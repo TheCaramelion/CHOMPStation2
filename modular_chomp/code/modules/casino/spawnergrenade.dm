@@ -99,7 +99,6 @@
 
 /obj/item/grenade/spawnergrenade/casino/gygax/scree
 	name = "Casino Mech Container (Phazon Scuttlebug)"
-	spawner_type = /obj/mecha/combat/phazon/scree
 
 /obj/item/grenade/spawnergrenade/casino/gygax/janus
 	name = "Casino Mech Container (Phazon Janus)"

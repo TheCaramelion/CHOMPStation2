@@ -451,8 +451,6 @@
 			/obj/item/clothing/glasses/eyepatch,
 			/obj/item/clothing/glasses/fakesunglasses,
 			/obj/item/clothing/glasses/fakesunglasses/aviator,
-			/obj/item/clothing/glasses/fluff/science_proper,
-			/obj/item/clothing/glasses/fluff/spiffygogs,
 			/obj/item/clothing/glasses/gglasses,
 			/obj/item/clothing/glasses/monocle,
 			/obj/item/clothing/glasses/regular,

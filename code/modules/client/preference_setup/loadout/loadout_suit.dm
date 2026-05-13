@@ -115,8 +115,6 @@
 	..()
 	var/list/hazards = list()
 	for(var/hazard_style in typesof(/obj/item/clothing/suit/storage/hazardvest))
-		if(hazard_style in typesof(/obj/item/clothing/suit/storage/hazardvest/fluff))	//VOREStation addition
-			continue																	//VOREStation addition
 		var/obj/item/clothing/suit/storage/hazardvest/hazardvest = hazard_style
 		hazards[initial(hazardvest.name)] = hazardvest
 	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(hazards))
@@ -871,22 +869,6 @@
 	allowed_roles = list(JOB_SECURITY_OFFICER, JOB_HEAD_OF_SECURITY, JOB_WARDEN, JOB_DETECTIVE)
 	show_roles = FALSE
 
-/datum/gear/suit/jacket_modular
-	display_name = "jacket, modular"
-	path = /obj/item/clothing/suit/storage/fluff/jacket
-
-/datum/gear/suit/jacket_modular/New()
-	..()
-	var/list/the_jackets = list()
-	for(var/the_jacket in typesof(/obj/item/clothing/suit/storage/fluff/jacket))
-		var/obj/item/clothing/suit/jacket_type = the_jacket
-		the_jackets[initial(jacket_type.name)] = jacket_type
-	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(the_jackets))
-
-/datum/gear/suit/gntop
-	display_name = "GN crop jacket"
-	path = /obj/item/clothing/suit/storage/fluff/gntop
-
 /datum/gear/suit/old_poncho //This is made from an old sprite which has been here for quite some time. Called old poncho because duplicates
 	display_name = "Colorful poncho"
 	description = "A Mexican looking poncho. It look like it fits wolf taurs as well."
@@ -959,10 +941,6 @@ Talon winter coat
 	allowed_roles = list (JOB_PARAMEDIC)
 
 //Long fur coat
-/datum/gear/suit/russofurcoat
-	display_name = "long fur coat"
-	path = /obj/item/clothing/suit/storage/vest/hoscoat/russofurcoat
-
 //Colorable Hoodie
 /datum/gear/suit/hoodie_vr
 	display_name = "hoodie with hood (colorable)"
@@ -1186,18 +1164,9 @@ Talon winter coat
 	path = /obj/item/clothing/suit/storage/vest/martian_miner
 
 //Formerly my custom fluff gear, but free to use for anyone, now.
-/datum/gear/suit/purple_robes
-	display_name = "purple robes"
-	path = /obj/item/clothing/suit/fluff/purp_robes
-
 /datum/gear/suit/pirate_coat
 	display_name = "pirate coat"
 	path = /obj/item/clothing/suit/pirate
-
-/datum/gear/suit/cloak_of_eyes
-	display_name = "cloak of eyes"
-	description = "A basic looking purple robe that has a hood and can be toggled to have eyes form and stare at moving creatures!"
-	path = /obj/item/clothing/suit/storage/hooded/purple_robes
 
 /datum/gear/suit/neo_pcloak_color
 	display_name = "flowing cloak, colorable"

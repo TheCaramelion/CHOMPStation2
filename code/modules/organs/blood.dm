@@ -520,7 +520,7 @@ BLOOD_VOLUME_SURVIVE = 40
 	if(source.data["viruses"])
 		B.viruses = source.data["viruses"]
 
-	B.fluorescent  = 0
+	dq_set_fluorescent(B, 0)
 	B.invisibility = INVISIBILITY_NONE
 	return B
 

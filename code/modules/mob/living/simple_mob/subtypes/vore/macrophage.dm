@@ -108,13 +108,13 @@
 		return
 	status_flags |= LEAPING
 	flying = TRUE
-	hovering = TRUE
+	dq_set_hovering(src, TRUE)
 	visible_message(span_warning("The [src] lunges at \the [A]!"))
 	throw_at(A, 7, 2)
 	if(status_flags & LEAPING)
 		status_flags &= ~LEAPING
 	flying = FALSE
-	hovering = FALSE
+	dq_set_hovering(src, FALSE)
 
 	var/mob/living/target = null
 	if(Adjacent(A))

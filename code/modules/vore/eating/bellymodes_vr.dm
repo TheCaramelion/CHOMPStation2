@@ -35,8 +35,8 @@
 				// If the prey can't pass the filter of at least one transfer location, skip it
 				if(ismob(M) && !(autotransfer_filter(M, autotransfer_secondary_whitelist, autotransfer_secondary_blacklist) || autotransfer_filter(M, autotransfer_whitelist, autotransfer_blacklist))) continue
 				if(isitem(M) && !(autotransfer_filter(M, autotransfer_secondary_whitelist_items, autotransfer_secondary_blacklist_items) || autotransfer_filter(M, autotransfer_whitelist_items, autotransfer_blacklist_items))) continue
-				M.belly_cycles++
-				if(M.belly_cycles < autotransferwait / 60)
+				dq_set_belly_cycles(M, dq_get_belly_cycles(M) + 1)
+				if(dq_get_belly_cycles(M) < autotransferwait / 60)
 					continue
 				autotransferables += M
 			if(LAZYLEN(autotransferables) >= autotransfer_min_amount)

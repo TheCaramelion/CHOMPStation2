@@ -167,7 +167,7 @@
 	return FALSE
 
 /mob/living/can_overcome_gravity()
-	return hovering
+	return dq_get_hovering(src)
 
 /mob/living/carbon/human/can_overcome_gravity()
 	. = ..()
@@ -207,13 +207,13 @@
 /mob/living/can_ztravel()
 	if(incapacitated())
 		return FALSE
-	return (hovering || is_incorporeal())
+	return (dq_get_hovering(src) || is_incorporeal())
 
 /mob/living/simple_mob/can_ztravel()
 	if(incapacitated())
 		return FALSE
 
-	if(hovering || is_incorporeal())
+	if(dq_get_hovering(src) || is_incorporeal())
 		return TRUE
 
 	if(Process_Spacemove())
@@ -226,7 +226,7 @@
 	if(incapacitated())
 		return FALSE
 
-	if(hovering || is_incorporeal())
+	if(dq_get_hovering(src) || is_incorporeal())
 		return TRUE
 
 	if(flying) //VOREStation Edit. Allows movement up/down with wings.
@@ -244,7 +244,7 @@
 	if(incapacitated() || is_dead())
 		return FALSE
 
-	if(hovering)
+	if(dq_get_hovering(src))
 		return TRUE
 
 	if(Process_Spacemove()) //Checks for active jetpack
@@ -382,7 +382,7 @@
 /mob/living/can_fall()
 	if(is_incorporeal())
 		return FALSE
-	if(hovering)
+	if(dq_get_hovering(src))
 		return FALSE
 	return ..()
 
@@ -547,7 +547,7 @@
 /mob/living/fall_impact(atom/hit_atom, damage_min = 0, damage_max = 5, silent = FALSE, planetary = FALSE)
 	var/turf/landing = get_turf(hit_atom)
 	var/safe_fall = FALSE
-	if(src.softfall || (isanimal(src) && src.mob_size <= MOB_SMALL))
+	if(dq_get_softfall(src) || (isanimal(src) && src.mob_size <= MOB_SMALL))
 		safe_fall = TRUE
 	if(planetary && src.CanParachute())
 		if(!silent)
@@ -605,27 +605,23 @@
 			if(istype(hit_turf))
 				hit_turf.break_tile()
 //Using /atom/movable instead of /obj/item because I'm not sure what all humans can pick up or wear
-/atom/movable
-	var/parachute = FALSE	// Is this thing a parachute itself?
-	var/hovering = FALSE	// Is the thing floating or flying in some way? If so, don't fall normally.	//Not implemented yet, idea is to let mobs/mechs ignore terrain slowdown and falling down floors
-	var/softfall = FALSE	// Is the thing able to lessen their impact upon falling?
-	var/parachuting = FALSE	// Is the thing able to jump out of planes and survive? Don't check this directly outside of CanParachute().
+// DQEdit — dq_get_parachute(src), dq_get_hovering(src), dq_get_softfall(src), dq_get_parachuting(src) moved to /datum/component/movable_state
 
 /atom/movable/proc/isParachute()
-	return parachute
+	return dq_get_parachute(src)
 
-//This is what makes the parachute items know they've been used.
+//This is what makes the dq_get_parachute(src) items know they've been used.
 //I made it /atom/movable so it can be retooled for other things (mobs, mechs, etc), though it's only currently called in human/CanParachute().
 /atom/movable/proc/handleParachute()
 	return
 
 //Checks if the thing is allowed to survive a fall from space
 /atom/movable/proc/CanParachute()
-	return parachuting
+	return dq_get_parachuting(src)
 
 //For humans, this needs to be a wee bit more complicated
 /mob/living/carbon/human/CanParachute()
-	//Certain slots don't really need to be checked for parachute ability, i.e. pockets, ears, etc. If this changes, just add them to the loop, I guess?
+	//Certain slots don't really need to be checked for dq_get_parachute(src) ability, i.e. pockets, ears, etc. If this changes, just add them to the loop, I guess?
 	//This is done in Priority Order, so items lower down the list don't call handleParachute() unless they're actually used.
 	if(back && back.isParachute())
 		back.handleParachute()
@@ -643,7 +639,7 @@
 		back.handleParachute()
 		return TRUE
 	else
-		return parachuting
+		return dq_get_parachuting(src)
 
 //Mech Code
 /obj/mecha/handle_fall(turf/landing)
@@ -672,7 +668,7 @@
 				span_danger("You land on \the [landing]!"), \
 				"You hear something land \the [landing].")
 		return
-	else if(!planetary && src.softfall) // Falling one floor and falling one atmosphere are very different things
+	else if(!planetary && dq_get_softfall(src)) // Falling one floor and falling one atmosphere are very different things
 		if(!silent)
 			visible_message(span_warning("\The [src] falls from above and lands on \the [landing]!"), \
 				span_danger("You land on \the [landing]!"), \

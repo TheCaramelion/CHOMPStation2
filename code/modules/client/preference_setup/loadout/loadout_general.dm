@@ -83,7 +83,6 @@
 	var/list/blacklisted_types = list()
 	// look if theres a better way to do this im all ears
 	blacklisted_types += subtypesof(/obj/item/toy/plushie/therapy)
-	blacklisted_types += subtypesof(/obj/item/toy/plushie/fluff)
 	blacklisted_types += /obj/item/toy/plushie/borgplushie/drake //VOREStation addition
 	blacklisted_types += /obj/item/toy/plushie/dragon/gold_east
 	blacklisted_types += /obj/item/toy/plushie/customizable

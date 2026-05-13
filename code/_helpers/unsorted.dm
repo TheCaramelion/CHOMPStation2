@@ -1123,7 +1123,7 @@ GLOBAL_LIST_INIT(common_tools, list(
 				cleanliness = O.surgery_cleanliness
 	if(!cleanliness) //We have no good objects on the turf. Time to check the floor!
 		var/turf/T = get_turf(src)
-		if(T.was_bloodied) //floor is contaminated
+		if(dq_get_was_bloodied(T)) //floor is contaminated
 			return 0
 		//Turf generally start with a germ level of 110 and cap out at 200.
 		//Can use sterilizine to lower germs of the floor, or space cleaner.

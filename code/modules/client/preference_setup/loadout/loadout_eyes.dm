@@ -270,14 +270,6 @@
 	)
 	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(selector_uniforms))
 
-/datum/gear/eyes/spiffygogs
-	display_name = "slick orange goggles"
-	path = /obj/item/clothing/glasses/fluff/spiffygogs
-
-/datum/gear/eyes/science_proper
-	display_name = "science goggles (no overlay)"
-	path = /obj/item/clothing/glasses/fluff/science_proper
-
 /datum/gear/eyes/bigshot
 	display_name = "Big Shot's Glasses"
 	path = /obj/item/clothing/glasses/sunglasses/bigshot

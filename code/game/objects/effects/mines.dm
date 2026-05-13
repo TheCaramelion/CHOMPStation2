@@ -101,7 +101,7 @@
 
 	if(istype(M, /mob/living/))
 		var/mob/living/mob = M
-		if(!(mob.hovering || mob.flying || mob.is_incorporeal() || mob.mob_size <= MOB_TINY))
+		if(!(dq_get_hovering(mob) || mob.flying || mob.is_incorporeal() || mob.mob_size <= MOB_TINY))
 			explode(M)
 
 /obj/effect/mine/attackby(obj/item/W as obj, mob/living/user as mob)
@@ -111,7 +111,7 @@
 		span_notice("You very carefully screw the mine's panel [panel_open ? "open" : "closed"]."))
 		playsound(src, W.usesound, 50, 1)
 
-		// Panel open, stay uncloaked, or uncloak if already cloaked. If you don't cloak on place, ignore it and just be normal alpha.
+		// Panel open, stay uncloaked, or uncloak if already dq_get_cloaked(src). If you don't cloak on place, ignore it and just be normal alpha.
 		alpha = camo_net ? (panel_open ? 255 : 50) : 255
 
 	else if((W.has_tool_quality(TOOL_WIRECUTTER) || istype(W, /obj/item/multitool)) && panel_open)
@@ -445,7 +445,7 @@
 
 // This tells AI mobs to not be dumb and step on mines willingly.
 /obj/item/mine/is_safe_to_step(mob/living/L)
-	if(!(L.hovering || L.flying || L.is_incorporeal() || L.mob_size <= MOB_TINY))
+	if(!(dq_get_hovering(L) || L.flying || L.is_incorporeal() || L.mob_size <= MOB_TINY))
 		return FALSE
 	return ..()
 

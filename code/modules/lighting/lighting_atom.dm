@@ -24,7 +24,7 @@
 	///Highest-intensity light affecting us, which determines our visibility.
 	var/affecting_dynamic_lumi = 0
 	///Lazylist to keep track on the sources of illumination.
-	var/list/affected_dynamic_lights
+	// DQEdit — affected_dynamic_lights moved to /datum/component/movable_state
 	///Either FALSE, [EMISSIVE_BLOCK_GENERIC], or [EMISSIVE_BLOCK_UNIQUE]
 	var/blocks_emissive = EMISSIVE_BLOCK_NONE
 	///Internal holder for emissive blocker object, do not use directly use blocks_emissive
@@ -200,10 +200,11 @@
 ///Keeps track of the sources of dynamic luminosity and updates our visibility with the highest.
 /atom/movable/proc/update_dynamic_luminosity()
 	var/highest = 0
-	for(var/i in affected_dynamic_lights)
-		if(affected_dynamic_lights[i] <= highest)
+	var/list/adl = dq_get_affected_dynamic_lights(src)
+	for(var/i in adl)
+		if(adl[i] <= highest)
 			continue
-		highest = affected_dynamic_lights[i]
+		highest = adl[i]
 	if(highest == affecting_dynamic_lumi)
 		return
 	luminosity -= affecting_dynamic_lumi

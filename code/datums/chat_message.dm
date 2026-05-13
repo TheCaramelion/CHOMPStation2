@@ -121,18 +121,17 @@ GLOBAL_LIST_EMPTY(runechat_image_cache)
 	if(length_char(text) > maxlen)
 		text = copytext_char(text, 1, maxlen + 1) + "..." // BYOND index moment
 
-	// Calculate target color if not already present
-	if(!target.chat_color || target.chat_color_name != target.name)
-		target.chat_color = colorize_string(target.name)
-		target.chat_color_darkened = colorize_string(target.name, 0.85, 0.85)
-		target.chat_color_name = target.name
-
+	// DQEdit — chat_color cache moved to /datum/component/chat_color_cache.
+	if(!dq_get_chat_color(target) || dq_get_chat_color_name(target) != target.name)
+		var/c = colorize_string(target.name)
+		var/cd = colorize_string(target.name, 0.85, 0.85)
 		// Always force it back to a pref if they have one
 		if(ismob(target))
 			var/mob/M = target
 			if(M?.client?.prefs && M.client.prefs.runechat_color != COLOR_BLACK)
-				target.chat_color = M.client.prefs.runechat_color
-				target.chat_color_darkened = M.client.prefs.runechat_color
+				c = M.client.prefs.runechat_color
+				cd = M.client.prefs.runechat_color
+		dq_set_chat_color_cache(target, c, target.name, cd)
 
 	// Get rid of any URL schemes that might cause BYOND to automatically wrap something in an anchor tag
 	var/static/regex/url_scheme = new(@"[A-Za-z][A-Za-z0-9+-\.]*:\/\/", "g")
@@ -182,7 +181,7 @@ GLOBAL_LIST_EMPTY(runechat_image_cache)
 	text = encode_html_emphasis(text)
 
 	// We dim italicized text to make it more distinguishable from regular text
-	var/tgt_color = extra_classes.Find("italics") ? target.chat_color_darkened : target.chat_color
+	var/tgt_color = extra_classes.Find("italics") ? dq_get_chat_color_darkened(target) : dq_get_chat_color(target) // DQEdit
 
 	// Approximate text height
 	var/complete_text = "<span class='center maptext [extra_classes != null ? extra_classes.Join(" ") : ""]' style='color: [tgt_color];'>[text]</span>"

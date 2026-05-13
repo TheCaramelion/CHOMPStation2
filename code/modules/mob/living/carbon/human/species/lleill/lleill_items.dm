@@ -25,14 +25,14 @@
 	industrial_use = REFINERYEXPORT_REASON_MATSCI
 
 /datum/reagent/glamour_transparent/affect_blood(mob/living/carbon/target, removed)
-	if(!target.cloaked)
+	if(!dq_get_cloaked(target))
 		target.visible_message(span_infoplain(span_bold("\The [target]") + " vanishes from sight."))
 		target.cloak()
 	target.bloodstr.clear_reagents() //instantly clears reagents afterwards
 	target.ingested.clear_reagents()
 	target.touching.clear_reagents()
 	spawn(600)
-		if(target.cloaked)
+		if(dq_get_cloaked(target))
 			target.uncloak()
 			target.visible_message(span_infoplain(span_bold("\The [target]") + " appears as if from thin air."))
 

@@ -291,29 +291,29 @@
 
 /mob/living/simple_mob/animal/space/mouse_army/stealth/uncloak()
 	last_uncloak = world.time
-	if(!cloaked)
+	if(!dq_get_cloaked(src))
 		return
 	animate(src, alpha = initial(alpha), time = 1 SECOND)
-	cloaked = FALSE
+	dq_set_cloaked(src, FALSE)
 
 /mob/living/simple_mob/animal/space/mouse_army/stealth/break_cloak()
 	uncloak()
 
 
 /mob/living/simple_mob/animal/space/mouse_army/stealth/is_cloaked()
-	return cloaked
+	return dq_get_cloaked(src)
 
 /mob/living/simple_mob/animal/space/mouse_army/stealth/handle_special()
-	if(!cloaked && can_cloak())
+	if(!dq_get_cloaked(src) && can_cloak())
 		cloak()
 
 /mob/living/simple_mob/animal/space/mouse_army/stealth/apply_bonus_melee_damage(atom/A, damage_amount)
-	if(cloaked)
+	if(dq_get_cloaked(src))
 		return damage_amount + cloaked_bonus_damage
 	return ..()
 
 /mob/living/simple_mob/animal/space/mouse_army/stealth/apply_melee_effects(atom/A)
-	if(cloaked)
+	if(dq_get_cloaked(src))
 		if(isliving(A))
 			var/mob/living/L = A
 			L.Weaken(cloaked_weaken_amount)

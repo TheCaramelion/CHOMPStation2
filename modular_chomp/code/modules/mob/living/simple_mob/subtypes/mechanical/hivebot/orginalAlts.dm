@@ -18,7 +18,7 @@
 /mob/living/simple_mob/mechanical/hivebot/tyr //not a hivebot but stealing the 'oil puddle on death' thing
 	icon = 'modular_chomp/icons/mob/hivebot.dmi'
 	pass_flags = PASSTABLE
-	hovering = TRUE
+	// DQEdit — dq_get_hovering(src) type-default moved to GLOB.dq_hovering_by_type
 	movement_cooldown = 1
 	faction = FACTION_TYR
 	melee_damage_lower = 12

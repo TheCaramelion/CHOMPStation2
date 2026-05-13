@@ -1306,7 +1306,11 @@ window "mapwindow"
 		is-visible = false
 		is-disabled = true
 		background-color = #222222
-	// DQAdd Start — belly overlay child of mapwindow for TGUI POC
+	// DQAdd Start — belly overlay child of mapwindow.
+	// inner-background-color=none (BYOND 516.1680+) tells the BROWSER's
+	// WebView2 surface to composite against the parent control instead of
+	// a solid backdrop, which lets the underlying MAP show through where
+	// the page renders transparent pixels.
 	elem "belly_overlay"
 		type = BROWSER
 		pos = 0,0
@@ -1314,8 +1318,7 @@ window "mapwindow"
 		anchor1 = 0,0
 		anchor2 = 100,100
 		is-visible = false
-		background-color = none
-		is-transparent = true
+		inner-background-color = #00000000
 	// DQAdd End
 
 window "outputwindow"

@@ -63,8 +63,7 @@ GLOBAL_LIST_INIT(item_vore_blacklist, list(
 		/obj/item/clothing/shoes/magboots,
 		/obj/item/areaeditor/blueprints,
 		/obj/item/clothing/head/helmet/space,
-		/obj/item/disk/nuclear,
-		/obj/item/clothing/suit/storage/hooded/wintercoat/roiz))
+		/obj/item/disk/nuclear))
 
 //Classic Vore sounds
 GLOBAL_LIST_INIT(classic_vore_sounds, list(
@@ -172,7 +171,6 @@ GLOBAL_LIST_INIT(global_vore_egg_types, list(
 // Global associated list of common items people might prefer to be item TF'd into
 GLOBAL_LIST_INIT(item_tf_options, list(
 	// Accessories
-	"Accessory - Necklace (metal)"				= /obj/item/clothing/accessory/tronket,
 	"Accessory - Ring"							= /obj/item/clothing/accessory/ring,
 	"Accessory - Sweater"						= /obj/item/clothing/accessory/sweater,
 	"Accessory - Sweater (keyhole)"				= /obj/item/clothing/accessory/sweater/keyhole,
@@ -184,7 +182,6 @@ GLOBAL_LIST_INIT(item_tf_options, list(
 	"Top - Bunny suit (reverse, maid)"			= /obj/item/clothing/under/reverse_bunnysuit_maid,
 	"Top - Bunny suit (reverse, top-only)"		= /obj/item/clothing/under/reverse_bunnytop,
 	"Top - Maid outfit (costume)"				= /obj/item/clothing/under/dress/maid,
-	"Top - Maid outfit (latex)"					= /obj/item/clothing/under/fluff/latexmaid,
 	"Top - Maid outfit (uniform)"				= /obj/item/clothing/under/dress/maid/janitor,
 	"Top - Swimsuit (black)"					= /obj/item/clothing/under/swimsuit/black,
 	"Top - Swimsuit (blue)"						= /obj/item/clothing/under/swimsuit/blue,
@@ -337,7 +334,6 @@ GLOBAL_LIST_INIT(edible_trash, list(/obj/item/broken_device,
 				/obj/item/reagent_containers/glass/rag,
 				/obj/item/soap,
 				/obj/item/spacecash,
-				/obj/item/storage/box/khcrystal,
 				/obj/item/storage/box/matches,
 				/obj/item/storage/box/wings,
 				/obj/item/storage/fancy/candle_box,

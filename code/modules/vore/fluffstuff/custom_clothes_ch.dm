@@ -14,7 +14,6 @@
 //Star Trek things.
 
 //TOS
-/obj/item/clothing/under/rank/trek/sec
 	name = "Operations Uniform"
 	desc = "The uniform worn by operations officers of the mid 2260s. It comes with extra security padding, but you feel strangely vulnerable just seeing this..."
 	icon_state = "trek_engsec"
@@ -23,25 +22,21 @@
 	siemens_coefficient = 0.9
 
 //TNG
-/obj/item/clothing/under/rank/trek/sec/next
 	desc = "The uniform worn by operation officers. This one's from the mid 2360s. This one has some additional security padding."
 	icon_state = "trek_next_engsec"
 	item_state = "trek_next_engsec"
 
 //ENT
-/obj/item/clothing/under/rank/trek/sec/ent
 	desc = "The uniform worn by operations officers of the 2140s. This one has some additional security padding."
 	icon_state = "trek_ent_engsec"
 	item_state = "trek_ent_engsec"
 
 //VOY
-/obj/item/clothing/under/rank/trek/sec/voy
 	desc = "The uniform worn by operations officers of the 2370s. This one has some additional security padding."
 	icon_state = "trek_voy_engsec"
 	item_state = "trek_voy_engsec"
 
 //DS9
-/obj/item/clothing/under/rank/trek/sec/ds9
 	desc = "The uniform worn by operations officers of the 2380s. This one has some additional security padding."
 	icon_state = "trek_engsec"
 	item_state = "trek_ds9_engsec"

@@ -1412,8 +1412,8 @@
 /datum/reagent/sterilizine/affect_touch(mob/living/carbon/M, alien, removed)
 	M.germ_level -= min(removed*20, M.germ_level)
 	for(var/obj/item/I in M.contents)
-		I.was_bloodied = null
-	M.was_bloodied = null
+		dq_set_was_bloodied(I, null)
+	dq_set_was_bloodied(M, null)
 	if(alien == IS_SLIME)
 		M.adjustFireLoss(removed)
 		M.adjustToxLoss(2 * removed)
@@ -1421,13 +1421,13 @@
 /datum/reagent/sterilizine/touch_obj(obj/O)
 	..()
 	O.germ_level -= min(volume*200, O.germ_level)
-	O.was_bloodied = null
+	dq_set_was_bloodied(O, null)
 
 /datum/reagent/sterilizine/touch_turf(turf/T)
 	..()
 	T.germ_level -= min(volume*200, T.germ_level)
 	for(var/obj/item/I in T.contents)
-		I.was_bloodied = null
+		dq_set_was_bloodied(I, null)
 	for(var/obj/effect/decal/cleanable/blood/B in T)
 		qdel(B)
 

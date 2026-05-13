@@ -95,7 +95,7 @@
 
 		else if(isliving(thing))
 			var/mob/living/L = thing
-			if(L.hovering || L.throwing || L.is_incorporeal()) // Flying over the lava. We're just gonna pretend convection doesn't exist.
+			if(dq_get_hovering(L) || L.throwing || L.is_incorporeal()) // Flying over the lava. We're just gonna pretend convection doesn't exist.
 				continue
 			. = TRUE
 			L.lava_act()
@@ -106,6 +106,6 @@
 
 // Tells AI mobs to not suicide by pathing into lava if it would hurt them.
 /turf/simulated/floor/lava/is_safe_to_enter(mob/living/L)
-	if(!is_safe() && !L.hovering)
+	if(!is_safe() && !dq_get_hovering(L))
 		return FALSE
 	return ..()

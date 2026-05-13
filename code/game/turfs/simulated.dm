@@ -120,7 +120,7 @@
 					S.handle_movement(src,(H.m_intent == I_RUN ? 1 : 0), H) // handle_movement now needs to know who is moving, for inshoe steppies
 					if(S.track_blood)
 						bloodDNA = S.forensic_data?.get_blooddna()
-						bloodcolor = S.blood_color
+						bloodcolor = dq_get_blood_color(S)
 						S.track_blood--
 			else
 				if(H.track_blood && H.feet_blood_DNA)

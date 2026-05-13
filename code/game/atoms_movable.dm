@@ -13,7 +13,7 @@
 	var/turf/throw_source = null
 	var/throw_speed = 2
 	var/throw_range = 7
-	var/moved_recently = 0
+	// DQEdit — moved_recently moved to /datum/component/movable_state
 	var/mob/pulledby = null
 	var/item_state = null // Used to specify the item state for the on-mob overlays.
 	var/icon_scale_x = DEFAULT_ICON_SCALE_X // Used to scale icons up or down horizonally in update_transform().
@@ -27,11 +27,11 @@
 	var/does_spin = TRUE // Does the atom spin when thrown (of course it does :P)
 	var/movement_type = NONE
 
-	var/cloaked = FALSE //If we're cloaked or not
-	var/image/cloaked_selfimage //The image we use for our client to let them see where we are
-	var/belly_cycles = 0 // Counting current belly process cycles for autotransfer.
+	// DQEdit — dq_get_cloaked(src) moved to /datum/component/movable_state
+	// DQEdit — cloaked_selfimage moved to /datum/component/movable_state
+	// DQEdit — belly_cycles moved to /datum/component/movable_state
 	var/autotransferable = TRUE // Toggle for autotransfer mechanics.
-	var/recursive_listeners
+	// DQEdit — recursive_listeners moved to /datum/component/movable_state
 	var/listening_recursive = NON_LISTENING_ATOM
 	var/unacidable = TRUE
 
@@ -97,7 +97,7 @@
 	if(pulledby)
 		pulledby.stop_pulling()
 
-	if(orbiting)
+	if(dq_get_orbiting(src))
 		stop_orbit()
 	throw_source = null
 	QDEL_NULL(riding_datum)
@@ -561,29 +561,33 @@
 
 // Procs to cloak/uncloak
 /atom/movable/proc/cloak()
-	if(cloaked)
+	if(dq_get_cloaked(src))
 		return FALSE
-	cloaked = TRUE
+	dq_set_cloaked(src, TRUE)
 	. = TRUE // We did work
 
 	var/static/animation_time = 1 SECOND
-	cloaked_selfimage = get_cloaked_selfimage()
+	dq_set_cloaked_selfimage(src, get_cloaked_selfimage())
 
 	//Wheeee
 	cloak_animation(animation_time)
 
 	//Needs to be last so people can actually see the effect before we become invisible
-	if(cloaked) // Ensure we are still cloaked after the animation delay
+	if(dq_get_cloaked(src)) // Ensure we are still dq_get_cloaked(src) after the animation delay
 		plane = CLOAKED_PLANE
 
 /atom/movable/proc/uncloak()
-	if(!cloaked)
+	if(!dq_get_cloaked(src))
 		return FALSE
-	cloaked = FALSE
+	dq_set_cloaked(src, FALSE)
 	. = TRUE // We did work
 
 	var/static/animation_time = 1 SECOND
-	QDEL_NULL(cloaked_selfimage)
+	// DQEdit — cloaked_selfimage in component
+	var/image/csi = dq_get_cloaked_selfimage(src)
+	if(csi)
+		qdel(csi)
+		dq_set_cloaked_selfimage(src, null)
 
 	//Needs to be first so people can actually see the effect, so become uninvisible first
 	plane = initial(plane)
@@ -636,7 +640,7 @@
 	filters -= filter(type="wave", x=0, y = 16, size = 0, offset = 0, flags = WAVE_SIDEWAYS)
 
 
-// So cloaked things can see themselves, if necessary
+// So dq_get_cloaked(src) things can see themselves, if necessary
 /atom/movable/proc/get_cloaked_selfimage()
 	var/icon/selficon = icon(icon, icon_state)
 	selficon.MapColors(0,0,0, 0,0,0, 0,0,0, 1,1,1) //White
@@ -674,14 +678,14 @@
 
 /atom/movable/proc/set_listening(set_to)
 	if (listening_recursive && !set_to)
-		LAZYREMOVE(recursive_listeners, src)
-		if (!LAZYLEN(recursive_listeners))
+		dq_recursive_listeners_remove(src, src)
+		if (!dq_recursive_listeners_len(src))
 			for (var/atom/movable/location as anything in get_nested_locs(src))
-				LAZYREMOVE(location.recursive_listeners, src)
+				dq_recursive_listeners_remove(location, src)
 	if (!listening_recursive && set_to)
-		LAZYOR(recursive_listeners, src)
+		dq_recursive_listeners_or(src, src)
 		for (var/atom/movable/location as anything in get_nested_locs(src))
-			LAZYOR(location.recursive_listeners, src)
+			dq_recursive_listeners_or(location, src)
 	listening_recursive = set_to
 
 ///Returns a list of all locations (except the area) the movable is within.
@@ -698,18 +702,22 @@
 /atom/movable/Exited(atom/movable/gone, atom/new_loc)
 	. = ..()
 
-	if (!LAZYLEN(gone.recursive_listeners))
+	var/list/gone_listeners = dq_get_recursive_listeners(gone)
+	if (!length(gone_listeners))
 		return
 	for (var/atom/movable/location as anything in get_nested_locs(src)|src)
-		LAZYREMOVE(location.recursive_listeners, gone.recursive_listeners)
+		for(var/listener in gone_listeners)
+			dq_recursive_listeners_remove(location, listener)
 
 /atom/movable/Entered(atom/movable/arrived, atom/old_loc)
 	. = ..()
 
-	if (!LAZYLEN(arrived.recursive_listeners))
+	var/list/arrived_listeners = dq_get_recursive_listeners(arrived)
+	if (!length(arrived_listeners))
 		return
 	for (var/atom/movable/location as anything in get_nested_locs(src)|src)
-		LAZYOR(location.recursive_listeners, arrived.recursive_listeners)
+		for(var/listener in arrived_listeners)
+			dq_recursive_listeners_or(location, listener)
 
 /atom/movable/proc/show_message(msg, type, alt, alt_type)//Message, type of message (1 or 2), alternative message, alt message type (1 or 2)
 	return

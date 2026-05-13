@@ -746,11 +746,6 @@
 	path = /obj/item/clothing/mask/breath/transparent
 	sort_category = "Xenowear"
 
-/datum/gear/uniform/loincloth
-	display_name = "loincloth"
-	path = /obj/item/clothing/suit/storage/fluff/loincloth
-	sort_category = "Xenowear"
-
 // Taj clothing
 /datum/gear/eyes/tajblind
 	display_name = "embroidered veil"

@@ -23,7 +23,7 @@
 	if(drop_mob && drop_mob != src)
 		///Varible to tell if we take damage or not for falling.
 		var/safe_fall = FALSE
-		if(drop_mob.softfall || (isanimal(drop_mob) && drop_mob.mob_size <= MOB_SMALL))
+		if(dq_get_softfall(drop_mob) || (isanimal(drop_mob) && drop_mob.mob_size <= MOB_SMALL))
 			safe_fall = TRUE
 
 		if(ishuman(drop_mob))

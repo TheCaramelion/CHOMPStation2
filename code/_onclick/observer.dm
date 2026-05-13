@@ -99,26 +99,7 @@
 	if(target)
 		user.loc = get_turf(target)
 
-// VOREStation Edit Begin
-
-/obj/machinery/gateway/centerstation/attack_ghost(mob/user as mob)
-	if(awaygate)
-		if(check_rights_for(user.client, R_HOLDER))
-			user.loc = awaygate.loc
-		else if(active)
-			user.loc = awaygate.loc
-		else
-			return
-	else
-		to_chat(user, "[src] has no destination.")
-
-// VOREStation Edit End
-
-/obj/machinery/gateway/centeraway/attack_ghost(mob/user as mob)
-	if(stationgate)
-		user.loc = stationgate.loc
-	else
-		to_chat(user, "[src] has no destination.")
+// DQEdit — gateway machinery procs removed; gateway feature deleted with awaymissions.
 
 // -------------------------------------------
 // This was supposed to be used by adminghosts

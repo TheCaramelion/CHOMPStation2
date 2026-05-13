@@ -88,8 +88,8 @@
 	if(isturf(T))
 		update_client_z(T.z)
 
-	if(cloaked && cloaked_selfimage)
-		client.images += cloaked_selfimage
+	if(dq_get_cloaked(src) && dq_get_cloaked_selfimage(src))
+		client.images += dq_get_cloaked_selfimage(src)
 
 	if(client)
 		for(var/datum/action/A as anything in persistent_client.player_actions)

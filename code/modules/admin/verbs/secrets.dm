@@ -274,7 +274,7 @@ ADMIN_VERB(secrets, R_HOLDER, "Secrets", "Abuse harder than you ever have before
 		if("paintball_mode")
 			for(var/species in GLOB.all_species)
 				var/datum/species/S = GLOB.all_species[species]
-				S.blood_color = "rainbow"
+				dq_set_blood_color(S, "rainbow")
 			for(var/obj/effect/decal/cleanable/blood/B in world)
 				B.basecolor = "rainbow"
 				B.update_icon()

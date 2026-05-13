@@ -133,10 +133,6 @@
 			wearer.Stun(5)
 			wearer.Weaken(5)
 			// CHOMPEdit Start - The thing just to drop the ball if hit
-			if(istype(wearer.l_hand, /obj/item/laserdome_hyperball))
-				wearer.unEquip(wearer.l_hand)
-			if(istype(wearer.r_hand, /obj/item/laserdome_hyperball))
-				wearer.unEquip(wearer.r_hand)
 			// CHOMPEdit End
 			if(emagged)
 				to_chat(wearer, span_bolddanger(span_massive("OH GOD! YOUR HEART!"))) //this is the last thing you see before you (presumably) die.

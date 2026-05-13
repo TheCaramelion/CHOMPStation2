@@ -6,36 +6,10 @@
 
 // Trekie things
 //TOS
-/datum/gear/uniform/job_trek/sec/tos
-	display_name = "TOS uniform, sec"
-	path = /obj/item/clothing/under/rank/trek/sec
-	allowed_roles = list(JOB_WARDEN,JOB_DETECTIVE,JOB_SECURITY_OFFICER,JOB_HEAD_OF_SECURITY,JOB_BLUESHIELD_GUARD)
-
 //TNG
-/datum/gear/uniform/job_trek/sec/tng
-	display_name = "TNG uniform, sec"
-	path = /obj/item/clothing/under/rank/trek/sec/next
-	allowed_roles = list(JOB_WARDEN,JOB_DETECTIVE,JOB_SECURITY_OFFICER,JOB_HEAD_OF_SECURITY,JOB_BLUESHIELD_GUARD)
-
 //VOY
-/datum/gear/uniform/job_trek/sec/voy
-	display_name = "VOY uniform, sec"
-	path = /obj/item/clothing/under/rank/trek/sec/voy
-	allowed_roles = list(JOB_WARDEN,JOB_DETECTIVE,JOB_SECURITY_OFFICER,JOB_HEAD_OF_SECURITY,JOB_BLUESHIELD_GUARD)
-
 //DS9
-/datum/gear/uniform/job_trek/sec/ds9
-	display_name = "DS9 uniform, sec"
-	path = /obj/item/clothing/under/rank/trek/sec/ds9
-	allowed_roles = list(JOB_WARDEN,JOB_DETECTIVE,JOB_SECURITY_OFFICER,JOB_HEAD_OF_SECURITY,JOB_BLUESHIELD_GUARD)
-
 //ENT
-/datum/gear/uniform/job_trek/sec/ent
-	display_name = "ENT uniform, sec"
-	path = /obj/item/clothing/under/rank/trek/sec/ent
-	allowed_roles = list(JOB_WARDEN,JOB_DETECTIVE,JOB_SECURITY_OFFICER,JOB_HEAD_OF_SECURITY,JOB_BLUESHIELD_GUARD)
-
-
 //Nullsuits (Zero Suits)
 /datum/gear/uniform/job_nullsuit/civ
 	display_name = "nullsuit, civilian"
