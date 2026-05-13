@@ -258,6 +258,7 @@ GLOBAL_LIST_EMPTY_TYPED(gear_datums, /datum/gear)
 	var/display_name       //Name/index. Must be unique.
 	var/description        //Description of this gear. If left blank will default to the description of the pathed item.
 	var/path               //Path to item.
+	var/variant            // DQAdd — variant key for consolidated parent types
 	var/cost = 1           //Number of points used. Items in general cost 1 point, storage/armor/gloves/special use costs 2 points.
 	var/slot               //Slot to equip to.
 	var/list/allowed_roles //Roles that can spawn with this item.
@@ -287,10 +288,13 @@ GLOBAL_LIST_EMPTY_TYPED(gear_datums, /datum/gear)
 
 /datum/gear/proc/spawn_item(location, metadata)
 	var/datum/gear_data/gd = new(path, location)
+	// DQEdit — propagate variant from gear to gear_data so tweaks can override it.
+	gd.variant = variant
 	if(length(gear_tweaks) && metadata)
 		for(var/datum/gear_tweak/gt in gear_tweaks)
 			gt.tweak_gear_data(metadata["[gt]"], gd)
-	var/item = new gd.path(gd.location)
+	// DQEdit — spawn via helper to apply variant.
+	var/item = spawn_with_variant(gd.path, gd.location, gd.variant)
 	if(length(gear_tweaks) && metadata)
 		for(var/datum/gear_tweak/gt in gear_tweaks)
 			gt.tweak_item(item, metadata["[gt]"])

@@ -86,20 +86,3 @@
 	desc = "An emblem found across all altevian vessels. The specific metals and jewels denote ranks. Otherwise, it's just a pretty rat skull emblem with a set of crystals for their eyes and fangs."
 	icon_state = "altevian_aquila"
 
-/obj/item/clothing/accessory/altevian_badge/aquila/silver
-	icon_state = "altevian_aquila_silver"
-
-/obj/item/clothing/accessory/altevian_badge/aquila/bronze
-	icon_state = "altevian_aquila_bronze"
-
-/obj/item/clothing/accessory/altevian_badge/aquila/black
-	icon_state = "altevian_aquila_black"
-
-/obj/item/clothing/accessory/altevian_badge/aquila/exotic
-	icon_state = "altevian_aquila_exotic"
-
-/obj/item/clothing/accessory/altevian_badge/aquila/phoron
-	icon_state = "altevian_aquila_phoron"
-
-/obj/item/clothing/accessory/altevian_badge/aquila/hydrogen
-	icon_state = "altevian_aquila_hydrogen"

@@ -28,7 +28,7 @@
 	for(var/chain_style in typesof(/obj/item/clothing/ears/skrell/chain))
 		var/obj/item/clothing/ears/skrell/chain/chain = chain_style
 		chaintypes[initial(chain.name)] = chain
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(chaintypes))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(chaintypes))
 
 /datum/gear/ears/skrell/bands
 	display_name = "headtail band selection (Skrell)"
@@ -42,7 +42,7 @@
 	for(var/band_style in typesof(/obj/item/clothing/ears/skrell/band))
 		var/obj/item/clothing/ears/skrell/band/band = band_style
 		bandtypes[initial(band.name)] = band
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(bandtypes))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(bandtypes))
 
 /datum/gear/ears/skrell/cloth/short
 	display_name = "short headtail cloth (Skrell)"
@@ -56,7 +56,7 @@
 	for(var/short_style in typesof(/obj/item/clothing/ears/skrell/cloth_male))
 		var/obj/item/clothing/ears/skrell/cloth_male/short = short_style
 		shorttypes[initial(short.name)] = short
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(shorttypes))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(shorttypes))
 
 /datum/gear/ears/skrell/cloth/long
 	display_name = "long headtail cloth (Skrell)"
@@ -70,7 +70,7 @@
 	for(var/long_style in typesof(/obj/item/clothing/ears/skrell/cloth_female))
 		var/obj/item/clothing/ears/skrell/cloth_female/long = long_style
 		longtypes[initial(long.name)] = long
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(longtypes))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(longtypes))
 
 /datum/gear/ears/skrell/colored/band
 	display_name = "Colored bands (Skrell)"
@@ -104,7 +104,7 @@
 	for(var/smock in typesof(/obj/item/clothing/under/teshari/smock))
 		var/obj/item/clothing/under/teshari/smock/smock_type = smock
 		smocks[initial(smock_type.name)] = smock_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(smocks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(smocks))
 
 /datum/gear/uniform/undercoat
 	display_name = "undercoat selection (Teshari)"
@@ -114,11 +114,12 @@
 
 /datum/gear/uniform/undercoat/New()
 	..()
+	// DQEdit — variants are now in GLOB.dq_teshari_undercoat_variants
 	var/list/undercoats = list()
-	for(var/undercoat in typesof(/obj/item/clothing/under/teshari/undercoat/standard))
-		var/obj/item/clothing/under/teshari/undercoat/standard/undercoat_type = undercoat
-		undercoats[initial(undercoat_type.name)] = undercoat_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(undercoats))
+	for(var/v in GLOB.dq_teshari_undercoat_variants)
+		var/list/spec = GLOB.dq_teshari_undercoat_variants[v]
+		undercoats[spec["name"]] = v
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(undercoats))
 
 /datum/gear/suit/cloak
 	display_name = "cloak selection (Teshari)"
@@ -132,7 +133,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/standard))
 		var/obj/item/clothing/suit/storage/teshari/cloak/standard/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/uniform/harness
 	display_name = "gear harness (Full Body Prosthetic, Diona)"
@@ -160,7 +161,7 @@
 	for(var/cohesionsuit in (typesof(/obj/item/clothing/under/cohesion)))
 		var/obj/item/clothing/under/cohesion/cohesion_type = cohesionsuit
 		cohesionsuits[initial(cohesion_type.name)] = cohesion_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cohesionsuits))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cohesionsuits))
 
 /datum/gear/uniform/dept
 	whitelisted = SPECIES_TESHARI
@@ -301,7 +302,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/jobs/hos,/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/hos))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/suit/dept/cloak/ce
 	display_name = "chief engineer cloak (Teshari)"
@@ -314,7 +315,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/jobs/ce,/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/ce))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/suit/dept/cloak/cmo
 	display_name = "chief medical officer cloak (Teshari)"
@@ -327,7 +328,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/jobs/cmo,/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cmo))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/suit/dept/cloak/qm
 	display_name = "quartermaster cloak (Teshari)"
@@ -340,7 +341,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/jobs/qm,/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/qm))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/suit/dept/cloak/cargo
 	display_name = "cargo cloak (Teshari)"
@@ -353,7 +354,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/jobs/cargo,/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cargo))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/suit/dept/cloak/mining
 	display_name = "mining cloak (Teshari)"
@@ -366,7 +367,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/jobs/mining,/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/mining))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/suit/dept/cloak/security
 	display_name = "security cloak (Teshari)"
@@ -379,7 +380,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/jobs/sec,/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/sec))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/suit/dept/cloak/service
 	display_name = "service cloak (Teshari)"
@@ -392,7 +393,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/jobs/service,/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/service))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/suit/dept/cloak/engineer
 	display_name = "engineering cloak (Teshari)"
@@ -405,7 +406,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/jobs/engineer,/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/engineer))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/suit/dept/cloak/atmos
 	display_name = "atmospherics cloak (Teshari)"
@@ -418,7 +419,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/jobs/atmos,/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/atmos))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/suit/dept/cloak/research
 	display_name = "scientist cloak (Teshari)"
@@ -431,7 +432,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/jobs/sci,/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/sci))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/suit/dept/cloak/robo
 	display_name = "roboticist cloak (Teshari)"
@@ -444,7 +445,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/jobs/robo,/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/robo))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/suit/dept/cloak/medical
 	display_name = "medical cloak (Teshari)"
@@ -457,7 +458,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/jobs/medical,/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/medical))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/suit/dept/cloak/chemistry
 	display_name = "chemist cloak (Teshari)"
@@ -470,7 +471,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/jobs/chemistry,/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/chemistry))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/suit/dept/cloak/virology
 	display_name = "virologist cloak (Teshari)"
@@ -483,7 +484,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/jobs/viro,/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/viro))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/suit/dept/cloak/psych
 	display_name = "psychiatrist cloak (Teshari)"
@@ -501,7 +502,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/jobs/para,/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/para))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/suit/dept/cloak/iaa
 	display_name = "internal affairs cloak (Teshari)"
@@ -514,11 +515,12 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/cloak/jobs/iaa,/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/iaa))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/uniform/smockcolor
 	display_name = "smock, recolorable (Teshari)"
-	path = /obj/item/clothing/under/teshari/smock/white
+	path = /obj/item/clothing/under/teshari/smock
+	variant = "white"
 	whitelisted = SPECIES_TESHARI
 	sort_category = "Xenowear"
 
@@ -538,11 +540,12 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/teshari/beltcloak/standard))
 		var/obj/item/clothing/suit/storage/teshari/beltcloak/standard/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/suit/beltcloak_color
 	display_name = "belted cloak, recolorable (Teshari)"
-	path = /obj/item/clothing/suit/storage/teshari/beltcloak/standard/white_grey
+	path = /obj/item/clothing/suit/storage/teshari/beltcloak/standard
+	variant = "white_grey"
 	whitelisted = SPECIES_TESHARI
 	sort_category = "Xenowear"
 
@@ -586,7 +589,7 @@
 	for(var/cloak in typesof(/obj/item/clothing/suit/storage/hooded/teshari/standard))
 		var/obj/item/clothing/suit/storage/teshari/cloak/cloak_type = cloak
 		cloaks[initial(cloak_type.name)] = cloak_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(cloaks))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(cloaks))
 
 /datum/gear/uniform/worksuit
 	display_name = "worksuit selection (Teshari)"
@@ -600,16 +603,18 @@
 	for(var/worksuit in typesof(/obj/item/clothing/under/teshari/undercoat/standard/worksuit))
 		var/obj/item/clothing/under/teshari/undercoat/standard/worksuit/worksuit_type = worksuit
 		worksuits[initial(worksuit_type.name)] = worksuit_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(worksuits))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(worksuits))
 
 /datum/gear/uniform/undercoatcolor
 	display_name = "undercoat, recolorable (Teshari)"
-	path = /obj/item/clothing/under/teshari/undercoat/standard/white_grey
+	// DQEdit — base recolorable; the white_grey sprite is set via a fixed variant.
+	path = /obj/item/clothing/under/teshari/undercoat/standard
 	whitelisted = SPECIES_TESHARI
 	sort_category = "Xenowear"
 
 /datum/gear/uniform/undercoatcolor/New()
 	..()
+	gear_tweaks += new/datum/gear_tweak/variant(list("white grey undercoat" = "white_grey"))
 	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/suit/cloakcolor
@@ -793,7 +798,7 @@
 	var/list/pants = list()
 	for(var/obj/item/clothing/under/altevian/uniform_type as anything in typesof(/obj/item/clothing/under/altevian))
 		pants[initial(uniform_type.name)] = uniform_type
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(pants))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(pants))
 
 /datum/gear/accessory/altevian_aquila
 	description = "An emblem found across all altevian vessels. The specific metals and jewels denote ranks. Otherwise, it's just a pretty rat skull emblem with a set of crystals for their eyes and fangs."
@@ -805,13 +810,13 @@
 	..()
 	var/list/badges = list(
 						"gold emblem" = /obj/item/clothing/accessory/altevian_badge/aquila,
-						"silver emblem" = /obj/item/clothing/accessory/altevian_badge/aquila/silver,
-						"bronze emblem" = /obj/item/clothing/accessory/altevian_badge/aquila/bronze,
-						"black emblem" = /obj/item/clothing/accessory/altevian_badge/aquila/black,
-						"blue emblem" = /obj/item/clothing/accessory/altevian_badge/aquila/exotic,
-						"purple emblem" = /obj/item/clothing/accessory/altevian_badge/aquila/phoron,
-						"red emblem" = /obj/item/clothing/accessory/altevian_badge/aquila/hydrogen)
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(badges))
+						"silver emblem" = "silver",
+						"bronze emblem" = "bronze",
+						"black emblem" = "black",
+						"blue emblem" = "exotic",
+						"purple emblem" = "phoron",
+						"red emblem" = "hydrogen")
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(badges))
 
 /datum/gear/suit/altevian_officer_suit
 	description = "A comfortable official suit for altevian command officers."
@@ -826,7 +831,7 @@
 	for(var/ratsuit in typesof(/obj/item/clothing/suit/captunic/capjacket/altevian_admiral))
 		var/obj/item/clothing/suit/captunic/capjacket/altevian_admiral/specific_ratsuit = ratsuit
 		suits[initial(specific_ratsuit.name)] = specific_ratsuit
-	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(suits))
+	gear_tweaks += new/datum/gear_tweak/variant(sortAssoc(suits))
 
 // Taur stuff
 /datum/gear/suit/taur/drake_cloak

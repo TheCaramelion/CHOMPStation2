@@ -1156,26 +1156,6 @@
 	icon_state = "cohesionsuit"
 	rolled_sleeves = -1 // defeats the purpose!!!
 
-/obj/item/clothing/under/cohesion/striped
-	name = "red striped cohesion suit"
-	desc = "A black cohesion suit with red stripes intended to assist Prometheans in maintaining their form and prevent direct skin exposure."
-	icon_state = "cohesionsuit_striped"
-
-/obj/item/clothing/under/cohesion/decal
-	name = "purple decaled cohesion suit"
-	desc = "A white cohesion suit with purple decals intended to assist Prometheans in maintaining their form and prevent direct skin exposure."
-	icon_state = "cohesionsuit_decal"
-
-/obj/item/clothing/under/cohesion/pattern
-	name = "blue patterned cohesion suit"
-	desc = "A white cohesion suit with blue patterns intended to assist Prometheans in maintaining their form and prevent direct skin exposure."
-	icon_state = "cohesionsuit_pattern"
-
-/obj/item/clothing/under/cohesion/hazard
-	name = "hazard cohesion suit"
-	desc = "An orange cohesion suit with yellow hazard stripes intended to assist Prometheans in maintaining their form and prevent direct skin exposure."
-	icon_state = "cohesionsuit_hazard"
-
 /obj/item/clothing/under/vampirehunter
 	name = "18th century outfit"
 	desc = "A flashy, if rather stiff set of ancient-styled slacks and tabard. The unyielding nature of the clothes often make one walk stiffly, but with divine purpose."
@@ -1593,60 +1573,6 @@
 	icon_state = "bb_turtle"
 	body_parts_covered = CHEST|ARMS
 
-
-/obj/item/clothing/under/turtlebaggy/cream_fem
-	name = "feminine cream baggy turtleneck"
-	icon_state = "bb_turtle_fem"
-
-
-/obj/item/clothing/under/turtlebaggy/purple
-	name = "purple baggy turtleneck"
-	icon_state = "bb_turtlepur"
-
-
-/obj/item/clothing/under/turtlebaggy/purple_fem
-	name = "feminine purple baggy turtleneck"
-	icon_state = "bb_turtlepur_fem"
-
-
-/obj/item/clothing/under/turtlebaggy/red
-	name = "red baggy turtleneck"
-	icon_state = "bb_turtlered"
-
-
-/obj/item/clothing/under/turtlebaggy/red_fem
-	name = "feminine red baggy turtleneck"
-	icon_state = "bb_turtlered_fem"
-
-
-/obj/item/clothing/under/turtlebaggy/blue
-	name = "blue baggy turtleneck"
-	icon_state = "bb_turtleblu"
-
-
-/obj/item/clothing/under/turtlebaggy/blue_fem
-	name = "feminine blue baggy turtleneck"
-	icon_state = "bb_turtleblu_fem"
-
-
-/obj/item/clothing/under/turtlebaggy/green
-	name = "green baggy turtleneck"
-	icon_state = "bb_turtlegrn"
-
-
-/obj/item/clothing/under/turtlebaggy/green_fem
-	name = "feminine green baggy turtleneck"
-	icon_state = "bb_turtlegrn_fem"
-
-
-/obj/item/clothing/under/turtlebaggy/black
-	name = "black baggy turtleneck"
-	icon_state = "bb_turtleblk"
-
-
-/obj/item/clothing/under/turtlebaggy/black_fem
-	name = "feminine black baggy turtleneck"
-	icon_state = "bb_turtleblk_fem"
 
 //more big sweaters
 

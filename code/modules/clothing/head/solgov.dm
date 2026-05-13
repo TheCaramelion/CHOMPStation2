@@ -192,16 +192,6 @@
 	desc = "A beret in basic Solar Confederate Government colors. For peacekeepers that are more inclined towards style than safety."
 	icon_state = "beret_lightblue"
 
-/obj/item/clothing/head/beret/solgov/ttc
-	name = "transgressive technologies beret"
-	desc = "A purple beret denoting service in the Transgressive Technologies Commission. For g-men that are more inclined towards style than safety."
-	icon_state = "beret_purpleyellow"
-
-/obj/item/clothing/head/beret/solgov/eio
-	name = "intelligence oversight beret"
-	desc = "A blue beret denoting service in Emergent Intelligent Oversight. For g-men that are more inclined towards style than safety."
-	icon_state = "beret_blue"
-
 /obj/item/clothing/head/beret/solgov/survey
 	name = "government survey beret"
 	desc = "A green beret denoting service in the SCG Galactic Survey Administration. For explorers that are more inclined towards style than safety."
@@ -211,16 +201,6 @@
 	name = "extraplanar survey beret"
 	desc = "A green beret with a silver emblem, denoting service in the Extraplanar Discovery Division of the GSA. For extraplanar explorers who are more inclined towards style than safety."
 	icon_state = "beret_greensilver"
-
-/obj/item/clothing/head/beret/solgov/inspector
-	name = "\improper Solar Inspection Group beret"
-	desc = "A grey beret with a silver insignia, denoting service in the Solar Inspection Group. For Almach-inspection personnel who are more inclined towards style than safety."
-	icon_state = "beret_graysilver"
-
-/obj/item/clothing/head/beret/solgov/health
-	name = "health service beret"
-	desc = "A white beret denoting service in the Interstellar Health Service. For medics that are more inclined towards style than safety."
-	icon_state = "beret_white"
 
 /*
  * SifGuard (Berets)

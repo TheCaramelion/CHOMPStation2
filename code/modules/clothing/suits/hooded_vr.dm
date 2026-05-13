@@ -138,31 +138,6 @@
 	hoodtype = /obj/item/clothing/head/hood/hoodie
 	allowed = list(POCKET_GENERIC, POCKET_EMERGENCY, POCKET_SUIT_REGULATORS)
 
-/obj/item/clothing/suit/storage/hooded/hoodie/redtrim
-	name = "red-trimmed hoodie"
-	desc = "A warm jacket, now featuring a hood and a bold red trim!"
-	icon_state = "hoodie_redtrim"
-
-/obj/item/clothing/suit/storage/hooded/hoodie/bluetrim
-	name = "blue-trimmed hoodie"
-	desc = "A warm jacket, now featuring a hood and a cool blue trim!"
-	icon_state = "hoodie_bluetrim"
-
-/obj/item/clothing/suit/storage/hooded/hoodie/greentrim
-	name = "green-trimmed hoodie"
-	desc = "A warm jacket, now featuring a hood and a chilled green trim!"
-	icon_state = "hoodie_greentrim"
-
-/obj/item/clothing/suit/storage/hooded/hoodie/purpletrim
-	name = "purple-trimmed hoodie"
-	desc = "A warm jacket, now featuring a hood and a smart purple trim!"
-	icon_state = "hoodie_purpletrim"
-
-/obj/item/clothing/suit/storage/hooded/hoodie/yellowtrim
-	name = "yellow-trimmed hoodie"
-	desc = "A warm jacket, now featuring a hood and an eye-catching yellow trim!"
-	icon_state = "hoodie_yellowtrim"
-
 // CC Winter Coat
 /obj/item/clothing/suit/storage/hooded/wintercoat/centcom
 	name = "centcom winter coat"

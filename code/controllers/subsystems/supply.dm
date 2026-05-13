@@ -191,6 +191,8 @@ SUBSYSTEM_DEF(supply)
 			slip.info +="CONTENTS:<br><ul>"
 
 		var/list/contains
+		// DQEdit — any pack may have a variant_pool; pick from it per spawn.
+		var/list/variant_pool_local = SP.variant_pool
 		if(istype(SP,/datum/supply_pack/randomised))
 			var/datum/supply_pack/randomised/SPR = SP
 			contains = list()
@@ -204,13 +206,15 @@ SUBSYSTEM_DEF(supply)
 			if(!typepath)
 				continue
 
-			var/number_of_items = max(1, contains[typepath])
+			// DQEdit — contains values are list(count, variant); for randomised, variant comes from pool.
+			var/list/spec = dq_resolve_spawn_value(contains[typepath])
+			var/number_of_items = max(1, spec["count"])
+			var/variant = spec["variant"]
 			for(var/j = 1 to number_of_items)
-				var/atom/B2
-				if(A)
-					B2 = new typepath(A)
-				else
-					B2 = new typepath(pickedloc)
+				var/use_variant = variant
+				if(!use_variant && length(variant_pool_local))
+					use_variant = pick(variant_pool_local)
+				var/atom/B2 = spawn_with_variant(typepath, A || pickedloc, use_variant)
 
 				if(slip)
 					slip.info += "<li>[B2.name]</li>" //add the item to the manifest

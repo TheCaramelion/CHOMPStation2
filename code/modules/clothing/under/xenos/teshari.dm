@@ -9,115 +9,15 @@
 	icon_state = "seromi_grey"
 	body_parts_covered = 0 // It's a thin piece of cloth with a neck hole.
 
-/obj/item/clothing/under/teshari/smock/white
-	name = "small white smock"
-	icon_state = "seromi_white"
-
-/obj/item/clothing/under/teshari/smock/red
-	name = "small Security smock"
-	icon_state = "seromi_red"
-
-/obj/item/clothing/under/teshari/smock/yellow
-	name = "small Engineering smock"
-	icon_state = "seromi_yellow"
-
-/obj/item/clothing/under/teshari/smock/medical
-	name = "small Medical uniform"
-	icon_state = "seromi_medical"
-
-/obj/item/clothing/under/teshari/smock/science
-	name = "small Research uniform"
-	icon_state = "teshari_science"
-
-/obj/item/clothing/under/teshari/smock/rainbow
-	name = "small rainbow smock"
-	icon_state = "seromi_rainbow"
-
 /obj/item/clothing/under/teshari/smock/dress
 	name = "small command dress"
 	icon_state = "seromi_dress_cap"
-
-/obj/item/clothing/under/teshari/smock/dress/science
-	name = "small research dress"
-	icon_state = "tesh_dress_science"
-
-/obj/item/clothing/under/teshari/smock/dress/security
-	name = "small security dress"
-	icon_state = "tesh_dress_security"
-
-/obj/item/clothing/under/teshari/smock/dress/engine
-	name = "small engineering dress"
-	icon_state = "tesh_dress_engine"
-
-/obj/item/clothing/under/teshari/smock/dress/medical
-	name = "small medical dress"
-	icon_state = "tesh_dress_medical"
-
-/obj/item/clothing/under/teshari/smock/uniform
-	name = "small command uniform"
-	icon_state = "seromi_captain"
-
-/obj/item/clothing/under/teshari/smock/formal
-	name = "small formal uniform"
-	icon_state = "seromi_captain_formal"
-
-/obj/item/clothing/under/teshari/smock/blackutilitysmock
-	name = "black utility smock"
-	icon_state = "teshari_blackutility_com"
-
-/obj/item/clothing/under/teshari/smock/greydress
-	name = "small grey dress"
-	icon_state = "teshari_greydress"
-
-/obj/item/clothing/under/teshari/smock/blackutility
-	name = "Teshari utility uniform"
-	icon_state = "teshari_blackutility"
-
-/obj/item/clothing/under/teshari/smock/bluegreydress
-	name = "small blue and grey dress"
-	icon_state = "teshari_bluegreydress"
 
 // Worksuits
 /obj/item/clothing/under/teshari/undercoat/standard/worksuit
 	name = "small black and red worksuit"
 	icon_state = "teshari_black_red_worksuit"
 	desc = "A small worksuit designed for a Teshari"
-
-/obj/item/clothing/under/teshari/undercoat/standard/worksuit/blackpurple
-	name = "small black and purple worksuit"
-	icon_state = "teshari_black_purple_worksuit"
-
-/obj/item/clothing/under/teshari/undercoat/standard/worksuit/blackorange
-	name = "small black and orange worksuit"
-	icon_state = "teshari_black_orange_worksuit"
-
-/obj/item/clothing/under/teshari/undercoat/standard/worksuit/blackblue
-	name = "small black and blue worksuit"
-	icon_state = "teshari_black_blue_worksuit"
-
-/obj/item/clothing/under/teshari/undercoat/standard/worksuit/blackgreen
-	name = "small black and greeen worksuit"
-	icon_state = "teshari_black_green_worksuit"
-
-/obj/item/clothing/under/teshari/undercoat/standard/worksuit/whitered
-	name = "small white and red worksuit"
-	icon_state = "teshari_white_red_worksuit"
-
-/obj/item/clothing/under/teshari/undercoat/standard/worksuit/whitepurple
-	name = "small white and purple worksuit"
-	icon_state = "teshari_white_purple_worksuit"
-
-/obj/item/clothing/under/teshari/undercoat/standard/worksuit/whiteorange
-	name = "small white and orange worksuit"
-	icon_state = "teshari_white_orange_worksuit"
-
-/obj/item/clothing/under/teshari/undercoat/standard/worksuit/whiteblue
-	name = "small white and blue worksuit"
-	icon_state = "teshari_white_blue_worksuit"
-
-/obj/item/clothing/under/teshari/undercoat/standard/worksuit/whitegreen
-	name = "small white and green worksuit"
-	icon_state = "teshari_white_green_worksuit"
 
 //Standard Undercoats
 

@@ -117,45 +117,9 @@
 	name = "peacekeeper beret"
 	desc = "A beret in Solar Central Government colors. For peacekeepers that are more inclined towards style than safety." //YW EDIT: Terran Commonwealth to Solar Central Government
 
-/obj/item/clothing/head/beret/solgov/homeguard
-	name = "home guard beret"
-	desc = "A red beret denoting service in the Sol Home Guard. For personnel that are more inclined towards style than safety."
-
-/obj/item/clothing/head/beret/solgov/gateway
-	name = "gateway administration beret"
-	desc = "An orange beret denoting service in the Gateway Administration. For personnel that are more inclined towards style than safety."
-
-/obj/item/clothing/head/beret/solgov/customs
-	name = "customs and trade beret"
-	desc = "A purple beret denoting service in the Customs and Trade Bureau. For personnel that are more inclined towards style than safety."
-
-/obj/item/clothing/head/beret/solgov/orbital
-	name = "orbital assault beret"
-	desc = "A blue beret denoting orbital assault training. For helljumpers that are more inclined towards style than safety."
-
-/obj/item/clothing/head/beret/solgov/research
-	name = "government research beret"
-	desc = "A green beret denoting service in the Bureau of Research. For explorers that are more inclined towards style than safety."
-
 /obj/item/clothing/head/beret/solgov/health
 	name = "health service beret"
 	desc = "A white beret denoting service in the Interstellar Health Service. For medics that are more inclined towards style than safety."
-
-/obj/item/clothing/head/beret/solgov/marcom
-	name = "\improper MARSCOM beret"
-	desc = "A red beret with a gold insignia, denoting service in the USDFDF Mars Central Command. For brass who are more inclined towards style than safety." //YW EDIT: TCGDF to USDFDF
-
-/obj/item/clothing/head/beret/solgov/stratcom
-	name = "\improper STRATCOM beret"
-	desc = "A grey beret with a silver insignia, denoting service in the USDFDF Strategic Command. For intelligence personnel who are more inclined towards style than safety." //YW EDIT: TCGDF to USDFDF
-
-/obj/item/clothing/head/beret/solgov/diplomatic
-	name = "diplomatic security beret"
-	desc = "A tan beret denoting service in the USDF Marines Diplomatic Security Group. For security personnel who are more inclined towards style than safety." //YW EDIT: TCG to USDF
-
-/obj/item/clothing/head/beret/solgov/borderguard
-	name = "border security beret"
-	desc = "A green beret with a silver emblem, denoting service in the Bureau of Border Security. For border guards who are more inclined towards style than safety."
 
 /obj/item/clothing/head/beret/solgov/sifguard
 	name = "\improper NDF beret"

@@ -8,6 +8,7 @@
 	var/amount = 0
 	var/list/instances		//What items are actually stored
 	var/stored				//The thing holding it is
+	var/variant = null		// DQAdd — variant key for consolidated parent types
 
 /datum/stored_item/New(stored, path, name = null, amount = 0)
 	src.item_path = path
@@ -60,14 +61,16 @@
 		return
 	instances = list()
 	for(var/i = 1 to amount)
-		var/new_product = new item_path(stored)
+		// DQEdit — route through spawn_with_variant.
+		var/new_product = spawn_with_variant(item_path, stored, variant)
 		instances += new_product
 
 /datum/stored_item/proc/refill_products(refill_amount)
 	if(!instances)
 		init_products()
 	for(var/i = 1 to refill_amount)
-		var/new_product = new item_path(stored)
+		// DQEdit
+		var/new_product = spawn_with_variant(item_path, stored, variant)
 		instances += new_product
 
 /datum/stored_item/stack/get_amount()

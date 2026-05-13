@@ -140,22 +140,3 @@
 
 	species_restricted = list(SPECIES_ALTEVIAN)
 
-/obj/item/clothing/suit/captunic/capjacket/altevian_admiral/gray
-	name = "gray altevian officer's suit"
-	icon_state = "altevian-admiral-gray"
-
-/obj/item/clothing/suit/captunic/capjacket/altevian_admiral/white
-	name = "white altevian officer's suit"
-	icon_state = "altevian-admiral-white"
-
-/obj/item/clothing/suit/captunic/capjacket/altevian_admiral/dark
-	name = "dark altevian officer's suit"
-	icon_state = "altevian-admiral-dark"
-
-/obj/item/clothing/suit/captunic/capjacket/altevian_admiral/olive
-	name = "olive altevian officer's suit"
-	icon_state = "altevian-admiral-olive"
-
-/obj/item/clothing/suit/captunic/capjacket/altevian_admiral/yellow
-	name = "yellow altevian officer's suit"
-	icon_state = "altevian-admiral-yellow"

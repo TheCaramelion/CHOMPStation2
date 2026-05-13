@@ -1020,30 +1020,6 @@
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 10, rad = 0)
 	allowed = list(POCKET_GENERIC, POCKET_EMERGENCY)
 
-/obj/item/clothing/suit/storage/snowsuit/command
-	name = "command snowsuit"
-	icon_state = "snowsuit_command"
-
-/obj/item/clothing/suit/storage/snowsuit/security
-	name = "security snowsuit"
-	icon_state = "snowsuit_security"
-
-/obj/item/clothing/suit/storage/snowsuit/medical
-	name = "medical snowsuit"
-	icon_state = "snowsuit_medical"
-
-/obj/item/clothing/suit/storage/snowsuit/engineering
-	name = "engineering snowsuit"
-	icon_state = "snowsuit_engineering"
-
-/obj/item/clothing/suit/storage/snowsuit/cargo
-	name = "cargo snowsuit"
-	icon_state = "snowsuit_cargo"
-
-/obj/item/clothing/suit/storage/snowsuit/science
-	name = "science snowsuit"
-	icon_state = "snowsuit_science"
-
 /obj/item/clothing/suit/caution
 	name = "wet floor sign"
 	desc = "Caution! Wet Floor!"

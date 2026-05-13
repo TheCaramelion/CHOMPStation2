@@ -201,16 +201,10 @@
 	num_contained = 4
 	contains = list(
 			/obj/item/clothing/under/teshari/smock,
-			/obj/item/clothing/under/teshari/smock/white,
-			/obj/item/clothing/under/teshari/smock/red,
-			/obj/item/clothing/under/teshari/smock/yellow,
-			/obj/item/clothing/under/teshari/smock/rainbow,
-			/obj/item/clothing/under/teshari/smock/dress,
-			/obj/item/clothing/under/teshari/smock/blackutilitysmock,
-			/obj/item/clothing/under/teshari/smock/greydress,
-			/obj/item/clothing/under/teshari/smock/blackutility,
-			/obj/item/clothing/under/teshari/smock/bluegreydress
+			/obj/item/clothing/under/teshari/smock,
+			/obj/item/clothing/under/teshari/smock/dress
 			)
+	variant_pool = list("white", "red", "yellow", "rainbow", "blackutilitysmock", "greydress", "blackutility", "bluegreydress")
 	cost = 20
 	containertype = /obj/structure/closet/crate
 	containername = "Teshari smocks crate"
@@ -220,19 +214,10 @@
 	desc = "An assortment of teshari undercoats."
 	num_contained = 4
 	contains = list(
-			/obj/item/clothing/under/teshari/undercoat/standard/orange_grey,
-			/obj/item/clothing/under/teshari/undercoat/standard/rainbow,
-			/obj/item/clothing/under/teshari/undercoat/standard/lightgrey_grey,
-			/obj/item/clothing/under/teshari/undercoat/standard/white_grey,
-			/obj/item/clothing/under/teshari/undercoat/standard/red_grey,
-			/obj/item/clothing/under/teshari/undercoat/standard/orange,
-			/obj/item/clothing/under/teshari/undercoat/standard/yellow_grey,
-			/obj/item/clothing/under/teshari/undercoat/standard/green_grey,
-			/obj/item/clothing/under/teshari/undercoat/standard/blue_grey,
-			/obj/item/clothing/under/teshari/undercoat/standard/purple_grey,
-			/obj/item/clothing/under/teshari/undercoat/standard/pink_grey,
-			/obj/item/clothing/under/teshari/undercoat/standard/brown_grey
+			/obj/item/clothing/under/teshari/undercoat/standard
 			)
+	// DQAdd — randomised pack: pick from this variant pool per draw
+	variant_pool = list("orange_grey", "rainbow", "lightgrey_grey", "white_grey", "red_grey", "orange", "yellow_grey", "green_grey", "blue_grey", "purple_grey", "pink_grey", "brown_grey")
 	cost = 20
 	containertype = /obj/structure/closet/crate
 	containername = "Teshari undercoats crate"
@@ -242,19 +227,9 @@
 	desc = "Another assortment of teshari undercoats."
 	num_contained = 4
 	contains = list(
-			/obj/item/clothing/under/teshari/undercoat,
-			/obj/item/clothing/under/teshari/undercoat/standard/black_orange,
-			/obj/item/clothing/under/teshari/undercoat/standard/black_grey,
-			/obj/item/clothing/under/teshari/undercoat/standard/black_white,
-			/obj/item/clothing/under/teshari/undercoat/standard/black_red,
-			/obj/item/clothing/under/teshari/undercoat/standard/black,
-			/obj/item/clothing/under/teshari/undercoat/standard/black_yellow,
-			/obj/item/clothing/under/teshari/undercoat/standard/black_green,
-			/obj/item/clothing/under/teshari/undercoat/standard/black_blue,
-			/obj/item/clothing/under/teshari/undercoat/standard/black_purple,
-			/obj/item/clothing/under/teshari/undercoat/standard/black_pink,
-			/obj/item/clothing/under/teshari/undercoat/standard/black_brown
+			/obj/item/clothing/under/teshari/undercoat/standard
 			)
+	variant_pool = list("black_orange", "black_grey", "black_white", "black_red", "black", "black_yellow", "black_green", "black_blue", "black_purple", "black_pink", "black_brown")
 	cost = 20
 	containertype = /obj/structure/closet/crate
 	containername = "Teshari undercoats crate"
@@ -310,16 +285,9 @@
 	num_contained = 4
 	contains = list(
 			/obj/item/clothing/under/teshari/undercoat/standard/worksuit,
-			/obj/item/clothing/under/teshari/undercoat/standard/worksuit/blackpurple,
-			/obj/item/clothing/under/teshari/undercoat/standard/worksuit/blackorange,
-			/obj/item/clothing/under/teshari/undercoat/standard/worksuit/blackblue,
-			/obj/item/clothing/under/teshari/undercoat/standard/worksuit/blackgreen,
-			/obj/item/clothing/under/teshari/undercoat/standard/worksuit/whitered,
-			/obj/item/clothing/under/teshari/undercoat/standard/worksuit/whitepurple,
-			/obj/item/clothing/under/teshari/undercoat/standard/worksuit/whiteorange,
-			/obj/item/clothing/under/teshari/undercoat/standard/worksuit/whiteblue,
-			/obj/item/clothing/under/teshari/undercoat/standard/worksuit/whitegreen
+			/obj/item/clothing/under/teshari/undercoat/standard/worksuit
 			)
+	variant_pool = list("blackpurple", "blackorange", "blackblue", "blackgreen", "whitered", "whitepurple", "whiteorange", "whiteblue", "whitegreen")
 	cost = 20
 	containertype = /obj/structure/closet/crate
 	containername = "Teshari worksuits crate"
@@ -329,19 +297,9 @@
 	desc = "An assortment of belted teshari cloaks."
 	num_contained = 4
 	contains = list(
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/orange_grey,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/rainbow,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/lightgrey_grey,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/white_grey,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/red_grey,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/orange,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/yellow_grey,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/green_grey,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/blue_grey,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/purple_grey,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/pink_grey,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/brown_grey
+			/obj/item/clothing/suit/storage/teshari/beltcloak/standard
 			)
+	variant_pool = list("orange_grey", "rainbow", "lightgrey_grey", "white_grey", "red_grey", "orange", "yellow_grey", "green_grey", "blue_grey", "purple_grey", "pink_grey", "brown_grey")
 	cost = 40
 	containertype = /obj/structure/closet/crate
 	containername = "Teshari cloaks crate"
@@ -351,21 +309,10 @@
 	desc = "Another assortment of belted teshari cloaks."
 	num_contained = 4
 	contains = list(
-			/obj/item/clothing/suit/storage/teshari/beltcloak,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_orange,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_grey,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_midgrey,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_lightgrey,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_white,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_red,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_yellow,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_green,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_blue,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_purple,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_pink,
-			/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_brown
+			/obj/item/clothing/suit/storage/teshari/beltcloak/standard,
+			/obj/item/clothing/suit/storage/teshari/beltcloak
 			)
+	variant_pool = list("black_orange", "black_grey", "black_midgrey", "black_lightgrey", "black_white", "black_red", "black", "black_yellow", "black_green", "black_blue", "black_purple", "black_pink", "black_brown")
 	cost = 40
 	containertype = /obj/structure/closet/crate
 	containername = "Teshari cloaks crate"

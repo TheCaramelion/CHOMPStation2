@@ -1,39 +1,3 @@
-/obj/item/pen/crayon/red
-	icon_state = "crayonred"
-	colour = "#DA0000"
-	shadeColour = "#810C0C"
-	colourName = "red"
-
-/obj/item/pen/crayon/orange
-	icon_state = "crayonorange"
-	colour = "#FF9300"
-	shadeColour = "#A55403"
-	colourName = "orange"
-
-/obj/item/pen/crayon/yellow
-	icon_state = "crayonyellow"
-	colour = "#FFF200"
-	shadeColour = "#886422"
-	colourName = "yellow"
-
-/obj/item/pen/crayon/green
-	icon_state = "crayongreen"
-	colour = "#A8E61D"
-	shadeColour = "#61840F"
-	colourName = "green"
-
-/obj/item/pen/crayon/blue
-	icon_state = "crayonblue"
-	colour = "#00B7EF"
-	shadeColour = "#0082A8"
-	colourName = "blue"
-
-/obj/item/pen/crayon/purple
-	icon_state = "crayonpurple"
-	colour = "#DA00FF"
-	shadeColour = "#810CFF"
-	colourName = "purple"
-
 /obj/item/pen/crayon/mime
 	icon_state = "crayonmime"
 	desc = "A very sad-looking crayon."
@@ -147,48 +111,6 @@
 		return ITEM_INTERACT_SUCCESS
 	else
 		..()
-
-/obj/item/pen/crayon/marker/black
-	icon_state = "markerblack"
-	colour = "#2D2D2D"
-	shadeColour = "#000000"
-	colourName = "black"
-
-/obj/item/pen/crayon/marker/red
-	icon_state = "markerred"
-	colour = "#DA0000"
-	shadeColour = "#810C0C"
-	colourName = "red"
-
-/obj/item/pen/crayon/marker/orange
-	icon_state = "markerorange"
-	colour = "#FF9300"
-	shadeColour = "#A55403"
-	colourName = "orange"
-
-/obj/item/pen/crayon/marker/yellow
-	icon_state = "markeryellow"
-	colour = "#FFF200"
-	shadeColour = "#886422"
-	colourName = "yellow"
-
-/obj/item/pen/crayon/marker/green
-	icon_state = "markergreen"
-	colour = "#A8E61D"
-	shadeColour = "#61840F"
-	colourName = "green"
-
-/obj/item/pen/crayon/marker/blue
-	icon_state = "markerblue"
-	colour = "#00B7EF"
-	shadeColour = "#0082A8"
-	colourName = "blue"
-
-/obj/item/pen/crayon/marker/purple
-	icon_state = "markerpurple"
-	colour = "#DA00FF"
-	shadeColour = "#810CFF"
-	colourName = "purple"
 
 /obj/item/pen/crayon/marker/mime
 	icon_state = "markermime"

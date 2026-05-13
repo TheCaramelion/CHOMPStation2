@@ -101,40 +101,20 @@
 	icon_override = 'icons/mob/uniform_yw.dmi'
 	armor = list(melee = 0, bullet = 0, laser = 0,energy = 0, bomb = 0, bio = 10, rad = 10)
 
-/obj/item/clothing/under/explorer/utility/supply
-	name = "\improper explorer supply uniform"
-	desc = "The utility uniform of the Explorer's association, made from biohazard resistant material. This one has silver trim and brown blazes."
-	icon_state = "blackutility_sup"
-
 /obj/item/clothing/under/explorer/utility/command
 	name = "\improper explorer command uniform"
 	desc = "The utility uniform of the Explorer's association, made from biohazard resistant material. This one has silver trim."
 	icon_state = "blackutility_com"
-
-/obj/item/clothing/under/explorer/utility/medical
-	name = "\improper explorer medical uniform"
-	desc = "The utility uniform of the Explorer's association, made from biohazard resistant material. This one has silver trim and blue blazes."
-	icon_state = "blackutility_med"
 
 /obj/item/clothing/under/explorer/utility/command/medical
 	name = "\improper explorer medical command uniform"
 	desc = "The utility uniform of the Explorer's association, made from biohazard resistant material. his one has gold trim and blue blazes."
 	icon_state = "blackutility_medcom"
 
-/obj/item/clothing/under/explorer/utility/security
-	name = "\improper explorer security uniform"
-	desc = "The utility uniform of the Explorer's association, made from biohazard resistant material. This one has silver trim and red blazes."
-	icon_state = "blackutility_sec"
-
 /obj/item/clothing/under/explorer/utility/command/security
 	name = "\improper explorer security command uniform"
 	desc = "The utility uniform of the Explorer's association, made from biohazard resistant material. This one has gold trim and red blazes."
 	icon_state = "blackutility_seccom"
-
-/obj/item/clothing/under/explorer/utility/engineering
-	name = "\improper explorer engineering uniform"
-	desc = "The utility uniform of the Explorer's association, made from biohazard resistant material. This one has silver trim and organge blazes."
-	icon_state = "blackutility_eng"
 
 /obj/item/clothing/under/explorer/utility/command/engineering
 	name = "\improper explorer engineering command uniform"
