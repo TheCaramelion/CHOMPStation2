@@ -644,6 +644,7 @@
 		for(var/mob/living/L in endfx)
 			if(L.surrounding_belly()) continue
 			L.clear_fullscreen("belly")
+			L.belly_overlay_tgui?.hide() // DQEdit — hide TGUI belly overlay
 			if(L.hud_used)
 				if(!L.hud_used.hud_shown)
 					L.toggle_hud_vis()

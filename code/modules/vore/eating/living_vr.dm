@@ -1632,6 +1632,7 @@
 		absorbed = FALSE
 		muffled = FALSE
 		clear_fullscreen("belly")
+		belly_overlay_tgui?.hide() // DQEdit — hide TGUI belly overlay
 		clear_fullscreen(ATOM_BELLY_FULLSCREEN)
 		stop_sound_channel(CHANNEL_PREYLOOP)
 

@@ -1638,6 +1638,7 @@
 
 		if(!surrounding_belly() && !previewing_belly) //VOREStation Add - Belly fullscreens safety
 			clear_fullscreen("belly")
+			belly_overlay_tgui?.hide() // DQEdit — hide TGUI belly overlay
 
 		if(CONFIG_GET(flag/welder_vision))
 			var/found_welder

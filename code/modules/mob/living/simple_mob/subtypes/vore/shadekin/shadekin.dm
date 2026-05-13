@@ -278,6 +278,7 @@
 			comp.in_dark_respite = TRUE
 			belly.owner.handle_belly_update()
 			clear_fullscreen("belly")
+			belly_overlay_tgui?.hide() // DQEdit — hide TGUI belly overlay
 			if(hud_used)
 				if(!hud_used.hud_shown)
 					toggle_hud_vis()
