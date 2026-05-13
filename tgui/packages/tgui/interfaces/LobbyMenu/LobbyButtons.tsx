@@ -86,8 +86,8 @@ export const LobbyButtons = (props: {
           View Crew Manifest
         </LobbyButton>
 
-        <LobbyButton index={3} onClick={() => act('shownews')} icon="newspaper">
-          Show Server News {new_news ? '(NEW!)' : null}
+        <LobbyButton index={3} onClick={() => act('open_guide')} icon="book">
+          Guide
         </LobbyButton>
 
         {can_submit_feedback ? (

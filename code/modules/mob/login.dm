@@ -78,6 +78,8 @@
 
 	//set macro to normal incase it was overriden (like cyborg currently does)
 	client.set_hotkeys_macro("macro", "hotkeymode")
+	// DQEdit — force hotkey mode regardless of player pref; non-hotkey is disabled in this fork.
+	winset(client, null, "mainwindow.macro=hotkeymode;hotkey_toggle.is-checked=true;mapwindow.map.focus=true")
 
 	if(!client.tooltips)
 		client.tooltips = new(client)

@@ -5695,4 +5695,23 @@
 #include "modular_chomp\maps\~turfpacks\unsim_turfs\unsim_turfs_special.dm"
 #include "modular_chomp\maps\~turfpacks\unsim_turfs\unsim_turfs_tiles.dm"
 #include "modular_chomp\maps\~turfpacks\unsim_turfs\unsim_turfs_walls.dm"
+// BEGIN DQ MODULAR INCLUDES
+#include "modular_dq\code\modules\quarry\quarry_config.dm"
+#include "modular_dq\code\modules\quarry\quarry_configs.dm"
+#include "modular_dq\code\modules\quarry\quarry_turfs.dm"
+#include "modular_dq\code\modules\quarry\quarry_guide.dm"
+#include "modular_dq\code\modules\quarry\quarry_pregen_hook.dm"
+#include "modular_dq\code\modules\quarry\quarry_profile.dm"
+#include "modular_dq\code\modules\quarry\quarry_layer.dm"
+#include "modular_dq\code\modules\quarry\quarry_anchor.dm"
+#include "modular_dq\code\modules\quarry\quarry_elevator.dm"
+#include "modular_dq\code\modules\quarry\quarry_elevator_anchor.dm"
+#include "modular_dq\code\modules\quarry\quarry_elevator_panel.dm"
+#include "modular_dq\code\modules\quarry\quarry_controller.dm"
+#include "modular_dq\code\modules\quarry\quarry_generator.dm"
+#include "modular_dq\code\modules\quarry\quarry_ladder.dm"
+#include "modular_dq\code\modules\quarry\quarry_rope.dm"
+#include "modular_dq\maps\submaps\deep_quarry\deep_quarry_areas.dm"
+#include "modular_dq\maps\submaps\deep_quarry\deep_quarry.dm"
+// END DQ MODULAR INCLUDES
 // END_INCLUDE

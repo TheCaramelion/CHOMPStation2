@@ -5,7 +5,10 @@
 /* FOR LIVE SERVER   */
 /*********************/
 
-#define USE_MAP_SOUTHERN_CROSS
+// DQEdit Start — booting into Deep Quarry instead of Southern Cross for the new fork.
+// #define USE_MAP_SOUTHERN_CROSS
+#define USE_MAP_DEEP_QUARRY
+// DQEdit End
 // #define USE_MAP_CETUS
 // #define USE_MAP_SOLUNA_NEXUS
 // #define USE_MAP_RELIC_BASE
@@ -42,3 +45,9 @@
 #ifdef USE_MAP_MINITEST
 #include "../virgo_minitest/virgo_minitest.dm"
 #endif
+
+// DQAdd Start — Deep Quarry boot wrapper lives outside modular_chomp.
+#ifdef USE_MAP_DEEP_QUARRY
+#include "../../../modular_dq/maps/deep_quarry/deep_quarry.dm"
+#endif
+// DQAdd End

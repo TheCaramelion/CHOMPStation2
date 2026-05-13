@@ -4,6 +4,12 @@
 /mob/new_player/Topic(href, href_list[])
 	. = ..()
 
+	// DQEdit Start — wiki/guide navigation from the lobby Guide button.
+	if(href_list["guide_topic"])
+		quarry_guide_open(src, href_list["guide_topic"])
+		return
+	// DQEdit End
+
 	if(href_list["open_station_news"])
 		show_latest_news(GLOB.news_data.station_newspaper)
 

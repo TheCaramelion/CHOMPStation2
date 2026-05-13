@@ -7,6 +7,8 @@
 
 	// Override the DreamSeeker macro with the borg version!
 	client.set_hotkeys_macro("borgmacro", "borghotkeymode")
+	// DQEdit — force hotkey mode; non-hotkey disabled in this fork.
+	winset(client, null, "mainwindow.macro=borghotkeymode;hotkey_toggle.is-checked=true;mapwindow.map.focus=true")
 
 	repick_laws()
 
