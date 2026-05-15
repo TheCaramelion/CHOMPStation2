@@ -223,6 +223,9 @@
 
 	if(success)
 		selected_surgery.end_step(user, M, zone, src)
+		// DQEdit — surgery completion cures matching cascading conditions
+		if(ishuman(M))
+			dq_apply_surgery_cures(selected_surgery, M, zone)
 		if(affected && prob(100-cleanliness)) //Infection chance based on cleanliness.
 			affected.adjust_germ_level(rand(10,20))
 	else

@@ -15,11 +15,26 @@
 	return ..()
 
 /proc/dq_get_listener_list_from_event(atom/a, observer_event)
+	if(!a || QDELING(a))
+		return list()
 	var/datum/component/observer_events/c = a.GetComponent(/datum/component/observer_events)
 	if(!c)
 		c = a.AddComponent(/datum/component/observer_events)
+		if(!c)
+			return list()
 	var/list/listeners = c.events[observer_event]
 	if(!listeners)
 		listeners = list()
 		c.events[observer_event] = listeners
 	return listeners
+
+/// Read-only variant for hot paths that must not allocate a component when
+/// none exists yet (e.g. /atom/Destroy()). Returns null when there's no
+/// observer-events component attached.
+/proc/dq_peek_listener_list_from_event(atom/a, observer_event)
+	if(!a)
+		return null
+	var/datum/component/observer_events/c = a.GetComponent(/datum/component/observer_events)
+	if(!c)
+		return null
+	return c.events[observer_event]

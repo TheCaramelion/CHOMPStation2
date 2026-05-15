@@ -16,7 +16,7 @@
 	value = CATALOGUER_REWARD_MEDIUM
 
 /mob/living/simple_mob/animal/giant_spider/thermic
-	desc = "Mirage-dq_get_cloaked(src) and orange, it makes you shudder to look at it. This one has simmering orange eyes."
+	desc = "Mirage-cloaked and orange, it makes you shudder to look at it. This one has simmering orange eyes."
 	catalogue_data = list(/datum/category_item/catalogue/fauna/giant_spider/thermic_spider)
 
 	icon_state = "pit"

@@ -7,26 +7,10 @@
 
 /datum/belly_overlays
 	var/belly_icon
-/datum/belly_overlays/vbo_belly1
-	belly_icon = "icons/mob/vore_fullscreens/VBO_belly1.dmi" // DQEdit — string not icon ref
-
-/datum/belly_overlays/vbo_belly2
-	belly_icon = "icons/mob/vore_fullscreens/VBO_belly2.dmi" // DQEdit — string not icon ref
-
-/datum/belly_overlays/vbo_belly3
-	belly_icon = "icons/mob/vore_fullscreens/VBO_belly3.dmi" // DQEdit — string not icon ref
-
-/datum/belly_overlays/vbo_belly4
-	belly_icon = "icons/mob/vore_fullscreens/VBO_belly4.dmi" // DQEdit — string not icon ref
-
-/datum/belly_overlays/vbo_belly5
-	belly_icon = "icons/mob/vore_fullscreens/VBO_belly5.dmi" // DQEdit — string not icon ref
-
-/datum/belly_overlays/vbo_belly6
-	belly_icon = "icons/mob/vore_fullscreens/VBO_belly6.dmi" // DQEdit — string not icon ref
-
-/datum/belly_overlays/vbo_belly7
-	belly_icon = "icons/mob/vore_fullscreens/VBO_belly7.dmi" // DQEdit — string not icon ref
+// DQEdit — vbo_belly1 through vbo_belly7 datums removed. Their DMI
+// files (VBO_belly1.dmi .. VBO_belly7.dmi) do not exist on disk in
+// this fork; the upstream commented-out block was correct. Keeping the
+// datums causes runtime errors in icon-metadata reads.
 
 /datum/belly_overlays/vbo_belly8
 	belly_icon = "icons/mob/vore_fullscreens/VBO_belly8.dmi" // DQEdit — string not icon ref

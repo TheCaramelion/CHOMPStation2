@@ -111,6 +111,15 @@ BLOOD_VOLUME_SURVIVE = 40
 			dmg_coef = 0.5
 			threshold_coef = 0.75
 
+		// DQEdit Start — DQ medical owns blood-loss presentation. The
+		// vanilla branch below floods chat with "you feel woozy" etc.,
+		// which collides with our internal_hemorrhage/hypovolemic_shock
+		// symptoms. We keep the pale flag (sprite cue), the oxyloss
+		// (mechanical consequence of low O2 transport), and the fatal
+		// paralyse/sleep — but suppress the player-facing dizzy/woozy
+		// spam and skip the eye_blurry overrides (our symptoms own
+		// blurred_vision). Reasoning: DQ conditions provide messaging
+		// via /datum/medical_symptom; doubled messages were confusing.
 		if(blood_volume_raw >= species.blood_volume*species.blood_level_safe)
 			if(pale)
 				pale = 0
@@ -119,40 +128,26 @@ BLOOD_VOLUME_SURVIVE = 40
 			if(!pale)
 				pale = 1
 				update_icons_body()
-				var/word = pick("dizzy","woozy","faint","disoriented","unsteady")
-				to_chat(src, span_red("You feel slightly [word]"))
-			if(prob(1))
-				var/word = pick("dizzy","woozy","faint","disoriented","unsteady")
-				to_chat(src, span_red("You feel [word]"))
 			if(getOxyLoss() < 20 * threshold_coef)
 				adjustOxyLoss(3 * dmg_coef)
 		else if(blood_volume_raw >= species.blood_volume*species.blood_level_danger)
 			if(!pale)
 				pale = 1
 				update_icons_body()
-			eye_blurry = max(eye_blurry,6)
 			if(getOxyLoss() < 50 * threshold_coef)
 				adjustOxyLoss(10 * dmg_coef)
 			adjustOxyLoss(1 * dmg_coef)
-			if(prob(15))
-				Paralyse(rand(1,3))
-				var/word = pick("dizzy","woozy","faint","disoriented","unsteady")
-				to_chat(src, span_red("You feel dangerously [word]"))
 		else if(blood_volume_raw >= species.blood_volume*species.blood_level_fatal)
 			adjustOxyLoss(5 * dmg_coef)
-//			adjustToxLoss(3 * dmg_coef)
-			if(prob(15))
-				var/word = pick("dizzy","woozy","faint","disoriented","unsteady")
-				to_chat(src, span_red("You feel extremely [word]"))
 		else //Not enough blood to survive (usually)
 			if(!pale)
 				pale = 1
 				update_icons_body()
-			eye_blurry = max(eye_blurry,6)
 			Paralyse(3)
 			Sleeping(3)
 			adjustToxLoss(3 * dmg_coef)
-			adjustOxyLoss(75 * dmg_coef) // 15 more than dexp fixes (also more than dex+dexp+tricord)
+			adjustOxyLoss(75 * dmg_coef)
+		// DQEdit End
 
 		// Without enough blood you slowly go hungry.
 		if(blood_volume_raw < species.blood_volume*species.blood_level_safe)

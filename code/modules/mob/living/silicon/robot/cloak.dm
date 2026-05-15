@@ -93,7 +93,7 @@
 
 /datum/modifier/robot_cloak
 	name = "robotic stealth"
-	desc = "You are currently dq_get_cloaked(src) and harder to see!."
+	desc = "You are currently cloaked and harder to see!."
 
 	on_created_text = span_warning("You become harder to see.")
 	on_expired_text = span_notice("You become fully visible once more.")

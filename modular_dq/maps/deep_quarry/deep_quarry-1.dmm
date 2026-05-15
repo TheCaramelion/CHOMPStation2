@@ -21,8 +21,12 @@
 /turf/simulated/floor/tiled,
 /area/deep_quarry/main)
 "f" = (
-/obj/structure/simple_door/sandstone,
-/turf/simulated/floor/tiled,
+/obj/machinery/door/window/northright{
+	req_access = list(5);
+	name = "Medical Reception";
+	dir = 8
+	},
+/turf/simulated/floor/tiled/white,
 /area/deep_quarry/main)
 "g" = (
 /obj/machinery/door/airlock/lift,
@@ -36,15 +40,50 @@
 /turf/simulated/floor/tiled/dark,
 /area/deep_quarry/main)
 "j" = (
-/turf/simulated/wall/elevator,
+/obj/effect/wingrille_spawn/reinforced,
+/turf/simulated/floor/tiled,
+/area/deep_quarry/main)
+"k" = (
+/obj/machinery/body_scanconsole,
+/turf/simulated/floor/tiled/white,
 /area/deep_quarry/main)
 "l" = (
 /obj/effect/landmark/quarry_elevator_anchor,
 /turf/simulated/floor/tiled/dark,
 /area/deep_quarry/main)
+"m" = (
+/obj/machinery/door/window/northright{
+	req_access = list(5);
+	name = "Medical Reception";
+	dir = 2
+	},
+/turf/simulated/floor/tiled,
+/area/deep_quarry/main)
+"n" = (
+/obj/machinery/atmospherics/unary/freezer{
+	icon_state = "freezer"
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"o" = (
+/obj/structure/window/reinforced,
+/turf/simulated/floor/tiled,
+/area/deep_quarry/main)
 "p" = (
-/obj/machinery/door/airlock/angled_bay/double/glass,
-/turf/simulated/wall/r_wall,
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"q" = (
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"r" = (
+/obj/structure/filingcabinet/chestdrawer{
+	name = "Medical Forms"
+	},
+/turf/simulated/floor/tiled/white,
 /area/deep_quarry/main)
 "s" = (
 /obj/machinery/light{
@@ -55,6 +94,17 @@
 "u" = (
 /obj/effect/landmark/arrivals,
 /turf/simulated/floor/tiled,
+/area/deep_quarry/main)
+"v" = (
+/obj/structure/table/glass,
+/obj/machinery/light{
+	dir = 2
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"w" = (
+/obj/item/modular_computer/console/preset/medical,
+/turf/simulated/floor/tiled/white,
 /area/deep_quarry/main)
 "x" = (
 /obj/structure/quarry_elevator_panel{
@@ -74,6 +124,179 @@
 	},
 /turf/simulated/floor/tiled/dark,
 /area/deep_quarry/main)
+"z" = (
+/obj/structure/table/glass,
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"A" = (
+/obj/machinery/atmospherics/unary/cryo_cell,
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"B" = (
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/table/reinforced,
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"C" = (
+/obj/machinery/chemical_synthesizer,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"D" = (
+/obj/structure/table/rack,
+/obj/item/roller{
+	pixel_y = -6
+	},
+/obj/item/roller,
+/obj/item/roller{
+	pixel_y = 8
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"E" = (
+/obj/structure/stairs/spawner/north,
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"F" = (
+/obj/machinery/door/airlock/glass_medical{
+	name = "Medical Reception";
+	req_access = list(5)
+	},
+/turf/space,
+/area/deep_quarry/main)
+"G" = (
+/obj/machinery/sleep_console,
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"H" = (
+/obj/machinery/vending/medical,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"I" = (
+/obj/structure/bed/chair/office/light{
+	dir = 1
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"J" = (
+/obj/machinery/light{
+	dir = 2
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"K" = (
+/obj/machinery/sleeper{
+	dir = 4
+	},
+/obj/machinery/sleeper{
+	dir = 8
+	},
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"L" = (
+/obj/machinery/papershredder,
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"M" = (
+/obj/structure/table/reinforced,
+/obj/machinery/computer/med_data/laptop{
+	pixel_x = 3;
+	pixel_y = 4
+	},
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"N" = (
+/obj/structure/table/reinforced,
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"O" = (
+/obj/structure/table/rack,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"P" = (
+/obj/structure/table/rack,
+/obj/item/clothing/accessory/stethoscope,
+/obj/item/clothing/accessory/stethoscope,
+/obj/item/clothing/accessory/stethoscope,
+/obj/item/storage/belt/medical,
+/obj/item/storage/belt/medical,
+/obj/item/storage/belt/medical,
+/obj/item/clothing/glasses/hud/health,
+/obj/item/clothing/glasses/hud/health,
+/obj/item/clothing/glasses/hud/health,
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"Q" = (
+/obj/machinery/chem_master,
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"R" = (
+/obj/machinery/door/airlock/glass_medical{
+	name = "Chemistry Laboratory";
+	req_access = list(33)
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"S" = (
+/obj/machinery/bodyscanner{
+	dir = 4
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"U" = (
+/obj/structure/table/reinforced,
+/obj/item/radio{
+	anchored = 1;
+	canhear_range = 1;
+	frequency = 1487;
+	icon_state = "red_phone";
+	name = "Reception Emergency Phone"
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"V" = (
+/obj/structure/table/reinforced,
+/obj/machinery/chemical_dispenser/full{
+	pixel_y = 16
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"W" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"X" = (
+/obj/machinery/smartfridge/secure/medbay{
+	req_one_access = list(33,66)
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+"Y" = (
+/obj/machinery/photocopier,
+/obj/machinery/light{
+	dir = 2
+	},
+/turf/simulated/floor/tiled/white,
+/area/deep_quarry/main)
+
 (1,1,1) = {"
 b
 b
@@ -30136,9 +30359,9 @@ b
 b
 b
 b
-b
-b
-b
+c
+c
+c
 b
 b
 b
@@ -30394,12 +30617,12 @@ b
 b
 b
 b
-b
-b
-b
-b
-b
-b
+c
+z
+p
+c
+c
+c
 b
 b
 b
@@ -30652,13 +30875,13 @@ b
 b
 b
 b
-b
-b
-b
-b
-b
-b
-b
+c
+K
+p
+p
+p
+S
+c
 b
 b
 b
@@ -30910,14 +31133,14 @@ b
 b
 b
 b
-b
-b
-b
-b
-b
-b
-b
-b
+c
+G
+p
+p
+p
+k
+v
+c
 b
 b
 b
@@ -31168,15 +31391,15 @@ b
 b
 b
 b
-b
-b
-b
-b
-b
-b
-b
-b
-b
+c
+E
+p
+p
+p
+p
+p
+S
+c
 b
 b
 b
@@ -31416,26 +31639,26 @@ b
 b
 b
 b
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
 b
 b
 b
 b
 b
 b
-b
-b
-b
+d
+d
+d
+d
+d
+c
+c
+q
+n
+p
+p
+k
+v
+c
 b
 b
 b
@@ -31674,26 +31897,26 @@ b
 b
 b
 b
-c
+b
+b
+b
+b
+d
+d
+d
+d
+d
+d
+d
+d
 d
 c
-d
-d
-d
-a
-d
-d
-d
+A
+p
+p
+p
+p
 c
-b
-b
-b
-b
-b
-b
-b
-b
-b
 b
 b
 b
@@ -31932,26 +32155,26 @@ b
 b
 b
 b
-c
+b
+b
+b
+d
+d
+d
+d
+d
+d
+d
+d
+d
 d
 c
-d
-d
-d
-d
-d
-d
-d
+A
+p
+p
+p
+p
 c
-b
-b
-b
-b
-b
-b
-b
-b
-b
 b
 b
 b
@@ -32190,27 +32413,27 @@ b
 b
 b
 b
-c
+b
+b
+b
+d
+d
+d
+e
+d
+d
+d
+e
+d
 d
 c
-d
-d
-d
-d
-d
-d
-d
 c
-b
-b
-b
-b
-b
-b
-b
-b
-b
-b
+W
+p
+p
+p
+c
+c
 b
 b
 b
@@ -32448,27 +32671,27 @@ b
 b
 b
 b
-c
+b
+b
 d
-p
 d
 d
 x
+j
+j
+j
+j
+j
+d
+d
+a
+m
+p
+p
+p
+p
+X
 c
-j
-j
-j
-j
-b
-b
-b
-b
-b
-b
-b
-b
-b
-b
 b
 b
 b
@@ -32706,9 +32929,9 @@ b
 b
 b
 b
-c
-s
-c
+b
+b
+d
 d
 h
 d
@@ -32717,16 +32940,16 @@ i
 i
 i
 j
-b
-b
-b
-b
-b
-b
-b
-b
-b
-b
+d
+d
+d
+o
+M
+B
+B
+f
+c
+c
 b
 b
 b
@@ -32964,9 +33187,9 @@ b
 b
 b
 b
-f
+b
+b
 d
-c
 s
 d
 d
@@ -32975,16 +33198,16 @@ i
 l
 y
 j
-b
-b
-b
-b
-b
-b
-b
-b
-b
-b
+d
+d
+d
+m
+N
+I
+p
+p
+L
+c
 b
 b
 b
@@ -33222,9 +33445,9 @@ b
 b
 b
 b
-c
+b
+b
 d
-p
 d
 u
 d
@@ -33233,16 +33456,16 @@ i
 i
 i
 j
-b
-b
-b
-b
-b
-b
-b
-b
-b
-b
+d
+d
+d
+o
+U
+w
+p
+p
+Y
+c
 b
 b
 b
@@ -33480,27 +33703,27 @@ b
 b
 b
 b
+b
+b
+d
+d
+d
+d
+j
+j
+j
+j
+j
+d
+d
+e
+m
+N
+I
+p
+p
+r
 c
-d
-c
-d
-d
-d
-c
-j
-j
-j
-j
-b
-b
-b
-b
-b
-b
-b
-b
-b
-b
 b
 b
 b
@@ -33738,27 +33961,27 @@ b
 b
 b
 b
-c
+b
+b
+b
+d
+d
+d
+a
+d
+d
+d
+a
+d
 d
 c
-d
-d
-d
-d
-d
-d
-d
 c
-b
-b
-b
-b
-b
-b
-b
-b
-b
-b
+c
+c
+c
+F
+c
+c
 b
 b
 b
@@ -33996,26 +34219,26 @@ b
 b
 b
 b
-c
+b
+b
+b
+d
+d
+d
+d
+d
+d
+d
+d
+d
 d
 c
-d
-d
-d
-d
-d
-d
-d
+H
+p
+p
+p
+p
 c
-b
-b
-b
-b
-b
-b
-b
-b
-b
 b
 b
 b
@@ -34254,26 +34477,26 @@ b
 b
 b
 b
-c
+b
+b
+b
+b
+d
+d
+d
+d
+d
+d
+d
+d
 d
 c
-d
-d
-d
-e
-d
-d
-d
+E
+p
+p
+p
+p
 c
-b
-b
-b
-b
-b
-b
-b
-b
-b
 b
 b
 b
@@ -34512,26 +34735,26 @@ b
 b
 b
 b
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
-c
 b
 b
 b
 b
 b
 b
-b
-b
-b
+d
+d
+d
+d
+d
+c
+c
+c
+E
+p
+p
+p
+J
+c
 b
 b
 b
@@ -34780,15 +35003,15 @@ b
 b
 b
 b
-b
-b
-b
-b
-b
-b
-b
-b
-b
+c
+Q
+p
+R
+p
+p
+p
+z
+c
 b
 b
 b
@@ -35038,14 +35261,14 @@ b
 b
 b
 b
-b
-b
-b
-b
-b
-b
-b
-b
+c
+C
+p
+c
+O
+p
+v
+c
 b
 b
 b
@@ -35296,14 +35519,14 @@ b
 b
 b
 b
-b
-b
-b
-b
-b
-b
-b
-b
+c
+V
+p
+c
+D
+P
+c
+c
 b
 b
 b
@@ -35554,12 +35777,12 @@ b
 b
 b
 b
-b
-b
-b
-b
-b
-b
+c
+N
+N
+c
+c
+c
 b
 b
 b
@@ -35812,9 +36035,9 @@ b
 b
 b
 b
-b
-b
-b
+c
+c
+c
 b
 b
 b

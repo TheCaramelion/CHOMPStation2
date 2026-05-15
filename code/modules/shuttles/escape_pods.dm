@@ -10,6 +10,12 @@
 
 	..()
 
+	// DQEdit — base shuttle New() may have early-returned without setting
+	// current_location (landmark missing). Skip the arming-controller
+	// lookup so we don't trip the null deref / spurious CRASH below.
+	if(!current_location)
+		return
+
 	//find the arming controller (berth) - If not configured directly, try to read it from current location landmark
 	var/arming_controller_tag = arming_controller
 	if(!arming_controller && active_docking_controller)

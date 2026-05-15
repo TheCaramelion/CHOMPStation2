@@ -1,5 +1,5 @@
 // Lurkers are somewhat similar to Hunters, however the big difference is that Lurkers have an imperfect cloak.
-// Their AI will try to do hit and run tactics, striking the enemy when its "dq_get_cloaked(src)", for bonus damage and a stun.
+// Their AI will try to do hit and run tactics, striking the enemy when its "cloaked", for bonus damage and a stun.
 // They keep attacking until the stun ends, then retreat to cloak again and repeat the cycle.
 // Hitting the spider before it does its ambush attack will break the cloak and make the spider flee.
 

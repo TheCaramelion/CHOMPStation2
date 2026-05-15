@@ -54,9 +54,11 @@
 	else
 		current_location = SSshuttles.get_landmark(current_location)
 	if(!istype(current_location))
-		if(debug_logging)
-			log_shuttle("UM whoops, no initial? [src]")
-		CRASH("Shuttle '[name]' could not find its starting location landmark [current_location].")
+		// DQEdit — landmark missing usually means the shuttle's home map
+		// was removed. Log once and skip registration so subtype New()s
+		// don't trip null derefs on current_location.docking_controller.
+		log_shuttle("Shuttle '[name]' could not find its starting location landmark; skipping registration.")
+		return
 
 	if(src.name in SSshuttles.shuttles)
 		CRASH("A shuttle with the name '[name]' is already defined.")

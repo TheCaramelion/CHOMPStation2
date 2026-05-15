@@ -486,9 +486,9 @@
 
 //Parachutes
 /obj/item/storage/backpack/parachute
-	name = "dq_get_parachute(src)"
+	name = "parachute"
 	desc = "A specially made backpack, designed to help one survive jumping from incredible heights. It sacrifices some storage space for that added functionality."
-	icon_state = "dq_get_parachute(src)"
+	icon_state = "parachute"
 	item_state_slots = list(slot_r_hand_str = "backpack", slot_l_hand_str = "backpack")
 	max_storage_space = ITEMSIZE_COST_NORMAL * 5
 

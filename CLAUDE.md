@@ -201,6 +201,38 @@ From `SpacemanDMM.toml` and `code/__odlint.dm`:
 - **Always chain `..()`** when overriding lifecycle procs (`Initialize`, `Destroy`, `MouseDrop_T`, etc.) unless you specifically need to suppress upstream behavior.
 - **Override via vars, not edits.** When a new icon, name, or description is all that's needed, subclass or re-open the type in `modular_<FORK>/` and override `icon`, `icon_state`, `name`, `desc`. Don't edit the upstream `.dm`.
 
+### 6a. List allocation patterns
+
+Lists in DM are reference-counted heap allocations. A `var/list/foo = list()` on an instance var allocates one fresh empty list **per instance**, even if nothing ever gets added. With hundreds or thousands of instances alive, this adds up. Two patterns matter:
+
+- **`var/static/list/foo`** — one list shared by every instance of the type. Use when the contents are immutable and identical across instances: cause tables, presentation strings, lookup maps. Authored once, never mutated at runtime. Saves memory linearly with instance count.
+  - **DM gotcha**: you cannot override the var's storage class in a subtype. If you declare `var/list/foo` on a parent and `var/static/list/foo = list(...)` on a child, DM rejects it with "duplicate definition". If the parent declares `var/static/list/foo`, that's a single global shared across all subtypes — assigning to it in a subtype overwrites the same storage. The "static per subtype" pattern just isn't expressible as a var.
+  - **Per-type static via proc**: the workaround is a getter proc that each subtype overrides to return a `var/static/list/` declared *inside the proc body*. DM scopes a proc-local `static` to that proc *on that type*, so each subtype's override gets its own one-time-initialised list. Readers call `obj.get_foo()` instead of `obj.foo`. Example:
+
+    ```dm
+    /datum/medical_symptom/proc/get_patient_messages()
+        return null
+    /datum/medical_symptom/sharp_pain/get_patient_messages()
+        var/static/list/L = list("A sharp pain stabs through your body.", "Your injury flares with pain.")
+        return L
+    ```
+
+    Costs one extra proc call per read but saves a per-instance list allocation. Used for symptom messages and condition vital-effect tables.
+- **Lazylists** — declare `var/list/foo` (no initializer) and access via the `LAZYADD` / `LAZYINITLIST` / `LAZYLEN` / `LAZYREMOVE` macros from `code/__defines/_lists.dm`. The list stays `null` until something is actually added, and goes back to `null` when emptied via `LAZYREMOVE`. Use when the list is per-instance, mutable, but often empty.
+
+**Anti-pattern**: `var/list/foo = list()` on an instance var. Every instance gets its own empty list — and *every subtype override* inherits the empty default rather than `null`, which means even subtype-specific subclasses that re-declare `foo = list("x", "y")` are *still* allocating because the parent's `= list()` ran first. Drop the `= list()` and use lazylist accessors instead. Locals inside procs (`var/list/temp = list()`) are fine — those are stack-frame allocations, not per-instance.
+
+Quick decision table:
+
+| Use case | Pattern |
+|---|---|
+| Constant table shared across all instances of a type | `var/static/list/foo = list(...)` |
+| Per-instance mutable, often empty | `var/list/foo` + LAZYADD/LAZYLEN |
+| Per-instance mutable, always non-empty | `var/list/foo = list(...)` (rare) |
+| Local working list inside a proc | `var/list/foo = list()` |
+
+The upstream codebase isn't 100% consistent on this — many vars predate the lazylist macros — so prefer the right pattern for new fork code without auditing every upstream var you touch.
+
 ---
 
 ## 7. TGUI (front-end) rules

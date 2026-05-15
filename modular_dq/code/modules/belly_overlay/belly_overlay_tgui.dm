@@ -26,7 +26,9 @@
 	return GLOB.tgui_always_state
 
 /datum/belly_overlay_tgui/ui_assets(mob/user)
-	return list(get_asset_datum(/datum/asset/simple/belly_overlays))
+	// Belly overlay files are registered + sent lazily via
+	// dq_send_belly_overlay_urls() in show(), not as a static bundle.
+	return list()
 
 /datum/belly_overlay_tgui/tgui_data(mob/user)
 	return state
@@ -66,7 +68,6 @@
 				var/icon_state = pair[1]
 				var/color = pair[2]
 				var/url = dq_get_belly_overlay_url(dmi, icon_state)
-				log_world("DQBELLY layer state=[icon_state] color=[color] url=[url]")
 				if(url)
 					layers += list(list(
 						"url"    = url,
@@ -110,7 +111,12 @@
 							"alpha"  = liquid_alpha,
 							"pixelY" = pixel_y,
 						))
-			dq_send_belly_overlay_assets(owner.client)
+			// Ship only the URLs we actually built into this layer set.
+			// The transport's per-client dedupe makes repeated calls free.
+			var/list/urls_to_send = list()
+			for(var/list/L in layers)
+				urls_to_send += L["url"]
+			dq_send_belly_overlay_urls(owner.client, urls_to_send)
 	state = list(
 		"visible" = length(layers) > 0,
 		"layers"  = layers,

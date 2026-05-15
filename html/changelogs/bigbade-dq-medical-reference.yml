@@ -1,0 +1,7 @@
+author: "BigBadE"
+delete-after: true
+changes:
+  - rscadd: "Added the Doctor's Encyclopedia — a TGUI reference book that lists every cascading medical condition, symptom, and treatment reagent with searchable tabs and qualitative descriptions."
+  - rscadd: "Added a Surgery tab to the Doctor's Encyclopedia documenting each procedure's steps, tools, and the conditions it treats."
+  - rscadd: "Completing the corresponding surgery now cures matching cascading conditions (fractures, bleeds, severed tendons, necrosis, brain damage, etc.)."
+  - balance: "Cascading conditions now always carry at least one publicly observable or scanner-detectable symptom — nerve damage, tissue necrosis, radiation sickness, and genetic damage included."

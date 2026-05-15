@@ -9,10 +9,14 @@
 	appearances = list()
 
 /datum/component/alt_appearances_owner/Destroy(force)
-	if(appearances)
-		for(var/k in appearances)
-			qdel(appearances[k])
-		appearances.Cut()
+	// Don't iterate-and-qdel here. The qdel chain runs both ways:
+	//   /atom/Destroy() → remove_all_alt_appearances() → qdel each entry
+	//   /datum/alternate_appearance/Destroy() → remove() → clear component
+	// If this proc also iterated, we'd re-enter alternate_appearance.Destroy
+	// after it had already deleted itself, triggering the "destroy proc
+	// was called multiple times" runtime. The atom-level cleanup is the
+	// authoritative path; we just drop our reference.
+	appearances = null
 	return ..()
 
 /datum/component/alt_appearances_viewer

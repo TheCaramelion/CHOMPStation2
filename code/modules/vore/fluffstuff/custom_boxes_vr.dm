@@ -91,6 +91,7 @@
 	name = "Yonra's Starting Kit"
 	desc = "A small box containing Yonra's personal effects"
 	has_items = list(
+		/obj/item/melee/fluff/holochain/mass,
 		/obj/item/clothing/accessory/medal/silver/unity)
 
 //ivymoomoo:Ivy Baladeva
@@ -158,6 +159,7 @@
 /obj/item/storage/backpack/dufflebag/sec/fluff/katarina/Initialize(mapload)
 	. = ..()
 	new /obj/item/clothing/accessory/holster/hip(src)
+	new /obj/item/clothing/suit/storage/fluff/fedcoat(src)
 	new /obj/item/clothing/suit/armor/det_suit(src)
 	new /obj/item/clothing/accessory/storage/black_vest(src)
 	new /obj/item/material/knife/tacknife/combatknife/fluff/katarina(src)
@@ -209,6 +211,10 @@
 	name = "Koyo's Cosplay Box"
 	desc = "One of many traditional wolfgirl clothing sets that Koyo owns. Awoo!"
 	has_items = list(
+		/obj/item/clothing/head/fluff/wolfgirl,
+		/obj/item/clothing/shoes/fluff/wolfgirl,
+		/obj/item/clothing/under/fluff/wolfgirl,
+		/obj/item/melee/fluffstuff/wolfgirlsword,
 		/obj/item/shield/fluff/wolfgirlshield)
 
 // Ryumi: Nikki Yumeno
@@ -232,6 +238,7 @@
 /*
 Swimsuits, for general use, to avoid arriving to work with your swimsuit.
 */
+/obj/item/storage/box/fluff/swimsuit
 	name = "Black Swimsuit capsule"
 	desc = "A little capsule where a swimsuit is usually stored."
 	storage_slots = 1
@@ -243,39 +250,51 @@ Swimsuits, for general use, to avoid arriving to work with your swimsuit.
 	can_hold = list(/obj/item/clothing/under/swimsuit/)
 	has_items = list(/obj/item/clothing/under/swimsuit/black)
 
+/obj/item/storage/box/fluff/swimsuit/blue
 	name = "Blue Swimsuit capsule"
 	has_items = list(/obj/item/clothing/under/swimsuit/blue)
 
+/obj/item/storage/box/fluff/swimsuit/purple
 	name = "Purple Swimsuit capsule"
 	has_items = list(/obj/item/clothing/under/swimsuit/purple)
 
+/obj/item/storage/box/fluff/swimsuit/green
 	name = "Green Swimsuit capsule"
 	has_items = list(/obj/item/clothing/under/swimsuit/green)
 
+/obj/item/storage/box/fluff/swimsuit/red
 	name = "Red Swimsuit capsule"
 	has_items = list(/obj/item/clothing/under/swimsuit/red)
 
+/obj/item/storage/box/fluff/swimsuit/white
 	name = "White Swimsuit capsule"
 	has_items = list(/obj/item/clothing/under/swimsuit/white)
 
+/obj/item/storage/box/fluff/swimsuit/blue
 	name = "Striped Swimsuit capsule"
 	has_items = list(/obj/item/clothing/under/swimsuit/striped)
 
+/obj/item/storage/box/fluff/swimsuit/earth
 	name = "Earthen Swimsuit capsule"
 	has_items = list(/obj/item/clothing/under/swimsuit/earth)
 
+/obj/item/storage/box/fluff/swimsuit/engineering
 	name = "Engineering Swimsuit capsule"
 	has_items = list(/obj/item/clothing/under/swimsuit/fluff/engineering)
 
+/obj/item/storage/box/fluff/swimsuit/science
 	name = "Science Swimsuit capsule"
 	has_items = list(/obj/item/clothing/under/swimsuit/fluff/science)
 
+/obj/item/storage/box/fluff/swimsuit/security
 	name = "Security Swimsuit capsule"
 	has_items = list(/obj/item/clothing/under/swimsuit/fluff/security)
 
+/obj/item/storage/box/fluff/swimsuit/medical
 	name = "Medical Swimsuit capsule"
 	has_items = list(/obj/item/clothing/under/swimsuit/fluff/medical)
 
+/obj/item/storage/box/fluff/swimsuit/cowbikini
 	name = "Cow Bikini Swimsuit capsule"
 	has_items = list(/obj/item/clothing/under/swimsuit/cowbikini)
 
@@ -291,28 +310,35 @@ Swimsuits, for general use, to avoid arriving to work with your swimsuit.
 	name = "Pink Mankini capsule"
 	has_items = list(/obj/item/clothing/under/swimsuit/stripper/mankini)
 
+/obj/item/storage/box/fluff/swimsuit/highclass
 	name = "High Class Swimsuit capsule"
 	has_items = list(/obj/item/clothing/under/swimsuit/highclass)
 
+/obj/item/storage/box/fluff/swimsuit/risque
 	name = "Risque Swimsuit capsule"
 	has_items = list(/obj/item/clothing/under/swimsuit/risque)
 
+/obj/item/storage/box/fluff/swimsuit/streamlined
 	name = "Streamlined Swimsuit capsule"
 	has_items = list(/obj/item/clothing/under/swimsuit/streamlined)
 
 //Monkey boxes for the new primals we have
+/obj/item/storage/box/monkeycubes/sobakacubes
 	name = "sobaka cube box"
 	desc = "Drymate brand sobaka cubes. Just add water!"
 	starts_with = list(/obj/item/reagent_containers/food/snacks/monkeycube/wrapped/sobakacube = 4)
 
+/obj/item/storage/box/monkeycubes/sarucubes
 	name = "saru cube box"
 	desc = "Drymate brand saru cubes. Just add water!"
 	starts_with = list(/obj/item/reagent_containers/food/snacks/monkeycube/wrapped/sarucube = 4)
 
+/obj/item/storage/box/monkeycubes/sparracubes
 	name = "sparra cube box"
 	desc = "Drymate brand sparra cubes. Just add water!"
 	starts_with = list(/obj/item/reagent_containers/food/snacks/monkeycube/wrapped/sparracube = 4)
 
+/obj/item/storage/box/monkeycubes/wolpincubes
 	name = "wolpin cube box"
 	desc = "Drymate brand wolpin cubes. Just add water!"
 	starts_with = list(/obj/item/reagent_containers/food/snacks/monkeycube/wrapped/wolpincube = 4)

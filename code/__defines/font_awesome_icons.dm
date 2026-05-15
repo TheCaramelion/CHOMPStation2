@@ -1227,7 +1227,7 @@
 #define FA_ICON_PANORAMA "fa-panorama"
 #define FA_ICON_PAPER_PLANE "fa-paper-plane"
 #define FA_ICON_PAPERCLIP "fa-paperclip"
-#define FA_ICON_PARACHUTE_BOX "fa-dq_get_parachute(src)-box"
+#define FA_ICON_PARACHUTE_BOX "fa-parachute-box"
 #define FA_ICON_PARAGRAPH "fa-paragraph"
 #define FA_ICON_PARKING "fa-parking"
 #define FA_ICON_PASSPORT "fa-passport"

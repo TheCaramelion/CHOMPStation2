@@ -1,3 +1,4 @@
+/obj/mecha/combat/phazon/scree
 	desc = "A very, very shiny exosuit. This thing has been polished and waxed practically to a mirror finish."
 	name = "Scuttlebug"
 	icon_state = "scuttlebug"

@@ -1,7 +1,7 @@
 /datum/maint_recycler_vendor_entry
 	var/name = "Cool Object to buy" //what it's shown as in the vendor
 	var/ad_message = "" //what comes after the name in the vendor
-	var/desc = "What the object actually is" //what's shown to the user upon dq_get_hovering(src)
+	var/desc = "What the object actually is" //what's shown to the user upon hovering
 	var/object_type_to_spawn
 	var/item_cost = 15 //in RP/Recycle Points
 

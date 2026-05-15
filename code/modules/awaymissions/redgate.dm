@@ -1636,6 +1636,7 @@
 			user.drop_from_inventory(flag)
 			flag.loc = src.loc			//place our flag neatly back on its pedestal
 
+/obj/item/laserdome_hyperball
 	name = "\improper HYPERball"	//*always* refer to it as "the hyperball", not just "the ball". corporate insists.
 	desc = "Because regular balls aren't exciting enough, the future needs HYPERballs!"
 	description_info = "Take the ball and dunk it into the opposing team's goal to score! You can either throw it into the goal or dunk it directly; the latter is worth more points, but it's more challenging as you need to be next to the goal in order to dunk."
@@ -1747,6 +1748,7 @@
 	else
 		return	//if they're not on a team, stop!
 
+	if(istype(B,/obj/item/laserdome_hyperball))
 		var/obj/item/laserdome_hyperball/ball = B
 		if(dunking_team != goal_team)
 			GLOB.global_announcer.autosay("[user] dunked the HYPERball for [capitalize(dunking_team)] team! [num2text(dunk_points)] points scored!","Laserdome Announcer","Entertainment")
@@ -1776,6 +1778,7 @@
 
 /obj/structure/hyperball_goal/hitby(atom/movable/source, datum/thrownthing/throwingdatum)
 	. = ..()
+	if(!istype(source, /obj/item/laserdome_hyperball))
 		return
 
 	var/obj/item/laserdome_hyperball/ball = source

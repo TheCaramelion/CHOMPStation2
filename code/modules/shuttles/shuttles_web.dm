@@ -279,7 +279,7 @@
 		"travel_progress" = between(0, percent_finished, 100),
 		"time_left" = round( (total_time - elapsed_time) / 10),
 		"can_cloak" = shuttle.can_cloak ? 1 : 0,
-		"dq_get_cloaked(src)" = dq_get_cloaked(shuttle) ? 1 : 0,
+		"cloaked" = shuttle.cloaked ? 1 : 0,
 		"can_autopilot" = shuttle.can_autopilot ? 1 : 0,
 		"autopilot" = shuttle.autopilot ? 1 : 0,
 		"can_rename" = shuttle.can_rename ? 1 : 0,

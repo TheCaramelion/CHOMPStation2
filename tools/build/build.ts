@@ -177,6 +177,7 @@ export const DmTarget = new Juke.Target({
     'sound/**',
     'tgui/public/tgui.html',
     'modular_chomp/**', // CHOMPAdd
+    'modular_dq/**', // DQAdd — without this, edits to fork code don't invalidate the DM build cache
     `${DME_NAME}.dme`,
     NamedVersionFile,
   ],

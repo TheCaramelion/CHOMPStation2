@@ -51,7 +51,7 @@
 	base_turf = /turf/space
 
 /area/syndicate_station/sky
-	name = "dq_get_hovering(src) over skies of sif"
+	name = "hovering over skies of sif"
 	icon_state = "shuttlegrn"
 	base_turf = /turf/simulated/sky/west
 

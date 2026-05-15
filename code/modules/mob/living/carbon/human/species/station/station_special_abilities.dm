@@ -595,7 +595,7 @@
 		to_chat(C, span_notice("You lack the nutrition to fly."))
 		return
 	if(C.anchored)
-		to_chat(C, span_notice("You are already dq_get_hovering(src) and/or anchored in place!"))
+		to_chat(C, span_notice("You are already hovering and/or anchored in place!"))
 		return
 
 	if(!C.anchored && !C.pulledby) //Not currently anchored, and not pulled by anyone.
