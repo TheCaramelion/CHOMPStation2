@@ -204,7 +204,11 @@
 	return L
 
 /// Shared spawning logic. Creates the dummy, applies the scenario, logs.
-/proc/_dq_run_scenario(mob/admin_mob, datum/dq_medical_scenario/scenario_path)
+/// `silent` hides the scenario name/description from chat so the admin
+/// running the random variant has to diagnose the patient blind. The
+/// admin log always records the scenario name regardless — silent only
+/// affects what the runner sees in their own chat.
+/proc/_dq_run_scenario(mob/admin_mob, datum/dq_medical_scenario/scenario_path, silent = FALSE)
 	if(!admin_mob)
 		return
 	var/turf/T = get_turf(admin_mob)
@@ -216,7 +220,10 @@
 	dummy.Sleeping(60 SECONDS)
 	var/datum/dq_medical_scenario/S = new scenario_path()
 	S.apply(dummy)
-	to_chat(admin_mob, span_notice("Spawned [dummy] with scenario: <b>[S.name]</b> — [S.description]"))
+	if(silent)
+		to_chat(admin_mob, span_notice("Spawned [dummy] with a random scenario — diagnose the patient yourself."))
+	else
+		to_chat(admin_mob, span_notice("Spawned [dummy] with scenario: <b>[S.name]</b> — [S.description]"))
 	log_admin("[key_name(admin_mob)] ran medical scenario '[S.name]' on [dummy] at [T].")
 	qdel(S)
 
@@ -239,4 +246,4 @@ ADMIN_VERB(dq_run_random_medical_scenario, R_DEBUG, "DQ Run Random Medical Scena
 		to_chat(user.mob, span_warning("No /datum/dq_medical_scenario subtypes defined."))
 		return
 	var/picked = pick(all_types)
-	_dq_run_scenario(user.mob, picked)
+	_dq_run_scenario(user.mob, picked, silent = TRUE)

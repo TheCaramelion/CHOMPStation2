@@ -13,9 +13,10 @@
 	category = "Organ failure"
 	clinical_description = "The liver can no longer clear metabolites or regulate clotting. Toxins accumulate in the bloodstream."
 	progression_rate = 0
-	// Peridaxon repairs the underlying liver damage and the condition
-	// clears once damage drops below threshold. Inaprovaline stabilises.
-	cured_by = list(REAGENT_ID_PERIDAXON = 1.0, REAGENT_ID_DEXALINP = 0.4, REAGENT_ID_INAPROVALINE = 0.2)
+	// Hepanephrodaxon is the targeted liver-repair drug; carthatoline
+	// reduces the toxin load the failing liver has to deal with so the
+	// condition stabilises faster. Generic chems no longer touch this.
+	cured_by = list(REAGENT_ID_HEPANEPHRODAXON = 1.2, REAGENT_ID_CARTHATOLINE = 0.5)
 	symptom_pool = list(
 		/datum/medical_symptom/fatigue        = 90,
 		/datum/medical_symptom/nausea         = 70,
@@ -39,7 +40,11 @@
 	category = "Organ failure"
 	clinical_description = "The kidneys have stopped clearing waste. Electrolytes drift and fluid balance fails."
 	progression_rate = 0
-	cured_by = list(REAGENT_ID_PERIDAXON = 1.0, REAGENT_ID_DEXALINP = 0.4, REAGENT_ID_INAPROVALINE = 0.2)
+	// Hepanephrodaxon (the same drug that fixes the liver) is the targeted
+	// nephron-repair drug — both organs share filtration tissue and
+	// respond to the same chem. Iron addresses the secondary anaemia
+	// that accompanies advanced renal failure.
+	cured_by = list(REAGENT_ID_HEPANEPHRODAXON = 1.2, REAGENT_ID_IRON = 0.2)
 	symptom_pool = list(
 		/datum/medical_symptom/fatigue        = 90,
 		/datum/medical_symptom/nausea         = 60,
@@ -63,7 +68,10 @@
 	category = "Eyes"
 	clinical_description = "Loss of vision from the eyes being starved of blood for too long. Without rapid restoration of circulation, the loss becomes permanent."
 	progression_rate = 0
-	cured_by = list(REAGENT_ID_IMIDAZOLINE = 1.0, REAGENT_ID_DEXALINP = 0.3, REAGENT_ID_INAPROVALINE = 0.2)
+	// Imidazoline is the targeted retinal-repair drug. Peridaxon's
+	// generic organ-repair pathway helps mildly — the eyes are an
+	// internal organ — but won't restore vision on its own.
+	cured_by = list(REAGENT_ID_IMIDAZOLINE = 1.0, REAGENT_ID_PERIDAXON = 0.3)
 	symptom_pool = list(
 		/datum/medical_symptom/blurred_vision = 95,
 		/datum/medical_symptom/confusion      = 30,
@@ -85,7 +93,9 @@
 	category = "Circulation"
 	clinical_description = "Injury to the heart itself. As the pump's output falls, perfusion suffers; when pump function collapses outright, cardiac arrest follows."
 	progression_rate = 0
-	cured_by = list(REAGENT_ID_PERIDAXON = 1.0, REAGENT_ID_INAPROVALINE = 0.8)
+	// Cordradaxon is the targeted cardiac repair drug. Inaprovaline
+	// stabilises rhythm during shock but doesn't repair the muscle.
+	cured_by = list(REAGENT_ID_CORDRADAXON = 1.0, REAGENT_ID_INAPROVALINE = 0.4)
 	worsened_by = list(REAGENT_ID_HYPERZINE = 1.0)
 	// Worsens the heart while present; in the Critical stage rapidly.
 	organ_damage_threshold = 0
@@ -131,9 +141,11 @@
 /datum/medical_issue/condition/brain_damage
 	name = "brain damage"
 	category = "Brain"
-	clinical_description = "Injury to brain tissue. Mild loss of cognition starts well before severe neurological collapse; advanced damage threatens herniation."
+	clinical_description = "Injury to brain tissue. Mild loss of cognition starts well before severe neurological collapse; advanced damage threatens herniation. Once tissue damage crosses the salvageable threshold, the brain decays faster than chemistry can repair it. No surgery reverses established brain damage."
 	progression_rate = 0
-	cured_by = list(REAGENT_ID_ALKYSINE = 0.4)
+	// Synaptizine is the targeted neuro-repair drug; alkysine is the
+	// older generic and still helps but more slowly.
+	cured_by = list(REAGENT_ID_SYNAPTIZINE = 0.7, REAGENT_ID_ALKYSINE = 0.3)
 
 /datum/medical_issue/condition/brain_damage/get_stages()
 	var/static/list/S = list(

@@ -72,6 +72,7 @@
 			dq_check_ischemic_damage()      // DQEdit — sustained oxyloss damages liver/kidneys/heart
 			dq_check_emergent_conditions()  // DQEdit — spawn/clear damage-emergent conditions based on organ state
 			dq_check_metric_conditions()    // DQEdit — spawn/clear metric-driven conditions (radiation, toxloss, temp, cloneloss)
+			dq_check_chem_conditions()      // DQEdit — spawn/clear chem side effects and drug interactions
 
 			handle_heartbeat()
 			handle_nif()

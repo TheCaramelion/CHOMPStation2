@@ -126,6 +126,12 @@
 #include "unit_test.dm"
 #include "vbo_tests.dm"
 #include "vore_tests.dm"
+// DQAdd Start — DQ fork tests live in modular_dq/ but need TEST_ASSERT*
+// macros in scope, which are #undef'd at the bottom of this file.
+#include "../../../modular_dq/code/unit_tests/dq_surgery_tests.dm"
+#include "../../../modular_dq/code/unit_tests/dq_bodyscanner_tests.dm"
+#include "../../../modular_dq/code/unit_tests/dq_audit_tests.dm"
+// DQAdd End
 // END_INCLUDE
 #ifdef REFERENCE_TRACKING_DEBUG //Don't try and parse this file if ref tracking isn't turned on. IE: don't parse ref tracking please mr linter
 #include "find_reference_sanity.dm"

@@ -214,7 +214,9 @@
 	category = "Brain"
 	clinical_description = "A brief disruption of brain function from a blow to the head. The first one usually resolves on its own; a second on top of it is far more serious."
 	progression_rate = -0.5  // negative — concussions heal on their own (~20 min from 100)
-	cured_by = list(REAGENT_ID_ALKYSINE = 0.8, REAGENT_ID_ANTITOXIN = 0.2)
+	// Synaptizine is the targeted neuro-repair drug; alkysine helps mildly;
+	// paracetamol manages the headache without accelerating recovery.
+	cured_by = list(REAGENT_ID_SYNAPTIZINE = 0.6, REAGENT_ID_ALKYSINE = 0.4, REAGENT_ID_PARACETAMOL = 0.2)
 	symptom_pool = list(
 		/datum/medical_symptom/headache         = 70,
 		/datum/medical_symptom/dizziness        = 60,
@@ -279,7 +281,6 @@
 /datum/medical_issue/condition/burn_shock/get_stages()
 	var/static/list/S = list(
 		"Stage 1" = list(
-			"name" = "burn shock (stage 1)",
 			"symptom_pool" = list(
 				/datum/medical_symptom/pallor = 70,
 				/datum/medical_symptom/chills = 50,
@@ -289,7 +290,6 @@
 			"vital_effects" = list("pulse_mod" = 10, "bp_sys_mod" = -5),
 		),
 		"Stage 2" = list(
-			"name" = "burn shock (stage 2)",
 			"symptom_pool" = list(
 				/datum/medical_symptom/pallor       = 80,
 				/datum/medical_symptom/chills       = 60,
@@ -306,7 +306,6 @@
 			),
 		),
 		"Stage 3" = list(
-			"name" = "burn shock (stage 3)",
 			"symptom_pool" = list(
 				/datum/medical_symptom/pallor       = 90,
 				/datum/medical_symptom/chills       = 80,

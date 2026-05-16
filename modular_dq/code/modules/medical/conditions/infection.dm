@@ -17,7 +17,11 @@
 	category = "Infection"
 	clinical_description = "Bacterial infection spreading through soft tissue. The site grows hot, red, and tender."
 	progression_rate = 0.5
-	cured_by = list(REAGENT_ID_SPACEACILLIN = 1.2)
+	// Spaceacillin is the standard narrow-spectrum antibiotic;
+	// corophizine is the wide-spectrum alternative (faster but causes
+	// GI side effects). Either works; their combo has a documented
+	// interference, see chem_effects.dm.
+	cured_by = list(REAGENT_ID_SPACEACILLIN = 1.2, REAGENT_ID_COROPHIZINE = 1.5)
 	symptom_pool = list(
 		/datum/medical_symptom/throbbing_pain  = 80,
 		/datum/medical_symptom/fever_sensation = 70,
@@ -54,7 +58,9 @@
 	category = "Infection"
 	clinical_description = "A systemic inflammatory response to bacterial invasion of the bloodstream. The whole body is fighting, and losing."
 	progression_rate = 0.7
-	cured_by = list(REAGENT_ID_SPACEACILLIN = 1.0, REAGENT_ID_INAPROVALINE = 0.4)
+	// Sepsis needs aggressive antibiotic coverage: corophizine's wide
+	// spectrum + spaceacillin together. Inaprovaline supports BP.
+	cured_by = list(REAGENT_ID_COROPHIZINE = 1.4, REAGENT_ID_SPACEACILLIN = 1.0, REAGENT_ID_INAPROVALINE = 0.3)
 	symptom_pool = list(
 		/datum/medical_symptom/fever_sensation = 80,
 		/datum/medical_symptom/chills          = 70,
@@ -92,7 +98,9 @@
 	category = "Infection"
 	clinical_description = "Sepsis past the point of compensation: blood pressure collapses and organs begin to fail."
 	progression_rate = 1.0
-	cured_by = list(REAGENT_ID_SPACEACILLIN = 0.8, REAGENT_ID_INAPROVALINE = 0.6, REAGENT_ID_IRON = 0.3)
+	// Late-stage sepsis needs the strongest antibiotic + BP support +
+	// red-cell support to drag the patient back.
+	cured_by = list(REAGENT_ID_COROPHIZINE = 1.0, REAGENT_ID_SPACEACILLIN = 0.6, REAGENT_ID_INAPROVALINE = 0.5, REAGENT_ID_IRON = 0.3)
 	symptom_pool = list(
 		/datum/medical_symptom/pallor          = 90,
 		/datum/medical_symptom/confusion       = 70,

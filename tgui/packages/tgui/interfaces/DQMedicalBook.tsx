@@ -19,7 +19,7 @@
 // The book is pure read-only — there are no `act()` calls. All data
 // arrives from /obj/item/book/dq_medical_reference.tgui_data.
 
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { useBackend, useSharedState } from 'tgui/backend';
 import { Window } from 'tgui/layouts';
 import {
@@ -102,7 +102,7 @@ type CauseLink = {
 };
 
 type ComplicationGroup = {
-  cause_id: string;
+  cause_id: string | null;
   cause_name: string;
   conditions: { id: string; name: string }[];
 };
@@ -126,12 +126,19 @@ type Condition = {
   description: string;
   progression: string;
   cures: ReagentRef[];
+  od_cures: ReagentRef[];
   worsens: ReagentRef[];
   symptoms: SymptomRef[];
   stages: ConditionStage[];
-  caused_by: CauseLink[];
+  causes: CauseLink[];
+  caused_by_reagents: { chems: { id: string; name: string }[] }[];
   complications: ComplicationGroup[];
   surgeries: { id: string; name: string }[];
+  // Cause-driven conditions ("stabilising") re-spawn while their cause
+  // is active; their cured_by reagents suppress symptoms but don't fix
+  // the underlying problem. One-shot conditions ("curative") are
+  // permanently cleared once severity hits zero.
+  cure_type: 'curative' | 'stabilising';
 };
 
 type ConditionRef = {
@@ -159,6 +166,57 @@ type ReagentConditionRef = {
   band: string;
 };
 
+type RecipeIngredient = {
+  id: string;
+  name: string;
+  amount: number;
+};
+
+type RecipeEntry = {
+  distilling: 0 | 1;
+  result_amount: number;
+  required: RecipeIngredient[];
+  catalysts: { id: string; name: string }[];
+  inhibitors: { id: string; name: string }[];
+  temp_min?: number;
+  temp_max?: number;
+};
+
+type SideEffectRef = {
+  id: string;
+  name: string;
+  threshold: number;
+  cause_name: string;
+  description: string;
+};
+
+type InteractionRef = {
+  id: string;
+  name: string;
+  threshold: number;
+  other_chems: { id: string; name: string; amount: number }[];
+  cause_name: string;
+  description: string;
+};
+
+type OverdoseInfo = {
+  threshold: number;
+  // When the reagent has an authored overdose condition, the encyclopedia
+  // links straight to it. Older reagents that don't yet have a condition
+  // emit just the threshold.
+  condition_id?: string;
+  condition_name?: string;
+  description?: string;
+  // True when the OD condition is gradient-based (lingers after the
+  // chem clears). Used to render a "lingers" advisory.
+  lingers?: 0 | 1;
+  // Niche conditions this OD drains while active. Clickable.
+  drains?: { id: string; name: string }[];
+  // Combat/utility upsides at peak severity. The 'key' identifies
+  // what game system the boost affects (see DQ docs).
+  boosts?: { key: string; strength: number }[];
+};
+
 type ReagentEntry = {
   id: string;
   name: string;
@@ -167,6 +225,11 @@ type ReagentEntry = {
   description: string;
   cures: ReagentConditionRef[];
   worsens: ReagentConditionRef[];
+  recipe: RecipeEntry[] | null;
+  used_in: { id: string; name: string }[];
+  overdose: OverdoseInfo | null;
+  side_effects: SideEffectRef[];
+  interactions: InteractionRef[];
 };
 
 type CauseOutcome = {
@@ -504,6 +567,7 @@ export const DQMedicalBook = () => {
                 selectedId={regSel}
                 onSelect={setRegSel}
                 goToCondition={goToCondition}
+                goToReagent={goToReagent}
               />
             )}
             {tab === 'causes' && (
@@ -604,70 +668,126 @@ const ConditionDetail = (props: {
         <LabeledList.Item label="Progression">{c.progression}</LabeledList.Item>
       </LabeledList>
 
-      {c.caused_by.length ? (
-        <Section title="Caused by" mt={1}>
-          {[...c.caused_by]
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .map((x) => (
-              <Button
-                key={x.id}
-                transparent
-                compact
-                onClick={() => props.goToCause(x.id)}
-              >
-                {x.name}
-              </Button>
-            ))}
+      {(c.causes?.length || c.caused_by_reagents?.length) ? (
+        <Section title="Causes" mt={1}>
+          {c.caused_by_reagents?.length
+            ? c.caused_by_reagents.map((row, ri) => (
+                <Box key={`row-${ri}`} mb="2px">
+                  {row.chems.map((r, ci) => (
+                    <Box inline key={r.id}>
+                      {ci > 0 ? (
+                        <Box inline color="label" mx={0.5}>
+                          +
+                        </Box>
+                      ) : null}
+                      <Button
+                        compact
+                        transparent
+                        onClick={() => props.goToReagent(r.id)}
+                      >
+                        {r.name}
+                      </Button>
+                    </Box>
+                  ))}
+                </Box>
+              ))
+            : null}
+          {c.causes?.length
+            ? [...c.causes]
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((x) => (
+                  <Button
+                    key={x.id}
+                    compact
+                    transparent
+                    onClick={() =>
+                      x.kind === 'condition'
+                        ? props.goToCondition(x.id)
+                        : props.goToCause(x.id)
+                    }
+                  >
+                    {x.name}
+                  </Button>
+                ))
+            : null}
         </Section>
       ) : null}
 
-      {c.stages.length > 1 ? (
-        c.stages.map((stage) => (
-          <Section
-            key={stage.id ?? 'stage'}
-            title={`Stage: ${stage.id}`}
-            mt={1}
-          >
-            {stage.description ? <Box mb={1}>{stage.description}</Box> : null}
-            <BandedList
-              entries={stage.symptoms.map((s) => ({
-                id: s.id,
-                name: s.name,
-                bandValue: s.frequency,
-              }))}
-              bands={FREQUENCY_BANDS}
-              onClick={props.goToSymptom}
-              emptyMessage="No documented overt symptoms."
-            />
-          </Section>
-        ))
-      ) : (
-        <Section title="Symptoms" mt={1}>
-          <BandedList
-            entries={(c.stages[0]?.symptoms ?? c.symptoms).map((s) => ({
-              id: s.id,
-              name: s.name,
-              bandValue: s.frequency,
-            }))}
-            bands={FREQUENCY_BANDS}
-            onClick={props.goToSymptom}
-            emptyMessage="No documented overt symptoms."
-          />
-        </Section>
-      )}
+      {c.stages.length > 1
+        ? c.stages.map((stage) =>
+            stage.symptoms.length ? (
+              <Section
+                key={stage.id ?? 'stage'}
+                title={`Stage: ${stage.id}`}
+                mt={1}
+              >
+                {stage.description ? <Box mb={1}>{stage.description}</Box> : null}
+                <BandedList
+                  entries={stage.symptoms.map((s) => ({
+                    id: s.id,
+                    name: s.name,
+                    bandValue: s.frequency,
+                  }))}
+                  bands={FREQUENCY_BANDS}
+                  onClick={props.goToSymptom}
+                  emptyMessage=""
+                />
+              </Section>
+            ) : null,
+          )
+        : (c.stages[0]?.symptoms ?? c.symptoms).length
+          ? (
+              <Section title="Symptoms" mt={1}>
+                <BandedList
+                  entries={(c.stages[0]?.symptoms ?? c.symptoms).map((s) => ({
+                    id: s.id,
+                    name: s.name,
+                    bandValue: s.frequency,
+                  }))}
+                  bands={FREQUENCY_BANDS}
+                  onClick={props.goToSymptom}
+                  emptyMessage=""
+                />
+              </Section>
+            )
+          : null}
 
-      <Section title="Cures" mt={1}>
-        <BandedList
-          entries={c.cures.map((r) => ({
-            id: r.id,
-            name: r.name,
-            bandValue: r.band,
-          }))}
-          bands={CURE_BANDS}
-          onClick={props.goToReagent}
-          emptyMessage="No known pharmacological cure."
-        />
-      </Section>
+      {c.cures.length || c.od_cures?.length ? (
+        <Section
+          title={c.cure_type === 'stabilising' ? 'Stabilisers' : 'Cures'}
+          mt={1}
+        >
+          {c.cures.length ? (
+            <BandedList
+              entries={c.cures.map((r) => ({
+                id: r.id,
+                name: r.name,
+                bandValue: r.band,
+              }))}
+              bands={CURE_BANDS}
+              onClick={props.goToReagent}
+              emptyMessage=""
+            />
+          ) : null}
+          {c.od_cures?.length ? (
+            <Box mt={c.cures.length ? 1 : 0}>
+              <Box bold mb={0.5} color="bad">
+                Overdose
+              </Box>
+              <BandedList
+                entries={c.od_cures.map((r) => ({
+                  id: r.id,
+                  name: r.name,
+                  bandValue: r.band,
+                }))}
+                bands={CURE_BANDS}
+                onClick={props.goToReagent}
+                emptyMessage=""
+              />
+            </Box>
+          ) : null}
+        </Section>
+      ) : null}
 
       {c.surgeries.length ? (
         <Section title="Surgical treatment" mt={1}>
@@ -707,48 +827,57 @@ const ConditionDetail = (props: {
           <Box style={{ display: 'grid', gridTemplateColumns: 'max-content max-content 1fr' }}>
             {[...c.complications]
               .sort((a, b) => a.cause_name.localeCompare(b.cause_name))
-              .flatMap((g) => [
-                <Box
-                  key={`${g.cause_id}-label`}
-                  style={{
-                    whiteSpace: 'nowrap',
-                    alignSelf: 'baseline',
-                    marginBottom: '2px',
-                  }}
-                >
-                  <Button
-                    transparent
-                    compact
-                    onClick={() => props.goToCause(g.cause_id)}
+              .flatMap((g, idx) => {
+                const groupKey = g.cause_id ?? `inline-${idx}`;
+                return [
+                  <Box
+                    key={`${groupKey}-label`}
+                    style={{
+                      whiteSpace: 'nowrap',
+                      alignSelf: 'baseline',
+                      marginBottom: '2px',
+                    }}
                   >
-                    {g.cause_name}
-                  </Button>
-                </Box>,
-                <Box
-                  key={`${g.cause_id}-sep`}
-                  px={1}
-                  style={{
-                    alignSelf: 'baseline',
-                    marginBottom: '2px',
-                  }}
-                >
-                  —
-                </Box>,
-                <Box key={`${g.cause_id}-items`} style={{ marginBottom: '2px' }}>
-                  {[...g.conditions]
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((cond) => (
+                    {g.cause_id ? (
                       <Button
-                        key={cond.id}
                         transparent
                         compact
-                        onClick={() => props.goToCondition(cond.id)}
+                        onClick={() => props.goToCause(g.cause_id as string)}
                       >
-                        {cond.name}
+                        {g.cause_name}
                       </Button>
-                    ))}
-                </Box>,
-              ])}
+                    ) : (
+                      <Box inline color="label">
+                        {g.cause_name}
+                      </Box>
+                    )}
+                  </Box>,
+                  <Box
+                    key={`${groupKey}-sep`}
+                    px={1}
+                    style={{
+                      alignSelf: 'baseline',
+                      marginBottom: '2px',
+                    }}
+                  >
+                    —
+                  </Box>,
+                  <Box key={`${groupKey}-items`} style={{ marginBottom: '2px' }}>
+                    {[...g.conditions]
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((cond) => (
+                        <Button
+                          key={cond.id}
+                          transparent
+                          compact
+                          onClick={() => props.goToCondition(cond.id)}
+                        >
+                          {cond.name}
+                        </Button>
+                      ))}
+                  </Box>,
+                ];
+              })}
           </Box>
         </Section>
       ) : null}
@@ -836,6 +965,7 @@ const ReagentTab = (props: {
   selectedId: string | null;
   onSelect: (id: string) => void;
   goToCondition: (id: string) => void;
+  goToReagent: (id: string) => void;
 }) => {
   const q = props.query.toLowerCase().trim();
   const has = (s: string | undefined, needle: string) =>
@@ -849,8 +979,15 @@ const ReagentTab = (props: {
       )
     : props.reagents;
   const sorted = [...matches].sort((a, b) => a.name.localeCompare(b.name));
-  const selected =
-    sorted.find((r) => r.id === props.selectedId) || sorted[0] || null;
+  // If selectedId points at something we can't find, fall back to the
+  // first match (sane default), but ONLY when there's an active query
+  // or no selection has been set yet. Otherwise show nothing — landing
+  // on the alphabetically-first reagent ("a colony of plant cells")
+  // because a link goes nowhere is worse than just showing an empty
+  // state.
+  const selected = props.selectedId
+    ? (sorted.find((r) => r.id === props.selectedId) ?? null)
+    : (sorted[0] ?? null);
 
   return (
     <Stack fill>
@@ -863,7 +1000,18 @@ const ReagentTab = (props: {
       </Stack.Item>
       <Stack.Item grow>
         {selected ? (
-          <ReagentDetail r={selected} goToCondition={props.goToCondition} />
+          <ReagentDetail
+            r={selected}
+            goToCondition={props.goToCondition}
+            goToReagent={props.goToReagent}
+          />
+        ) : props.selectedId ? (
+          <Section fill>
+            <Box color="bad">
+              No data for "{props.selectedId}". Pick a reagent from the
+              index.
+            </Box>
+          </Section>
         ) : (
           <Section fill>
             <Box color="average">Select a reagent from the index.</Box>
@@ -877,24 +1025,27 @@ const ReagentTab = (props: {
 const ReagentDetail = (props: {
   r: ReagentEntry;
   goToCondition: (id: string) => void;
+  goToReagent: (id: string) => void;
 }) => {
   const { r } = props;
   return (
     <Section title={r.name} fill scrollable>
       {r.description ? <Box mb={1}>{r.description}</Box> : null}
 
-      <Section title="Treats">
-        <BandedList
-          entries={r.cures.map((c) => ({
-            id: c.id,
-            name: c.name,
-            bandValue: c.band,
-          }))}
-          bands={CURE_BANDS}
-          onClick={props.goToCondition}
-          emptyMessage="No therapeutic indication recorded."
-        />
-      </Section>
+      {r.cures.length ? (
+        <Section title="Treats">
+          <BandedList
+            entries={r.cures.map((c) => ({
+              id: c.id,
+              name: c.name,
+              bandValue: c.band,
+            }))}
+            bands={CURE_BANDS}
+            onClick={props.goToCondition}
+            emptyMessage=""
+          />
+        </Section>
+      ) : null}
 
       {r.worsens.length ? (
         <Section title="Contraindicts" mt={1}>
@@ -908,6 +1059,203 @@ const ReagentDetail = (props: {
             onClick={props.goToCondition}
             emptyMessage=""
           />
+        </Section>
+      ) : null}
+
+      {r.side_effects?.length ? (
+        <Section title="Side effects" mt={1}>
+          {r.side_effects.map((s, i) => (
+            <Box key={i} mb="2px">
+              <Box color="average" bold inline mr={1}>
+                ≥ {s.threshold}u →
+              </Box>
+              <Button
+                compact
+                transparent
+                onClick={() => props.goToCondition(s.id)}
+              >
+                {s.name}
+              </Button>
+            </Box>
+          ))}
+        </Section>
+      ) : null}
+
+      {r.interactions?.length ? (
+        <Section title="Interactions" mt={1}>
+          {r.interactions.map((x, i) => (
+            <Box key={i} mb="2px">
+              {x.other_chems.map((o) => (
+                <Button
+                  key={o.id}
+                  compact
+                  transparent
+                  onClick={() => props.goToReagent(o.id)}
+                >
+                  {o.name}
+                </Button>
+              ))}
+              <Box color="label" inline mx={1}>
+                →
+              </Box>
+              <Button
+                compact
+                transparent
+                onClick={() => props.goToCondition(x.id)}
+              >
+                {x.name}
+              </Button>
+            </Box>
+          ))}
+        </Section>
+      ) : null}
+
+      {r.overdose ? (
+        <Section title="Overdose" mt={1}>
+          <Box mb="2px">
+            <Box color="bad" bold inline mr={1}>
+              ≥ {r.overdose.threshold}u →
+            </Box>
+            {r.overdose.condition_id && r.overdose.condition_name ? (
+              <Button
+                compact
+                transparent
+                onClick={() =>
+                  props.goToCondition(r.overdose!.condition_id!)
+                }
+              >
+                {r.overdose.condition_name}
+              </Button>
+            ) : (
+              <Box color="label" inline>
+                harmful overdose effects.
+              </Box>
+            )}
+          </Box>
+          {r.overdose.drains?.length ? (
+            <Box mb="2px">
+              <Box color="good" bold inline mr={1}>
+                Cures at OD:
+              </Box>
+              {r.overdose.drains.map((d) => (
+                <Button
+                  key={d.id}
+                  compact
+                  transparent
+                  color="good"
+                  onClick={() => props.goToCondition(d.id)}
+                >
+                  {d.name}
+                </Button>
+              ))}
+            </Box>
+          ) : null}
+          {r.overdose.boosts?.length ? (
+            <Box>
+              <Box color="good" bold inline mr={1}>
+                OD upside:
+              </Box>
+              {r.overdose.boosts.map((b, i) => (
+                <Box key={i} inline mr={1} color="good">
+                  {b.key} (+{b.strength})
+                </Box>
+              ))}
+            </Box>
+          ) : null}
+        </Section>
+      ) : null}
+
+      {r.recipe?.length ? (
+        <Section title="Recipe" mt={1}>
+          {r.recipe.map((rcp, i) => (
+            <Box key={i} mb="4px">
+              {/* Render the recipe as: 2u Inaprovaline + 1u Bicaridine → 3u Result */}
+              {rcp.required.map((ing, j) => (
+                <Fragment key={ing.id}>
+                  {j > 0 ? (
+                    <Box color="label" inline mx={1}>
+                      +
+                    </Box>
+                  ) : null}
+                  <Box bold inline>
+                    {ing.amount}u
+                  </Box>
+                  <Box inline ml="2px">
+                    <Button
+                      compact
+                      transparent
+                      onClick={() => props.goToReagent(ing.id)}
+                    >
+                      {ing.name}
+                    </Button>
+                  </Box>
+                </Fragment>
+              ))}
+              <Box color="label" inline mx={1}>
+                →
+              </Box>
+              <Box bold inline color="good">
+                {rcp.result_amount}u {r.name}
+              </Box>
+              {rcp.distilling ? (
+                <Box color="grey" fontSize="0.85em" ml={1}>
+                  Distilled
+                  {rcp.temp_min
+                    ? ` at ${rcp.temp_min}-${rcp.temp_max} K`
+                    : ''}
+                </Box>
+              ) : null}
+              {rcp.catalysts.length ? (
+                <Box color="grey" fontSize="0.85em" ml={1}>
+                  Catalyst:{' '}
+                  {rcp.catalysts.map((c, k) => (
+                    <Button
+                      key={c.id}
+                      compact
+                      transparent
+                      onClick={() => props.goToReagent(c.id)}
+                    >
+                      {c.name}
+                      {k < rcp.catalysts.length - 1 ? ',' : ''}
+                    </Button>
+                  ))}
+                </Box>
+              ) : null}
+              {rcp.inhibitors.length ? (
+                <Box color="grey" fontSize="0.85em" ml={1}>
+                  Inhibited by:{' '}
+                  {rcp.inhibitors.map((c, k) => (
+                    <Button
+                      key={c.id}
+                      compact
+                      transparent
+                      onClick={() => props.goToReagent(c.id)}
+                    >
+                      {c.name}
+                      {k < rcp.inhibitors.length - 1 ? ',' : ''}
+                    </Button>
+                  ))}
+                </Box>
+              ) : null}
+            </Box>
+          ))}
+        </Section>
+      ) : null}
+
+      {r.used_in?.length ? (
+        <Section title="Used in" mt={1}>
+          {[...r.used_in]
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((u) => (
+              <Button
+                key={u.id}
+                compact
+                transparent
+                onClick={() => props.goToReagent(u.id)}
+              >
+                {u.name}
+              </Button>
+            ))}
         </Section>
       ) : null}
     </Section>

@@ -11,7 +11,10 @@
 	category = "Brain"
 	clinical_description = "A bleed beneath the dura. Pressure builds inside the skull as the bleed grows, crowding healthy tissue."
 	progression_rate = 1.0
-	cured_by = list(REAGENT_ID_ALKYSINE = 0.8, REAGENT_ID_BICARIDAZE = 0.4)
+	// Synaptizine repairs neural tissue from the bleed; bicaridaze
+	// slows the bleed itself. The surgical option (craniotomy) is the
+	// real fix for severe cases.
+	cured_by = list(REAGENT_ID_SYNAPTIZINE = 0.8, REAGENT_ID_BICARIDAZE = 0.4)
 	symptom_pool = list(
 		/datum/medical_symptom/headache             = 90,
 		/datum/medical_symptom/confusion            = 80,

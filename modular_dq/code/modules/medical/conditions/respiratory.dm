@@ -14,7 +14,9 @@
 	category = "Chest"
 	clinical_description = "Bruised lung tissue from a heavy chest impact. Breathing grows harder as fluid accumulates in the lung."
 	progression_rate = 1.0
-	cured_by = list(REAGENT_ID_BICARIDAZE = 0.8, REAGENT_ID_DEXALIN = 0.5)
+	// Mild lung trauma — respirodaxon repairs the bruised tissue
+	// directly; dexalin supports oxygenation while it heals.
+	cured_by = list(REAGENT_ID_RESPIRODAXON = 0.8, REAGENT_ID_DEXALIN = 0.4)
 	organ_damage_threshold = 70
 	organ_damage_type = "internal"
 	organ_damage_per_tick = 1.5
@@ -97,7 +99,9 @@
 	category = "Chest"
 	clinical_description = "An inhalation injury — heat and smoke have scorched the upper airway, and the tissue is swelling in response."
 	progression_rate = 1.0
-	cured_by = list(REAGENT_ID_KELOTANE = 0.6, REAGENT_ID_DEXALIN = 0.5, REAGENT_ID_DERMALINE = 1.0)
+	// Burn-specialised dermaline / kelotane treat the airway burn itself;
+	// respirodaxon repairs the underlying lung tissue once they've cooled.
+	cured_by = list(REAGENT_ID_DERMALINE = 1.0, REAGENT_ID_KELOTANE = 0.6, REAGENT_ID_RESPIRODAXON = 0.4)
 	organ_damage_threshold = 60
 	organ_damage_type = "internal"
 	organ_damage_per_tick = 2
@@ -139,9 +143,9 @@
 	category = "Chest"
 	clinical_description = "The lungs can no longer oxygenate the blood. Without oxygen the rest of the body begins to suffocate from the inside."
 	progression_rate = 0  // no self-progression; tracks lung damage
-	// Peridaxon repairs the underlying lung damage. Dexalin-plus and
-	// inaprovaline buy time while the lungs recover.
-	cured_by = list(REAGENT_ID_PERIDAXON = 1.0, REAGENT_ID_DEXALINP = 0.5, REAGENT_ID_INAPROVALINE = 0.3)
+	// Respirodaxon is the targeted lung-repair drug. Dexalin-plus
+	// supplies oxygen while the lungs recover.
+	cured_by = list(REAGENT_ID_RESPIRODAXON = 1.2, REAGENT_ID_DEXALINP = 0.4)
 	symptom_pool = list(
 		/datum/medical_symptom/labored_breathing = 95,
 		/datum/medical_symptom/cyanosis          = 90,

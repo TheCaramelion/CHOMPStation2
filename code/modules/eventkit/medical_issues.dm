@@ -50,7 +50,13 @@
 		handle_symptoms()
 
 /datum/medical_issue/proc/cure_issue()
-	LAZYREMOVE(affectedorgan.medical_issues,src)
+	// DQEdit — guard the deref. affectedorgan can be null if the organ
+	// was amputated/extracted (the organ's Destroy/removed clears its
+	// medical_issues list and nulls each issue's pointer; this proc may
+	// still get called via the condition's own progression path before
+	// the qdel chain runs).
+	if(affectedorgan)
+		LAZYREMOVE(affectedorgan.medical_issues, src)
 	qdel(src)
 
 /datum/medical_issue/proc/handle_damage()

@@ -57,6 +57,15 @@
 	if(trace_chemicals) trace_chemicals.Cut()
 	QDEL_NULL(data)
 
+	// DQEdit — clear medical_issues so conditions don't outlive their
+	// host organ with a dangling affectedorgan pointer. Without this an
+	// amputated arm with an active tendon_severed leaks the condition
+	// onto the floor with the limb.
+	if(medical_issues)
+		for(var/datum/medical_issue/I in medical_issues)
+			I.affectedorgan = null
+		QDEL_LIST(medical_issues)
+
 	return ..()
 
 /obj/item/organ/proc/update_health()
@@ -437,6 +446,14 @@
 				take_damage(rand(1,3))
 
 /obj/item/organ/proc/removed(mob/living/user)
+	// DQEdit — conditions stay attached to the organ so re-implantation
+	// brings them back. Unhook owner so the now-detached patient stops
+	// processing them. Re-anchoring happens in the implantation surgery
+	// step via dq_reseat_owner().
+	if(medical_issues)
+		for(var/datum/medical_issue/condition/C in medical_issues)
+			C.owner = null
+
 	if(owner)
 		owner.internal_organs_by_name[organ_tag] = null
 		owner.internal_organs_by_name -= organ_tag
@@ -496,6 +513,11 @@
 	target.internal_organs_by_name[organ_tag] = src
 
 	handle_organ_mod_special()
+
+	// DQEdit — re-anchor medical conditions that travelled with the
+	// extracted organ. See /obj/item/organ/external/replaced for the
+	// limb-level equivalent.
+	dq_reseat_owner(target)
 
 /obj/item/organ/proc/bitten(mob/user)
 

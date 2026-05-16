@@ -225,6 +225,11 @@ SUBSYSTEM_DEF(quarry)
 // Idempotent and safe to call from multiple ladder-click handlers. If a
 // concurrent caller is already generating this depth, this caller waits
 // up to ~10 seconds for the result.
+//
+// Restore-vs-generate: if a snapshot exists on disk (the layer was
+// previously visited and unloaded), restore_layer reconstructs it.
+// Otherwise generate_layer runs the full procgen path. Either way the
+// result is cached in layers[key].
 /datum/controller/subsystem/quarry/proc/ensure_layer(depth)
 	var/key = "[depth]"
 	var/datum/quarry_layer/existing = layers[key]
@@ -247,7 +252,13 @@ SUBSYSTEM_DEF(quarry)
 		return existing
 
 	generating[key] = TRUE
-	var/datum/quarry_layer/L = generate_layer(depth)
+	var/datum/quarry_layer/L = null
+	if(has_snapshot(depth))
+		L = restore_layer(depth)
+		if(!L)
+			log_game("SSquarry: restore_layer failed for depth [depth]; falling back to generate_layer")
+	if(!L)
+		L = generate_layer(depth)
 	generating -= key
 
 	if(L)
@@ -498,13 +509,21 @@ SUBSYSTEM_DEF(quarry)
 					AM.forceMove(dst_t)
 		elevator.current_depth = 0
 
+	var/quarry_z = L.z
+
+	// Snapshot the layer to disk before wiping so the next visit can
+	// restore exactly what the players left behind. Skip for layers that
+	// were never actually entered (a pregen that's getting cascade-
+	// unloaded has nothing player-meaningful to preserve).
+	if(L.ever_occupied)
+		snapshot_layer(depth, quarry_z)
+
 	// Drop the layer's bay reference. The doors get qdel'd along with the Z
 	// below, so just clear the list.
 	if(elevator)
 		elevator.layer_bays -= key
 		elevator.doors -= key
 
-	var/quarry_z = L.z
 	for(var/turf/T in block(locate(1, 1, quarry_z), locate(QUARRY_LAYER_SIZE, QUARRY_LAYER_SIZE, quarry_z)))
 		for(var/atom/movable/AM in T)
 			if(istype(AM, /mob/observer))

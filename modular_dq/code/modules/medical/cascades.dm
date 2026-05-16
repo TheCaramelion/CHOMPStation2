@@ -58,9 +58,26 @@
 			// outcomes that activate at different damage levels.
 			if(!isnull(o.threshold) && single_damage < o.threshold)
 				continue
-			if(!prob(o.chance))
+			if(!prob(dq_scaled_cascade_chance(o, single_damage)))
 				continue
 			target.dq_spawn_condition(o.condition_type)
+
+
+/// Scale a damage-event outcome's spawn probability by how much the hit
+/// exceeds its threshold. A wound exactly at the threshold rolls at the
+/// authored base chance; a 2× threshold hit guarantees the spawn (100%);
+/// in between, the chance scales linearly and is capped at 95% so there's
+/// still a small element of luck up to the deterministic ceiling. This
+/// makes massive trauma reliably seed cascades while keeping borderline
+/// hits stochastic. If no threshold is declared, fall back to the base
+/// chance — there's nothing to scale against.
+/proc/dq_scaled_cascade_chance(datum/dq_cause_outcome/o, single_damage)
+	if(isnull(o.threshold) || o.threshold <= 0)
+		return o.chance
+	var/ratio = single_damage / o.threshold
+	if(ratio >= 2)
+		return 100
+	return min(round(o.chance * ratio), 95)
 
 
 /proc/_dq_is_limb_tag(organ_tag)

@@ -16,13 +16,48 @@
 //   block_typing              if any condition sets this, mob can't chat
 //   block_hold_arm            arm zone name; mob can't hold items there
 
+/// Aggregate the OD upside (positive effects from overdosed chems)
+/// across the mob's active conditions, scaled by per-condition severity.
+/// Each contributing condition declares `od_boost = list(key = strength)`
+/// where `strength` is the value at severity 100; the proc scales by
+/// `severity / 100` so a mild OD (severity 30) contributes 30% of the
+/// authored strength.
+///
+/// Sum is *not* capped here — callers may apply their own ceilings.
+/// Currently only OD-style scaling conditions populate od_boost.
+/mob/living/carbon/human/proc/dq_od_boost_value(key)
+	. = 0
+	for(var/datum/medical_issue/condition/C in get_all_conditions())
+		if(!C.od_boost)
+			continue
+		if(isnull(C.od_boost[key]))
+			continue
+		. += C.od_boost[key] * (C.severity / 100)
+
+
+/// Per-key cap for aggregate mechanical-effect values. A patient with
+/// four cascading conditions shouldn't have their movement multiplied
+/// by 4× — the system would feel punishing rather than dangerous.
+/// Caps apply across all active conditions on the mob. Keys not present
+/// here aren't capped (defensive — new effects authored later opt in
+/// explicitly by adding a line here).
+GLOBAL_LIST_INIT(dq_mechanical_caps, list(
+	"slowdown"          = 2.5,
+	"accuracy_penalty"  = 50,
+	"drop_held_prob"    = 25,
+))
+
 /// Sum a single mechanical-effects key across the mob's active
-/// conditions. Numeric effects sum; lists merge.
+/// conditions, capped at the per-key ceiling in `dq_mechanical_caps`.
+/// Numeric effects sum; lists merge.
 /mob/living/carbon/human/proc/dq_mechanical_value(key)
 	. = 0
 	for(var/datum/medical_issue/condition/C in get_all_conditions())
 		if(C.mechanical_effects && !isnull(C.mechanical_effects[key]))
 			. += C.mechanical_effects[key]
+	var/cap = GLOB.dq_mechanical_caps[key]
+	if(!isnull(cap) && . > cap)
+		. = cap
 
 /mob/living/carbon/human/proc/dq_mechanical_flag(key)
 	for(var/datum/medical_issue/condition/C in get_all_conditions())
@@ -103,6 +138,12 @@
 // --- Hook procs used by upstream callers ---
 
 /// Returns the slowdown contribution from all active conditions on a
-/// human. Added to movement_delay() at the call site.
+/// human. Added to movement_delay() at the call site. Subtracts any
+/// "speed" boost from active OD conditions (hyperzine, etc.) so a
+/// stim-overdosed patient actually moves faster — capped at 1.0 so a
+/// patient can't end up with negative slowdown (movement still has a
+/// floor).
 /mob/living/carbon/human/proc/dq_condition_slowdown()
-	return dq_mechanical_value("slowdown")
+	var/slow = dq_mechanical_value("slowdown")
+	var/boost = dq_od_boost_value("speed")
+	return max(-1.0, slow - boost)

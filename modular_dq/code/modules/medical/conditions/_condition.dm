@@ -36,6 +36,72 @@
 	/// progression. Used for chems that are right for one condition
 	/// but actively harmful for another.
 	var/list/worsened_by
+	/// reagent ID -> multiplier (0..N) applied to OTHER conditions'
+	/// cure rate while THIS condition is active on the same patient.
+	/// Used for drug-interaction markers — bicaridine + spaceacillin
+	/// produces a "bicaridine_antibiotic_interference" condition whose
+	/// `interferes_with = list(REAGENT_ID_SPACEACILLIN = 0.4)` makes
+	/// spaceacillin only 40% as effective at curing whatever it would
+	/// normally cure. Multipliers from multiple interference conditions
+	/// compound — two interference conditions both listing the same
+	/// reagent at 0.5 result in 0.25× total cure rate. > 1.0 is a
+	/// boost; < 1.0 is interference; 0 is total block.
+	var/list/interferes_with
+	/// reagent ID -> minimum-volume threshold. While EVERY listed reagent
+	/// is in the patient's body at or above its threshold, the dispatcher
+	/// spawns this condition; when any drops below threshold, it clears.
+	/// Used for drug side effects (single-reagent entry) and drug
+	/// interactions (two-or-more-reagent entry) — replaces the older
+	/// /datum/dq_cause/chem_presence indirection so the encyclopedia can
+	/// link conditions directly to the reagents that cause them.
+	/// Host organ for the spawned condition is `caused_by_chems_organ`.
+	var/list/caused_by_chems
+	/// Organ tag where chem-caused conditions mount. Read by the
+	/// dispatcher; pick clinically relevant: brain for CNS effects,
+	/// liver for metabolic side effects, heart for cardiac, etc.
+	var/caused_by_chems_organ = O_LIVER
+	/// If TRUE, severity scales with how-far-over the chem threshold
+	/// rather than being binary. Used for overdoses: 1u over starts a
+	/// slow climb; 20u over climbs fast. When volume drops back under
+	/// threshold, severity decays gradually so the OD lingers after
+	/// the dose clears. Side-effect / interaction conditions keep the
+	/// binary spawn/clear model (TRUE here would be overkill).
+	var/chem_scaling = FALSE
+	/// Per-tick severity climb at exactly 1u over threshold. Higher =
+	/// faster overdose. The dispatcher computes
+	/// `delta = chem_climb_per_unit * over_amount`. Effective rate at
+	/// 10u over = chem_climb_per_unit * 10.
+	var/chem_climb_per_unit = 0.3
+	/// Per-tick severity decay when the volume is back under threshold.
+	/// Higher = OD clears faster. ~3 means a peak severity of 100 takes
+	/// ~33 ticks (~66 seconds) to drift back to zero.
+	var/chem_decay_per_tick = 3
+	/// Conditions this one cures while it's active — keyed by
+	/// /datum/medical_issue/condition typepath → severity drop per tick
+	/// at severity 100. Scaled by THIS condition's severity (so a mild
+	/// OD only mildly drains the target). Used for niche OD effects
+	/// where overdosing one chem unlocks a path to clear an otherwise
+	/// hard-to-reach condition (bicaridine OD → subdural hematoma, etc).
+	/// The cured condition is found across all the patient's organs.
+	var/list/od_cures_externally
+	/// Positive effects contributed by this condition while active.
+	/// Keyed by effect name → strength at severity 100. The aggregator
+	/// (dq_od_boost_value) scales by severity automatically so mild ODs
+	/// give a slice of the buff and severe ODs give it in full.
+	///
+	/// Effect keys:
+	///   "speed"          — added to dq_condition_slowdown() (subtracted as boost)
+	///   "accuracy"       — added to gunfire accuracy
+	///   "pain_resist"    — proportion of pain ignored (1.0 = full immunity)
+	///   "stun_resist"    — proportion of stun resisted
+	///   "brute_heal"     — per-tick brute_dam removed
+	///   "burn_heal"      — per-tick burn_dam removed
+	///   "oxy_heal"       — per-tick oxyloss removed
+	///   "tox_heal"       — per-tick toxloss removed
+	///   "brain_repair"   — bonus brain organ repair per tick
+	///   "heart_repair"   — bonus heart organ repair per tick
+	///   "bleed_seal"     — per-tick bonus on internal_hemorrhage cure
+	var/list/od_boost
 
 	/// Severity threshold above which the condition starts damaging
 	/// organs. Below this, the condition is symptomatic but not yet
@@ -100,11 +166,12 @@
 	/// / "o2_sat_mod" / "resp_mod".
 	var/list/vital_effects
 
-	/// Has a doctor diagnosed this with a body scanner? Patients can't
-	/// see their own condition name until diagnosed; body scanners
-	/// reveal it. Some conditions stay hidden until a related symptom
-	/// (e.g., cascaded child) gives them away.
-	var/diagnosed = FALSE
+	/// Severity at the last time a bodyscanner read this condition. Used
+	/// to compute the trend arrow shown alongside scanner findings —
+	/// medics see if their treatment is taking hold without needing the
+	/// raw severity number. Null = not yet scanned (first scan emits
+	/// "new" rather than a directional arrow).
+	var/last_scanned_severity = null
 
 	/// Active stage id, or null for non-staged conditions. Set by the
 	/// emergent dispatcher (for organ-damage / metric conditions) or
@@ -123,11 +190,32 @@
 	symptom_affect = null
 
 /datum/medical_issue/condition/handle_effects()
-	if(!owner || !affectedorgan)
+	// Offline tick: organ has been removed from a body (severed limb on
+	// the floor, organ in a tray). Conditions continue to progress —
+	// necrosis worsens, infections fester — but they can't apply
+	// body-level effects (no patient to slow down, no organ damage to
+	// pile on). Severity-only path.
+	if(!affectedorgan)
+		return
+	if(!owner)
+		tick_offline()
 		return
 	if(!(affectedorgan in owner.organs) && !(affectedorgan in owner.internal_organs))
 		return
 	tick_condition()
+
+
+/// Detached-organ tick. Severity drifts according to progression_rate
+/// (no reagent metabolism, no damage scaling) so the condition keeps
+/// developing on a severed limb. Skipped on negative-progression
+/// conditions like concussion: a severed concussed head doesn't get
+/// less concussed, but it doesn't make sense for it to keep healing
+/// once detached either.
+/datum/medical_issue/condition/proc/tick_offline()
+	if(progression_rate <= 0)
+		return
+	var/delta = CONDITION_BASE_PROGRESSION * progression_rate
+	severity = clamp(severity + delta, 0, CONDITION_SEVERITY_TERMINAL)
 
 /// Returns the vital-effects table for this condition. Subtypes with
 /// fixed effects should override to return a `var/static/list/` so the
@@ -153,6 +241,17 @@
 /datum/medical_issue/condition/proc/get_stages()
 	return null
 
+/// Recompute the active stage from the condition's own state. Default
+/// implementation is no-op; subclasses with severity-driven stages
+/// override this to call _apply_stage with the appropriate id. Called
+/// from tick_condition every tick BEFORE the severity math runs, so a
+/// surgery's severity drop (or a chem's gradual cure) can pull a
+/// patient back to a milder stage. Dispatcher-driven conditions (heart_damage,
+/// brain_damage) leave this alone — their stage is set by the emergent
+/// dispatcher based on organ-damage %, not severity.
+/datum/medical_issue/condition/proc/recompute_stage_from_severity()
+	return
+
 /// Swap the per-instance vars to the named stage's entry. Called when
 /// the dispatcher or the condition's own tick decides the stage has
 /// changed. Forces a symptom reroll on the next tick so the new pool
@@ -174,20 +273,66 @@
 		max_symptoms = entry["max_symptoms"]
 	mechanical_effects = entry["mechanical_effects"]
 	vital_effects = entry["vital_effects"]
+	// OD-condition extensions: per-stage upside boosts and organ damage
+	// rates can be authored alongside the symptom pool. Null entries
+	// clear the previous stage's values so a milder stage doesn't carry
+	// forward an aggressive stage's drain.
+	od_boost = entry["od_boost"]
+	if(!isnull(entry["organ_damage_per_tick"]))
+		organ_damage_per_tick = entry["organ_damage_per_tick"]
+	if(!isnull(entry["organ_damage_type"]))
+		organ_damage_type = entry["organ_damage_type"]
+	if(!isnull(entry["organ_damage_targets"]))
+		organ_damage_targets = entry["organ_damage_targets"]
 	last_reroll_band = -1  // force symptom reroll on next tick
+	// always_spawns: list of /datum/medical_issue/condition typepaths
+	// that this stage hardwires as complications. Each is spawned once
+	// on entry to the stage (idempotent — already-present conditions
+	// are skipped). Replaces the dq_cause/severity_gate cascade for
+	// OD complications: the OD's own Critical stage is the cause, the
+	// spawned condition is the effect, no separate cause datum needed.
+	if(islist(entry["always_spawns"]))
+		for(var/T in entry["always_spawns"])
+			if(_dq_outcome_already_present(T))
+				continue
+			spawn_child_condition(T)
 
 /datum/medical_issue/condition/proc/tick_condition()
-	// Reagent effects: cures lower, worsens raise. Each reagent's
-	// contribution is its declared per-tick number; we just sum them.
+	// Let staged conditions retreat to a lower stage if their severity has
+	// dropped enough since last tick. Default no-op; severity-driven
+	// staged subtypes override.
+	recompute_stage_from_severity()
+
+	// Reagent effects: cures lower, worsens raise. The authored rate is
+	// the per-tick number at the standard dose (DQ_CHEM_STANDARD_DOSE
+	// u in the patient's body). Sub-standard doses heal proportionally
+	// slower; over-standard doses heal faster up to DQ_CHEM_DOSE_CAP×.
+	// Stacks with per-reagent interaction modifiers
+	// (dq_reagent_cure_modifier reads `interferes_with` markers on
+	// other conditions on the same patient).
+	//
+	// Volume is summed across bloodstr and ingested — ingested chems
+	// trickle into bloodstr and metabolize within the same Life tick,
+	// so by the time conditions tick the bloodstr is briefly empty even
+	// though the chem is actively medicating. Counting either holder
+	// keeps swallowed pills working like injections.
 	var/delta = CONDITION_BASE_PROGRESSION * progression_rate
 	if(cured_by)
 		for(var/id in cured_by)
-			if(owner.reagents?.has_reagent(id) || owner.bloodstr?.has_reagent(id))
-				delta -= cured_by[id]
+			var/scale = dq_chem_dose_scale(dq_reagent_volume(id))
+			if(scale <= 0)
+				continue
+			var/mod = owner?.dq_reagent_cure_modifier(id) || 1
+			delta -= cured_by[id] * scale * mod
 	if(worsened_by)
 		for(var/id in worsened_by)
-			if(owner.reagents?.has_reagent(id) || owner.bloodstr?.has_reagent(id))
-				delta += worsened_by[id]
+			// Worsen effects scale the same way — a massive overdose of
+			// a contraindicated chem should hurt more than a trace.
+			var/scale = dq_chem_dose_scale(dq_reagent_volume(id))
+			if(scale <= 0)
+				continue
+			delta += worsened_by[id] * scale
+
 	// Severity-driven acceleration: conditions snowball as they progress.
 	// 1× at severity 0, 2× at 50, 3× at 100. Cures still scale too —
 	// late-stage conditions are harder (not impossible) to drag back.
@@ -246,6 +391,54 @@
 	// it does for any other source of damage.
 	if(organ_damage_type && severity >= organ_damage_threshold)
 		_apply_organ_damage()
+
+
+/// Is a reagent actively medicating the owner this tick? Returns TRUE
+/// for any of: bloodstream, gut (still being absorbed), or the atom-level
+/// holder (simple-mob carbons that lack the metabolism subsystem).
+///
+/// Why this exists: bloodstream-only checking misses pill / drink cures
+/// because the metabolism subsystem moves chems from `ingested` to
+/// `bloodstr` and then *consumes* them inside the same Life tick, so
+/// the bloodstream is briefly empty by the time conditions tick. The
+/// gut acts as a buffer that keeps the chem visible to the condition
+/// check even when bloodstr has drained.
+/datum/medical_issue/condition/proc/dq_reagent_present(id)
+	if(!owner)
+		return FALSE
+	if(owner.bloodstr?.has_reagent(id))
+		return TRUE
+	if(owner.ingested?.has_reagent(id))
+		return TRUE
+	if(owner.reagents?.has_reagent(id))
+		return TRUE
+	return FALSE
+
+
+/// Sum of a reagent's volume across the body's holders. Used by the
+/// cure/worsen scaling logic — a chem's effect is proportional to how
+/// much is in the body, capped at the dose-cap multiple. Returns 0 if
+/// none is present.
+/datum/medical_issue/condition/proc/dq_reagent_volume(id)
+	. = 0
+	if(!owner)
+		return
+	. += _dq_holder_reagent_volume(owner.bloodstr, id)
+	. += _dq_holder_reagent_volume(owner.ingested, id)
+	. += _dq_holder_reagent_volume(owner.reagents, id)
+
+
+/// Map a body volume to a dose-scale multiplier. 0u = 0× (no effect),
+/// standard dose = 1× (authored rate), dose cap = DQ_CHEM_DOSE_CAP×.
+/// Linear ramp; above cap, no further bonus (and OD risk takes over).
+/proc/dq_chem_dose_scale(volume)
+	if(volume <= 0)
+		return 0
+	var/scale = volume / DQ_CHEM_STANDARD_DOSE
+	if(scale > DQ_CHEM_DOSE_CAP)
+		return DQ_CHEM_DOSE_CAP
+	return scale
+
 
 /// Picks a fresh `active_symptoms` set from `symptom_pool`. Each entry
 /// is rolled against its weight; the count is clamped to [min,max].
@@ -372,9 +565,6 @@
 		return H.internal_organs_by_name[tag]
 	return null
 
-/datum/medical_issue/condition/proc/cleared_on_resleeve()
-	return TRUE
-
 /// Multiplier applied to per-tick severity delta based on how badly hurt
 /// the patient is RIGHT NOW. Base returns 1.0 (no scaling). Override on
 /// conditions that should accelerate with underlying damage:
@@ -419,3 +609,19 @@
 				continue
 			for(var/datum/medical_issue/condition/C in O.medical_issues)
 				. += C
+
+
+/// Product of every `interferes_with[reagent_id]` factor on every
+/// active condition on this mob. Returns 1.0 if no condition interferes
+/// — the no-op default. Used by tick_condition to scale a cure
+/// reagent's contribution when an interaction is active (bicaridine
+/// dampening spaceacillin, etc).
+/mob/living/carbon/human/proc/dq_reagent_cure_modifier(reagent_id)
+	. = 1.0
+	for(var/datum/medical_issue/condition/C as anything in get_all_conditions())
+		if(!C.interferes_with)
+			continue
+		var/factor = C.interferes_with[reagent_id]
+		if(isnull(factor))
+			continue
+		. *= factor

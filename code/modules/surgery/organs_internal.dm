@@ -76,9 +76,24 @@
 		return
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
 
+	// DQEdit Start — restrict which internal organs this step may repair.
+	// Without this, fix_organ zeros every internal organ in the zone:
+	// craniotomy would also fix every other organ in the head, lung_repair
+	// would heal heart+liver+kidneys in the torso. The DQ surgery records
+	// declare `heals_organs` per procedure; only those tags are eligible.
+	// If no DQ surgery maps to this step, behaviour falls back to the
+	// upstream "fix everything" semantics for the rare non-DQ caller.
+	var/list/dq_permitted = dq_organs_step_may_repair(src.type, target_zone)
+	// DQEdit End
+
 	for(var/obj/item/organ/internal/I in affected.internal_organs)
 		if(I && (I.damage > 0 || I.status == ORGAN_DEAD || I.germ_level))
 			if(!(I.robotic >= ORGAN_ROBOT))
+				// DQEdit Start — skip organs the matching DQ surgery doesn't
+				// claim to repair.
+				if(dq_permitted && !dq_permitted[I.organ_tag])
+					continue
+				// DQEdit End
 				user.visible_message(span_notice("[user] treats damage to [target]'s [I.name] with [tool_name]."), \
 				span_notice("You treat damage to [target]'s [I.name] with [tool_name].") )
 				user.balloon_alert_visible("starts treating damage to [target]'s [I.name]", "treating damage to \the [I.name]")

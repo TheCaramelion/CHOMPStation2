@@ -335,7 +335,12 @@
 /datum/reagent/iron
 	name = REAGENT_IRON
 	id = REAGENT_ID_IRON
-	description = "Pure iron is a metal."
+	// DQEdit — explain the clinical role rather than the materials-science
+	// one. Iron supplements support hemoglobin synthesis, which lets the
+	// body produce red blood cells faster. Used as a supportive treatment
+	// for anemia from sustained blood loss and as a secondary cure for
+	// renal failure (where the kidneys' erythropoietin production fails).
+	description = "Pure iron, a metal also essential for the body's blood production. Oral or IV iron supports hemoglobin synthesis, helping a patient who has lost significant blood — or whose kidneys have failed — rebuild their red cell count."
 	taste_description = "metal"
 	reagent_state = SOLID
 	scannable = SCANNABLE_BENEFICIAL

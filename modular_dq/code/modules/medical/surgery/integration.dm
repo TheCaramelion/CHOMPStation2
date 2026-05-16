@@ -61,6 +61,31 @@ GLOBAL_PROTECT(dq_surgery_by_step)
 	return FALSE
 
 
+/// Returns the union of `heals_organs` lists from every DQ surgery that
+/// maps to the given `step_path` and whose `body_region` matches `zone`.
+/// Used by the fix_organ DQEdit to restrict which internal organs a
+/// shared surgery_step is allowed to repair — the upstream step zeros
+/// every internal organ in the zone, which is more than any single DQ
+/// surgery intends.
+/proc/dq_organs_step_may_repair(step_path, zone)
+	var/list/registry = dq_surgeries_registry()
+	if(!length(registry))
+		return null
+	var/list/surgeries = registry[step_path]
+	if(!length(surgeries))
+		return null
+	var/list/out
+	for(var/datum/dq_surgery/surgery as anything in surgeries)
+		if(!_dq_surgery_matches_zone(surgery, zone))
+			continue
+		if(!surgery.heals_organs)
+			continue
+		LAZYINITLIST(out)
+		for(var/tag in surgery.heals_organs)
+			out[tag] = TRUE
+	return out
+
+
 /proc/dq_apply_surgery_cures(datum/surgery_step/step, mob/living/carbon/human/patient, zone)
 	if(!step || !patient)
 		return
@@ -73,6 +98,21 @@ GLOBAL_PROTECT(dq_surgery_by_step)
 	for(var/datum/dq_surgery/surgery as anything in surgeries)
 		if(!_dq_surgery_matches_zone(surgery, zone))
 			continue
+		var/drop = surgery.cure_severity
 		for(var/datum/medical_issue/condition/C as anything in patient.get_all_conditions())
-			if(C.type in surgery.treats)
+			if(!(C.type in surgery.treats))
+				continue
+			// Graduated cure: drop severity by `cure_severity`. When that
+			// brings severity to ~0, the condition's own cure_issue path
+			// removes it via check_progress; otherwise the surgery has
+			// reduced the active problem but the patient still has
+			// recovery to do.
+			if(drop >= 100 || drop >= C.severity)
 				C.cure_issue()
+			else
+				C.severity = max(0, C.severity - drop)
+				// Force the symptom set to refresh on the next tick — a
+				// post-surgery patient should stop presenting Critical-stage
+				// symptoms once their severity has dropped, not wait until
+				// the next band boundary is crossed naturally.
+				C.last_reroll_band = -1

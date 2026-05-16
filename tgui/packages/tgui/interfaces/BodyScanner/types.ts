@@ -5,21 +5,34 @@ export type Data = {
   occupant: occupant;
 };
 
+export type DamageBand =
+  | 'uninjured'
+  | 'minor'
+  | 'moderate'
+  | 'severe'
+  | 'critical';
+
+export type DamagePanelEntry = {
+  kind: string;
+  label: string;
+  band: DamageBand;
+};
+
+export type ScannerFinding = {
+  phrase: string;
+  organ: string;
+  severity: DamageBand;
+  trend: 'new' | 'worsening' | 'improving' | 'stable';
+  stage?: string | null;
+};
+
 export type occupant = {
   name: string;
   species: string;
   stat: number;
-  health: number;
-  maxHealth: number;
+  fakedeath: BooleanLike;
+  healthBand: DamageBand;
   hasVirus: number;
-  bruteLoss: number;
-  oxyLoss: number;
-  toxLoss: number;
-  fireLoss: number;
-  radLoss: number;
-  cloneLoss: number;
-  brainLoss: number;
-  paralysis: number;
   paralysisSeconds: number;
   bodyTempC: number;
   bodyTempF: number;
@@ -41,6 +54,9 @@ export type occupant = {
   hasWithdrawl: BooleanLike;
   hasAllergens: BooleanLike;
   allergens: string[] | null;
+  damagePanel: DamagePanelEntry[];
+  scannerFindings: ScannerFinding[];
+  worstFinding: DamageBand;
 };
 
 type reagent = { name: string; amount: number; overdose: BooleanLike };
@@ -49,27 +65,20 @@ export type internalOrgan = {
   name: string;
   desc?: string | null;
   germ_level?: number;
-  damage?: number;
-  maxHealth?: number;
-  bruised?: number;
-  broken?: number;
+  injuryBand?: DamageBand;
   robotic: BooleanLike;
   dead: BooleanLike;
   inflamed: BooleanLike;
   missing: BooleanLike;
-  medical_issues_I?: string[];
 };
 
 export type externalOrgan = {
   name: string;
   open: BooleanLike;
   germ_level: number;
-  bruteLoss: number;
-  fireLoss: number;
-  totalLoss: number;
-  maxHealth: number;
-  bruised: number;
-  broken: number;
+  injuryBand: DamageBand;
+  hasBrute: BooleanLike;
+  hasBurn: BooleanLike;
   implants: { name: string; known: BooleanLike }[];
   implants_len: number;
   status: {
@@ -82,5 +91,4 @@ export type externalOrgan = {
   };
   lungRuptured: BooleanLike;
   internalBleeding: BooleanLike;
-  medical_issues_E: string[];
 };

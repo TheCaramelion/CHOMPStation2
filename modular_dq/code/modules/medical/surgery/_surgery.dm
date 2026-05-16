@@ -51,3 +51,18 @@
 	/// `treats` conditions. Null = procedure isn't yet hooked to a
 	/// real upstream step; treats listing is informational only.
 	var/completion_step
+	/// How much severity the completing step drops from each matching
+	/// condition. Default 100 = full cure. Lower values produce
+	/// graduated effects — e.g. a craniotomy that drops 60 severity
+	/// will bring Critical brain damage down to Significant rather
+	/// than instantly clearing it. The condition's normal
+	/// progression then takes over.
+	var/cure_severity = 100
+	/// Which internal organs the surgery actually repairs, as a list of
+	/// O_* tags. Read by the DQEdit on /datum/surgery_step/internal/fix_organ
+	/// to gate which organs get their damage zeroed when the step finishes
+	/// — upstream behaviour zeros every internal organ in the zone, which
+	/// is far too generous (a craniotomy would also fix every other organ
+	/// in the head). A surgery that doesn't share fix_organ can leave this
+	/// null.
+	var/list/heals_organs

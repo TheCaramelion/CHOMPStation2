@@ -184,11 +184,12 @@
 
 // --- Subtype: blood_loss ------------------------------------------------
 //
-// Reserved for future use. The two existing blood-loss-driven failures
-// (hypovolemic_shock as a sev-gate from hemorrhage, anoxic_brain_injury
-// via upstream oxyloss conversion) don't need a dedicated cause kind
-// yet; this slot is here so a future "the patient's blood volume fell
-// below X" rule has a place to live without another framework change.
+// Reserved for future use. Existing blood-loss-driven cascades —
+// hypovolemic_shock from internal_hemorrhage via a severity_gate, and
+// the staged brain_damage / heart_damage conditions driven via
+// organ_damage from oxyloss — don't need a dedicated cause kind yet;
+// this slot is here so a future "patient's blood volume fell below X"
+// rule has a place to live without another framework change.
 
 /datum/dq_cause/blood_loss
 	category = "Environmental"
@@ -227,6 +228,7 @@
 	///   "radiation"        — acute rad value
 	///   "accumulated_rads" — chronic accumulated dose
 	///   "toxloss"          — current toxin damage
+	///   "oxyloss"          — current oxygen-debt damage
 	///   "temp_above"       — bodytemperature above normal (kelvin)
 	///   "temp_below"       — drop below normal (positive number)
 	///   "cloneloss"        — clone damage

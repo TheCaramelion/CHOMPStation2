@@ -101,6 +101,7 @@
 	)
 	tools = list("Scalpel", "Hemostat")
 	treats = list(/datum/medical_issue/condition/compartment_syndrome)
+	completion_step = /datum/surgery_step/fasciotomy
 
 
 // --- Chest --------------------------------------------------------------
@@ -117,8 +118,9 @@
 		"Open the pleural space and release the trapped air.",
 		"Place the chest tube and secure it.",
 	)
-	tools = list("Scalpel", "Hemostat", "Chest tube (improvised: any rigid hollow tube)")
+	tools = list("Scalpel", "Hemostat")
 	treats = list(/datum/medical_issue/condition/tension_pneumothorax)
+	completion_step = /datum/surgery_step/chest_tube
 
 
 /datum/dq_surgery/lung_repair
@@ -136,30 +138,46 @@
 	tools = list("Scalpel", "Retractor", "Hemostat", "Fixovein", "Bone gel", "Cautery")
 	treats = list(/datum/medical_issue/condition/respiratory_failure)
 	completion_step = /datum/surgery_step/internal/fix_organ
+	heals_organs = list(O_LUNGS)
+	// Mechanical lung repair drops severity substantially but doesn't
+	// fully resolve respiratory failure on its own — the patient still
+	// needs oxygenation support to clear the rest.
+	cure_severity = 70
 
 
 // --- Brain & neuro ------------------------------------------------------
+//
+// Note: established brain tissue damage is intentionally NOT surgically
+// treatable in this fork. Once the brain's organ-damage % is high enough
+// to spawn the `brain_damage` cascading condition, no surgery brings it
+// back — alkysine + time is the only path, and past ~60% organ damage
+// alkysine can't keep up with the underlying decay. A subdural hematoma
+// (the bleed that drives the damage in the first place) IS surgically
+// drainable; that's what craniotomy is for now.
 
 /datum/dq_surgery/craniotomy
 	name = "Craniotomy"
 	category = "Brain"
 	subcategory = "Neurological"
-	description = "Opening the skull to relieve cranial pressure and access the brain. The treatment of last resort for severe brain damage or herniation."
+	description = "Opening the skull to drain a subdural bleed and relieve cranial pressure. Doesn't reverse brain-tissue damage that's already occurred — that's permanent and untreatable surgically."
 	body_region = "Head"
 	steps = list(
 		"Open the scalp.",
 		"Cut into the skull bone with a circular saw.",
 		"Open the dural sheath.",
-		"Mend or remove the damaged tissue.",
+		"Drain the bleed and relieve the pressure.",
 		"Reseal the dura and replace the skull section.",
 		"Close the scalp.",
 	)
 	tools = list("Scalpel", "Circular saw", "Retractor", "Hemostat", "Bone gel")
-	treats = list(
-		/datum/medical_issue/condition/subdural_hematoma,
-		/datum/medical_issue/condition/brain_damage,
-	)
+	treats = list(/datum/medical_issue/condition/subdural_hematoma)
 	completion_step = /datum/surgery_step/internal/fix_organ
+	// Heals the brain organ damage that the bleed inflicted — but not
+	// brain_damage condition itself (it isn't in `treats`). If the
+	// hematoma already pushed brain damage past the unsalvageable
+	// threshold, the patient's brain_damage condition continues
+	// progressing regardless.
+	heals_organs = list(O_BRAIN)
 
 
 // --- Cardiac ------------------------------------------------------------
@@ -168,7 +186,7 @@
 	name = "Open cardiac repair"
 	category = "Chest"
 	subcategory = "Thoracic"
-	description = "Opening the chest to repair damaged cardiac tissue. Indicated when the heart is too damaged for pharmacological recovery."
+	description = "Opening the chest to repair damaged cardiac tissue. Indicated when the heart is too damaged for pharmacological recovery. A single procedure can lift the patient out of cardiac arrest but not fully restore cardiac function — follow-up care is required."
 	body_region = "Torso"
 	steps = list(
 		"Open the chest and retract the ribcage.",
@@ -178,6 +196,12 @@
 	)
 	tools = list("Scalpel", "Retractor", "Hemostat", "Fixovein", "Bone gel", "Cautery")
 	treats = list(/datum/medical_issue/condition/heart_damage)
+	completion_step = /datum/surgery_step/cardiac_repair
+	// Cardiac repair is severe surgery: drops 60 severity. A patient in
+	// cardiac arrest (severity ~80+) is dropped to cardiogenic shock
+	// territory but not fully cured — the heart still needs chems and
+	// time. Saving a life, not finishing the treatment.
+	cure_severity = 60
 
 
 // --- Abdominal ----------------------------------------------------------
@@ -197,6 +221,7 @@
 	)
 	tools = list("Scalpel", "Retractor", "Hemostat", "Fixovein", "Cautery")
 	treats = list(/datum/medical_issue/condition/internal_hemorrhage)
+	completion_step = /datum/surgery_step/exploratory_laparotomy
 
 
 // --- Infection / wound -------------------------------------------------
@@ -237,3 +262,4 @@
 	)
 	tools = list("Scalpel", "Retractor", "Fixovein", "Cautery")
 	treats = list(/datum/medical_issue/condition/ischemic_vision_loss)
+	completion_step = /datum/surgery_step/retinal_repair

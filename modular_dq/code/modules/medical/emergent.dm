@@ -117,6 +117,189 @@
 		_dq_apply_outcomes(host, c.produces, value, 0)
 
 
+/// Chem-presence conditions: walk every condition subtype that
+/// declares `caused_by_chems`. Two models are supported:
+///
+///   Binary (chem_scaling = FALSE, default):
+///     While every named reagent is in the body at or above its
+///     threshold, the condition exists at severity 50. The moment any
+///     chem drops below threshold, the condition is cleared. Used for
+///     side effects and interactions — they're presence-gated.
+///
+///   Scaling (chem_scaling = TRUE):
+///     Severity climbs while the chem is over its threshold, with the
+///     climb rate scaled by how-far-over. When volume drops back under,
+///     severity decays at chem_decay_per_tick — the condition LINGERS
+///     after the dose clears. Used for overdoses: small over-doses
+///     accrue mildly, big over-doses spawn fast.
+///
+/// Lives on the condition itself rather than in a wrapping cause datum
+/// — the encyclopedia links these conditions directly to their causing
+/// reagents.
+/mob/living/carbon/human/proc/dq_check_chem_conditions()
+	if(stat == DEAD)
+		return
+	var/static/list/chem_caused_types
+	if(isnull(chem_caused_types))
+		chem_caused_types = list()
+		for(var/T in subtypesof(/datum/medical_issue/condition))
+			var/datum/medical_issue/condition/proto = dq_proto(T)
+			if(length(proto.caused_by_chems))
+				chem_caused_types += T
+
+	for(var/T as anything in chem_caused_types)
+		var/datum/medical_issue/condition/proto = dq_proto(T)
+		var/list/chems = proto.caused_by_chems
+		if(!length(chems))
+			continue
+
+		var/obj/item/organ/host = _dq_resolve_organ_on(src, proto.caused_by_chems_organ)
+		if(!host)
+			continue
+		var/datum/medical_issue/condition/existing
+		for(var/datum/medical_issue/condition/C in host.medical_issues)
+			if(C.type == T)
+				existing = C
+				break
+
+		if(proto.chem_scaling)
+			_dq_apply_scaling_chem_condition(host, existing, T, proto, chems)
+		else
+			_dq_apply_binary_chem_condition(host, existing, T, chems)
+
+	// External-cure effects: OD conditions (typically) drain the
+	// severity of OTHER conditions on the patient. Lives in this
+	// dispatcher so the effect fires every Life tick reliably, not
+	// dependent on the OD condition's host organ ticking. Scales by
+	// the OD condition's own severity so mild ODs drain mildly.
+	for(var/datum/medical_issue/condition/C as anything in get_all_conditions())
+		if(!length(C.od_cures_externally))
+			continue
+		var/sev_scale = C.severity / 100
+		if(sev_scale <= 0)
+			continue
+		for(var/target_type in C.od_cures_externally)
+			var/drop_per_tick = C.od_cures_externally[target_type] * sev_scale
+			if(drop_per_tick <= 0)
+				continue
+			for(var/datum/medical_issue/condition/target as anything in get_all_conditions())
+				if(target.type == target_type)
+					target.severity = max(0, target.severity - drop_per_tick)
+
+
+/// Binary (presence-gated) chem condition: spawn at severity 50 when
+/// every named reagent is over its threshold, clear instantly when any
+/// drops below.
+/mob/living/carbon/human/proc/_dq_apply_binary_chem_condition(obj/item/organ/host, datum/medical_issue/condition/existing, condition_type, list/chems)
+	var/all_present = TRUE
+	for(var/reagent_id in chems)
+		var/vol = _dq_chem_volume(src, reagent_id)
+		if(!vol || vol < chems[reagent_id])
+			all_present = FALSE
+			break
+	if(all_present)
+		if(!existing)
+			var/datum/medical_issue/condition/N = new condition_type()
+			N.owner = src
+			N.affectedorgan = host
+			N.severity = 50
+			LAZYADD(host.medical_issues, N)
+	else if(existing)
+		existing.cure_issue()
+
+
+/// Scaling (overdose-style) chem condition: severity climbs while the
+/// chem is over threshold, decays when it's not. Lingers after the
+/// dose clears. Climb rate scales with how-far-over so a small dose
+/// barely registers and a huge dose spirals fast.
+///
+/// Multi-chem scaling causes — rare, but the framework supports them —
+/// drive climb from the SMALLEST over-amount across the gate (any chem
+/// at or below threshold halts the climb), and decay from the same
+/// gate failure. That matches the intuitive "interaction OD" pattern.
+/mob/living/carbon/human/proc/_dq_apply_scaling_chem_condition(obj/item/organ/host, datum/medical_issue/condition/existing, condition_type, datum/medical_issue/condition/proto, list/chems)
+	var/min_over_amount = INFINITY
+	for(var/reagent_id in chems)
+		var/vol = _dq_chem_volume(src, reagent_id)
+		var/over = vol - chems[reagent_id]
+		if(over < min_over_amount)
+			min_over_amount = over
+
+	if(min_over_amount > 0)
+		// Over threshold: severity climbs.
+		if(!existing)
+			var/datum/medical_issue/condition/N = new condition_type()
+			N.owner = src
+			N.affectedorgan = host
+			N.severity = 0
+			LAZYADD(host.medical_issues, N)
+			existing = N
+		existing.severity = min(100, existing.severity + proto.chem_climb_per_unit * min_over_amount)
+		_dq_apply_od_stage(existing)
+		return
+
+	// Under (or exactly at) threshold: existing condition decays.
+	// If it has nothing to decay, cure it; otherwise tick it down.
+	if(!existing)
+		return
+	existing.severity -= proto.chem_decay_per_tick
+	if(existing.severity <= 0)
+		existing.cure_issue()
+		return
+	_dq_apply_od_stage(existing)
+
+
+/// Pick the OD stage from severity and apply it via the condition's
+/// `_apply_stage` so the per-stage symptom pool / mechanical / vital
+/// tables swap in. Three tiers: Mild (25-60), Severe (60-90), Critical
+/// (90+). Sub-clinical below 25 — accumulating but no overt effects yet
+/// (symptoms cleared, stage reset to null).
+///
+/// Each OD condition declares its own `get_stages()` with stage-specific
+/// effect data; the dispatcher only owns the severity→stage_id mapping.
+/proc/_dq_apply_od_stage(datum/medical_issue/condition/existing)
+	var/new_stage
+	if(existing.severity >= 90)
+		new_stage = "Critical"
+	else if(existing.severity >= 60)
+		new_stage = "Severe"
+	else if(existing.severity >= 25)
+		new_stage = "Mild"
+	else
+		new_stage = null
+	if(new_stage == existing.stage)
+		return
+	if(!new_stage)
+		// Sub-clinical: clear the stage-applied state so the patient has
+		// no overt symptoms while severity ticks under threshold.
+		existing.stage = null
+		existing.active_symptoms = null
+		existing.symptom_pool = null
+		existing.mechanical_effects = null
+		existing.vital_effects = null
+		existing.last_reroll_band = -1
+		return
+	existing._apply_stage(new_stage)
+
+
+/// Sum of a reagent's volume across all body holders the cure-check
+/// machinery considers. Mirrors dq_reagent_present's holder list so
+/// presence and threshold agree on what counts.
+/proc/_dq_chem_volume(mob/living/carbon/M, reagent_id)
+	. = 0
+	. += _dq_holder_reagent_volume(M.bloodstr, reagent_id)
+	. += _dq_holder_reagent_volume(M.ingested, reagent_id)
+	. += _dq_holder_reagent_volume(M.reagents, reagent_id)
+
+/proc/_dq_holder_reagent_volume(datum/reagents/holder, reagent_id)
+	if(!holder)
+		return 0
+	for(var/datum/reagent/R in holder.reagent_list)
+		if(R.id == reagent_id)
+			return R.volume
+	return 0
+
+
 /// Read a named scalar metric off the mob for metric_threshold causes.
 /// Centralised so adding a new metric kind only requires one edit.
 /mob/living/carbon/human/proc/dq_get_metric(metric_name)
@@ -127,6 +310,8 @@
 			return accumulated_rads
 		if("toxloss")
 			return getToxLoss()
+		if("oxyloss")
+			return getOxyLoss()
 		if("temp_above")
 			// Kelvin above 310.15 (37°C).
 			return max(0, bodytemperature - 310.15)

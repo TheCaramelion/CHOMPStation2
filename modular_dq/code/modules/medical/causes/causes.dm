@@ -382,13 +382,24 @@
 
 /datum/dq_cause/metric_threshold/toxic_exposure
 	name = "Toxin exposure"
-	description = "Inhaled, ingested, or injected toxins faster than the liver can process them — phoron leaks, poisoned food, spider venom, untreated liver failure."
+	description = "Inhaled, ingested, or injected toxins faster than the liver can process them — phoron leaks, poisoned food, spider venom, untreated liver failure, or chemicals at overdose driving toxin damage directly into the bloodstream."
 	metric = "toxloss"
 	host_organ = O_LIVER
 
 /datum/dq_cause/metric_threshold/toxic_exposure/setup()
 	..()
 	declare(/datum/medical_issue/condition/toxic_poisoning, threshold = 30)
+
+
+/datum/dq_cause/metric_threshold/oxygen_debt
+	name = "Oxygen debt"
+	description = "Sustained oxygen demand outstrips delivery. Suffocation, severe blood loss, lung damage, or chemicals at overdose that compromise oxygenation all push tissues into hypoxia until the underlying cause is treated."
+	metric = "oxyloss"
+	host_organ = O_LUNGS
+
+/datum/dq_cause/metric_threshold/oxygen_debt/setup()
+	..()
+	declare(/datum/medical_issue/condition/tissue_hypoxia, threshold = 30)
 
 
 /datum/dq_cause/metric_threshold/cold_exposure
@@ -424,3 +435,4 @@
 /datum/dq_cause/metric_threshold/genetic_insult/setup()
 	..()
 	declare(/datum/medical_issue/condition/genetic_damage, threshold = 20)
+

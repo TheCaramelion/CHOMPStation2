@@ -130,6 +130,34 @@
 		C.tick_condition()
 	TEST_ASSERT(C.severity < before_cure, "cure reagent did not lower severity ([before_cure] -> [C.severity])")
 
+
+// Ingested cures (pills / drinks) need to lower severity the same as
+// injections. This regression-tests the bug where conditions only
+// checked bloodstr — ingested chems transfer to bloodstr and get
+// consumed within the same Life tick, so by the time tick_condition
+// ran, bloodstr was empty even though the patient had a full stomach
+// of medicine. Fix: dq_reagent_present() checks ingested as well.
+
+/datum/unit_test/dq_medical_condition_cure_ingested_lowers_severity
+
+/datum/unit_test/dq_medical_condition_cure_ingested_lowers_severity/Run()
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	var/datum/medical_issue/condition/internal_hemorrhage/C = _dq_spawn_condition_on(H, BP_TORSO, /datum/medical_issue/condition/internal_hemorrhage)
+	TEST_ASSERT_NOTNULL(C, "spawn failed")
+
+	for(var/i in 1 to 10)
+		C.tick_condition()
+	var/before_cure = C.severity
+	TEST_ASSERT(before_cure > 0, "severity must rise above 0 before testing cure")
+
+	// Put the chem in the gut — that's where it lands when a player
+	// swallows a pill. Bloodstr is empty.
+	H.ingested.add_reagent(REAGENT_ID_BICARIDAZE, 50)
+	TEST_ASSERT(!H.bloodstr.has_reagent(REAGENT_ID_BICARIDAZE), "bloodstr should be empty pre-tick (chem is in gut)")
+	for(var/i in 1 to 5)
+		C.tick_condition()
+	TEST_ASSERT(C.severity < before_cure, "swallowed cure should lower severity ([before_cure] -> [C.severity])")
+
 // --- cascade triggers from createwound -----------------------------------
 
 /datum/unit_test/dq_medical_cascade_via_createwound
@@ -192,7 +220,12 @@
 // --- shared helpers ------------------------------------------------------
 
 /datum/unit_test/proc/_dq_spawn_condition_on(mob/living/carbon/human/H, organ_tag, condition_type)
-	var/obj/item/organ/external/O = H.get_organ(organ_tag)
+	var/obj/item/organ/O = H.get_organ(organ_tag)
+	if(!O)
+		// Internal-organ tags (O_HEART, O_LUNGS, O_BRAIN, O_EYES, etc.)
+		// aren't returned by get_organ() — that one resolves external
+		// limbs only. Fall back to internal_organs_by_name.
+		O = H.internal_organs_by_name[organ_tag]
 	if(!O)
 		return null
 	var/datum/medical_issue/condition/C = new condition_type()
