@@ -1,3 +1,4 @@
+#if !defined(SLIM) // DQAdd — gated under SLIM build
 //Pilot
 
 /obj/item/clothing/under/rank/pilot1
@@ -31,3 +32,4 @@
 
 /obj/item/clothing/under/rank/pilot2/no_webbing
 	starting_accessories = null
+#endif // !SLIM

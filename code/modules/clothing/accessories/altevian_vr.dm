@@ -85,4 +85,3 @@
 	name = "Royal Altevian Navy Emblem"
 	desc = "An emblem found across all altevian vessels. The specific metals and jewels denote ranks. Otherwise, it's just a pretty rat skull emblem with a set of crystals for their eyes and fangs."
 	icon_state = "altevian_aquila"
-

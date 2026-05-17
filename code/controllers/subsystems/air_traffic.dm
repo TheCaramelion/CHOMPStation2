@@ -7,7 +7,6 @@ SUBSYSTEM_DEF(atc)
 	runlevels = RUNLEVEL_GAME
 	wait = 2 SECONDS
 	flags = SS_BACKGROUND | SS_NO_FIRE  // DQEdit — disable ATC chatter; flag also pulls SS out of fire list
-
 	VAR_PRIVATE/next_tick = 0
 	VAR_PRIVATE/datum/atc_chatter_type/chatter_datum = new() // don't change, override the chatter_box() proc
 	VAR_PRIVATE/delay_min = 45 MINUTES				//How long between ATC traffic, minimum

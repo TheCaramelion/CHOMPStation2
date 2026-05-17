@@ -8,7 +8,6 @@ SUBSYSTEM_DEF(appreciation)
 	runlevels = RUNLEVEL_GAME
 	wait = 2 MINUTES 								//This really does not need to fire very often at all
 	flags = SS_NO_INIT | SS_BACKGROUND
-
 	VAR_PRIVATE/next_tick = 0
 	VAR_PRIVATE/delay_min = 90 MINUTES				//How long between announcements, minimum
 	VAR_PRIVATE/delay_max = 180 MINUTES				//Ditto, maximum

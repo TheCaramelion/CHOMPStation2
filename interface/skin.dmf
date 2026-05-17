@@ -1,8 +1,9 @@
 macro "borghotkeymode"
-	// DQEdit Start — Tab escape disabled.
-	// elem
-	//	name = "TAB"
-	//	command = ".winset \"mainwindow.macro=borgmacro hotkey_toggle.is-checked=false input.focus=true\""
+	// DQEdit Start — Tab escape disabled. No-op DM verb so DreamSeeker
+	// treats the key as consumed.
+	elem "tab"
+		name = "TAB"
+		command = ".dq-tab-noop"
 	// DQEdit End
 	elem
 		name = "Shift"
@@ -521,10 +522,15 @@ macro "macro"
 		command = "planedown"
 
 macro "hotkeymode"
-	// DQEdit Start — Tab escape disabled; we never let players leave hotkey mode.
-	// elem "tab"
-	//	name = "TAB"
-	//	command = ".winset \"mainwindow.macro=macro hotkey_toggle.is-checked=false input.focus=true\""
+	// DQEdit Start — Tab escape disabled. Bind TAB to a no-op DM verb so
+	// DreamSeeker treats the key as consumed (a verb dispatch is
+	// definitively "the macro handled this"). Without an explicit
+	// verb, DreamSeeker falls back to its built-in "toggle hotkey
+	// mode" default — which breaks our UI because we deleted the
+	// non-hotkey skin elements it expects to focus on.
+	elem "tab"
+		name = "TAB"
+		command = ".dq-tab-noop"
 	// DQEdit End
 	elem "shift"
 		name = "Shift"

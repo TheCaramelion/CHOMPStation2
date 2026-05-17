@@ -2,9 +2,11 @@
 //
 // Lifecycle of a layer:
 //   ensure_layer(N) -> allocates a fresh Z, loads the empty stone template
-//   onto it, runs the cave generator, places a descent ladder on a random
-//   floor tile, returns the /datum/quarry_layer record.
-//   unload_layer(N) -> qdels everything on the Z and turfs it to space.
+//   onto it, runs the cave generator, carves the elevator bay, places
+//   decorations and mobs, returns the /datum/quarry_layer record.
+//   unload_layer(N) -> snapshots the layer to disk and turfs it to space.
+//
+// The elevator is the sole way in and out — no ladders or escape ropes.
 //
 // "Same depth, same layer" is emergent: ensure_layer is idempotent on
 // loaded layers, so concurrent or staggered descents to depth N all land
@@ -15,9 +17,13 @@
 // substrate template (deep_quarry_layer.dmm) covers the full Z with a
 // 1-tile bedrock perimeter and a mineable cave interior. The cave gen
 // operates on the full 256x256 — generation takes 30-60s per layer with
-// per-cell yields, but pregeneration after each descent keeps the next
-// layer ready in advance.
-#define QUARRY_LAYER_SIZE 256
+// per-cell yields. Layers are generated on demand when the elevator is
+// sent to a depth that hasn't been generated yet; the elevator's
+// travel_to blocks on ensure_layer with doors closed.
+//
+// QUARRY_LAYER_SIZE is defined in quarry_defines.dm so the unit tests
+// can reference it — that file is hoisted before _unit_tests.dm in the
+// DME.
 
 SUBSYSTEM_DEF(quarry)
 	name = "Deep Quarry"
@@ -31,11 +37,6 @@ SUBSYSTEM_DEF(quarry)
 	// Per-depth re-entrancy guard: set to depth while ensure_layer is generating.
 	var/list/generating = list()
 
-	// Surface tile that escape ropes deliver to. Populated either by a
-	// /obj/effect/landmark/quarry_anchor self-registering, or by our
-	// Initialize() scanning for one as a fallback.
-	var/turf/surface_anchor = null
-
 	// All concrete /datum/quarry_layer_config instances. Built once at
 	// Initialize from subtypesof(); select_config picks across them.
 	var/list/configs = list()
@@ -45,27 +46,28 @@ SUBSYSTEM_DEF(quarry)
 	var/datum/quarry_elevator/elevator
 
 	// The deepest depth a player has ever set foot on this round. Monotonic.
-	// Used by deepest_elevator_stop() for the surface elevator's
-	// "send to depth N" target. Starts at 1 so the elevator always has
-	// at least depth 1 as a destination — layer 1 is pregenerated at init
-	// regardless of whether anyone has visited it.
-	var/deepest_visited = 1
+	// Bumped by the surface elevator panel when the player picks
+	// "descend further". Starts at 0 so the surface panel's first descent
+	// goes to depth 1, generated on demand.
+	var/deepest_visited = 0
+	// The deepest depth the elevator may travel to. Bumped when the
+	// previous depth's stabilization goal hits its unlock threshold.
+	// Starts at 1: depth 1 is unconditionally reachable so a fresh
+	// round always has a first destination.
+	var/unlocked_depth = 1
 
 /datum/controller/subsystem/quarry/Initialize()
+	// Wipe any leftover snapshots from a prior round before anything
+	// else touches the layer system. Snapshots are per-round artefacts
+	// so a restart should always start clean.
+	clear_all_snapshots()
+
 	// Create the elevator before scanning the map. Landmarks on the entrance
 	// map register their bays/doors with the elevator during their own
 	// Initialize, and that may run before or after SSquarry depending on
 	// init order — both directions are covered by us doing a fallback scan
 	// at the end of this proc.
 	elevator = new
-
-	// Find the surface anchor if a landmark didn't self-register first.
-	if(!isturf(surface_anchor))
-		for(var/obj/effect/landmark/quarry_anchor/L in world)
-			surface_anchor = get_turf(L)
-			break
-	if(!isturf(surface_anchor))
-		log_game("SSquarry: no surface_anchor found at init; escape ropes will fail.")
 
 	// Fallback scan for the elevator anchor: if the landmark's Initialize ran
 	// before SSquarry's, our elevator.surface_bay would have been written
@@ -103,6 +105,9 @@ SUBSYSTEM_DEF(quarry)
 	if(!length(configs))
 		log_game("SSquarry: no /datum/quarry_layer_config subtypes found; layers will fail to generate.")
 
+	// Instantiate all runtime cave events.
+	init_events()
+
 	// Carve cave network into the surface map around the hand-authored
 	// rooms. The .dmm fills the area outside the room with mineable cave
 	// walls; this gen punches walkable passages through them and tags
@@ -110,11 +115,17 @@ SUBSYSTEM_DEF(quarry)
 	// concrete, elevator walls/floor) is non-mineral so it's left alone.
 	generate_surface()
 
-	// Layer 1 is NOT pregenerated here — that work (~15s for 256x256) is
-	// deferred to the first client Login, which kicks off a background
-	// spawn. By the time a player walks to the down-shaft, layer 1 is
-	// ready. See ensure_pregen_started() and the /mob/new_player/Login
-	// hook in modular_dq/code/modules/quarry/quarry_pregen_hook.dm.
+	// No pregen of layer 1 — the elevator's travel_to handles generation
+	// on demand. The first "descend further" press from the surface
+	// panel takes ~15s while the player waits inside the bay; the doors
+	// stay closed until the layer is ready.
+	//
+	// We DO pre-roll the depth-1 feature set + goals so the elevator UI
+	// shows the real quest list before anyone descends. The full world
+	// gen still happens on first dispatch; the preroll just publishes
+	// a goals-only snapshot for UI consumption.
+	if(!has_snapshot(1))
+		preroll_layer(1)
 
 	// One-shot memory profile dump. Wait a few seconds for the world to
 	// settle (atoms, atmos, lighting all finished initializing), then
@@ -123,14 +134,6 @@ SUBSYSTEM_DEF(quarry)
 		quarry_profile_atoms()
 
 	return SS_INIT_SUCCESS
-
-// Idempotent: starts pregen of layer 1 in the background if it isn't
-// already loaded or being generated. Cheap to call multiple times.
-/datum/controller/subsystem/quarry/proc/ensure_pregen_started()
-	if(layers["1"]?.loaded || generating["1"])
-		return
-	spawn(0)
-		ensure_layer(1)
 
 // Run the surface-biome cave generator on Z=1. Selected config has
 // depth_weights = {"0": 100} so it picks deterministically.
@@ -144,47 +147,80 @@ SUBSYSTEM_DEF(quarry)
 	// matching the default config wall_turf. No ChangeTurf pass needed.
 	new /datum/random_map/automata/cave_system/quarry(cfg, 1, 1, 1, world.maxx, world.maxy)
 
-	// Place ores. Collect wall candidates once, then pick N at random.
-	// Faster than iterating + prob() because we skip the iteration overhead
-	// on the ~95% of tiles that wouldn't get ore anyway.
-	if(cfg.ore_density > 0 && length(cfg.ore_table))
+	// Roll features for the surface biome and place each as veins or
+	// pools. Pass a throwaway layer so build_goals can be called (the
+	// goals themselves are discarded — surface doesn't participate in
+	// stabilization).
+	var/datum/quarry_layer/throwaway = new(0)
+	var/list/feature_types = _quarry_roll_feature_types(cfg)
+	var/list/aggregated = _quarry_aggregate_features(feature_types, throwaway)
+	var/list/instances = aggregated["instances"]
+	if(length(instances))
 		var/list/walls = list()
-		for(var/turf/simulated/mineral/T in block(locate(1, 1, 1), locate(world.maxx, world.maxy, 1)))
-			if(T.density && !T.mineral && !T.ignore_mapgen && !T.ignore_oregen)
-				walls += T
-		place_ores_in(walls, cfg)
+		var/list/floors = list()
+		for(var/turf/simulated/T in block(locate(1, 1, 1), locate(world.maxx, world.maxy, 1)))
+			if(istype(T, /turf/simulated/mineral))
+				var/turf/simulated/mineral/M = T
+				if(M.density && !M.mineral && !M.ignore_mapgen && !M.ignore_oregen)
+					walls += M
+			else if(istype(T, /turf/simulated/floor))
+				floors += T
+		for(var/datum/quarry_feature/F as anything in instances)
+			if(F.placement_type == "pool")
+				_quarry_place_pool_feature(F, floors)
+			else if(length(F.ore_contributions))
+				_quarry_place_wall_feature(F, walls)
+	qdel(throwaway)
 
-// Place ores on a random subset of the given wall list. count is computed
-// from cfg.ore_density as a percentage of the wall list size; we then pick
-// that many tiles directly via random sampling rather than iterating the
-// full list and rolling prob() per cell.
-/datum/controller/subsystem/quarry/proc/place_ores_in(list/walls, datum/quarry_layer_config/cfg)
-	if(!length(walls) || !cfg.ore_density || !length(cfg.ore_table))
-		return
-	var/count = round(length(walls) * cfg.ore_density / 100)
-	if(count <= 0)
-		return
-	var/list/pool = walls.Copy()
-	for(var/i in 1 to count)
-		if(!length(pool))
-			break
-		var/idx = rand(1, length(pool))
-		var/turf/simulated/mineral/T = pool[idx]
-		pool.Cut(idx, idx + 1)
-		if(T.mineral || T.ignore_mapgen || T.ignore_oregen)
-			continue
-		var/mineral_name = pickweight(cfg.ore_table)
-		if(mineral_name && (mineral_name in GLOB.ore_data))
-			T.mineral = GLOB.ore_data[mineral_name]
-			T.UpdateMineral()
-
-// Elevator stops are at depths 1, 6, 11, 16, ... (the sequence 1 + 5k).
-// Returns the deepest stop <= deepest_visited, or null if no depth has
-// been visited yet. The surface panel uses this as its "send to N" target.
+// Elevator stops at every depth a player has reached. Surface panel
+// uses this as its "send to N" target. Returns null if no depth has
+// been visited yet.
 /datum/controller/subsystem/quarry/proc/deepest_elevator_stop()
 	if(deepest_visited < 1)
 		return null
-	return 1 + 5 * round((deepest_visited - 1) / 5)
+	return deepest_visited
+
+
+// Re-evaluate unlocked_depth based on aggregate goal completion. The
+// deepest reachable depth advances by one for each consecutive
+// stabilised layer starting from depth 1. A layer is "stabilised"
+// when at least QUARRY_STABILITY_THRESHOLD% of its goals are
+// individually satisfied — see layer_stability_percent.
+//
+// Idempotent. Call after every goal-progress event.
+/datum/controller/subsystem/quarry/proc/recompute_unlocked_depth()
+	while(TRUE)
+		var/datum/quarry_layer/L = layers["[unlocked_depth]"]
+		if(!L?.loaded)
+			return
+		if(layer_stability_percent(L) < QUARRY_STABILITY_THRESHOLD)
+			return
+		unlocked_depth++
+		// Pre-roll the newly-frontier depth's features and goals so the
+		// elevator UI can show them before anyone descends. The partial
+		// snapshot is consumed by ensure_layer on first dispatch.
+		if(!has_snapshot(unlocked_depth))
+			preroll_layer(unlocked_depth)
+
+
+// Returns the aggregate stability of a layer as a 0..100 integer.
+// Mean of per-goal percent_complete across all goals on the layer —
+// each goal is clamped 0..100 individually so over-mining one
+// resource can't carry an under-mined one. A layer with no goals is
+// treated as fully stable so a config whose rolled features all
+// returned empty goal lists doesn't soft-lock the round.
+/datum/controller/subsystem/quarry/proc/layer_stability_percent(datum/quarry_layer/L)
+	if(!L)
+		return 0
+	var/total = length(L.goals)
+	if(total <= 0)
+		return 100
+	var/sum_percent = 0
+	for(var/datum/quarry_goal/G as anything in L.goals)
+		if(!G)
+			continue
+		sum_percent += G.percent_complete()
+	return round(sum_percent / total)
 
 // Returns a /datum/quarry_layer_config picked weighted-randomly from all
 // configs whose weight_at(depth) is non-zero. Returns null if none apply.
@@ -199,19 +235,26 @@ SUBSYSTEM_DEF(quarry)
 	return pickweight(weighted)
 
 /datum/controller/subsystem/quarry/fire()
+	tick_layer_danger()
+	tick_layer_events()
 	unload_empty_layers()
 
-// Sweep occupied-but-now-empty layers and unload them.
-// Layers that have never been entered (pregenerated, awaiting a visitor)
-// are skipped — they are not "abandoned," they are "unused yet." Called
-// periodically as a backstop and on demand by the escape rope.
+// Sweep loaded layers and unload any that have no live players on them.
+// Called periodically from fire(). Layers already mid-unload are
+// skipped so the async wipe can finish without being re-triggered.
 /datum/controller/subsystem/quarry/proc/unload_empty_layers()
-	// Snapshot the keys: unload_layer can mutate the list (cascade unload
-	// of pregenerated descendants).
+	// Snapshot the keys: unload_layer can mutate the list when the
+	// async tail finishes.
 	var/list/keys = layers.Copy()
 	for(var/key in keys)
 		var/datum/quarry_layer/L = layers[key]
-		if(!L?.loaded || !L.ever_occupied)
+		if(!L?.loaded || L.unloading)
+			continue
+		// Skip any depth the elevator is in the middle of dispatching
+		// to — without this guard, the sweep snapshots+wipes the layer
+		// between the elevator's ensure_layer call and its bay_at()
+		// check, leaving the player staring at "the shaft groans."
+		if(elevator?.pending_arrivals?[key])
 			continue
 		if(is_layer_empty(L.z))
 			unload_layer(L.depth)
@@ -233,30 +276,49 @@ SUBSYSTEM_DEF(quarry)
 /datum/controller/subsystem/quarry/proc/ensure_layer(depth)
 	var/key = "[depth]"
 	var/datum/quarry_layer/existing = layers[key]
-	if(existing?.loaded)
+	if(existing?.loaded && !existing.unloading)
 		return existing
 
-	// Wait out a concurrent generation.
-	if(generating[key])
-		for(var/i in 1 to 50)
-			sleep(2)
-			existing = layers[key]
-			if(existing?.loaded)
-				return existing
-			if(!generating[key])
-				break
+	// Wait out a concurrent generation OR a concurrent unload of this
+	// depth. Either way we want the slot truly free before we (re)build,
+	// because building on a stale slot has the OLD unload's async tail
+	// stomping the NEW layer's record when it finishes, and worse, has
+	// the wipe pass potentially touching tiles the new player is on.
+	//
+	// No timeout: wait as long as it takes. The wipe yields per row via
+	// CHECK_TICK and is bounded by the world being responsive enough to
+	// run it. Capping the wait used to time out and let the new build
+	// race the wipe — that's the bug we're avoiding.
+	while(TRUE)
+		existing = layers[key]
+		if(!generating[key] && (!existing || (!existing.unloading && !existing.loaded)))
+			break
+		if(existing?.loaded && !existing.unloading)
+			return existing
+		sleep(2)
 
 	// Re-check after the wait.
 	existing = layers[key]
-	if(existing?.loaded)
+	if(existing?.loaded && !existing.unloading)
 		return existing
 
 	generating[key] = TRUE
 	var/datum/quarry_layer/L = null
 	if(has_snapshot(depth))
-		L = restore_layer(depth)
-		if(!L)
-			log_game("SSquarry: restore_layer failed for depth [depth]; falling back to generate_layer")
+		// Partial snapshot = preroll_layer output. Goal previews are in
+		// the file, but no tiles have been generated yet. Honor the
+		// rolled feature set so what the player sees underground
+		// matches the goals the UI promised.
+		if(is_partial_snapshot(depth))
+			var/list/preset = read_snapshot_feature_types(depth)
+			var/path = _quarry_snapshot_path(depth)
+			if(fexists(path))
+				fdel(path)
+			L = generate_layer(depth, preset)
+		else
+			L = restore_layer(depth)
+			if(!L)
+				log_game("SSquarry: restore_layer failed for depth [depth]; falling back to generate_layer")
 	if(!L)
 		L = generate_layer(depth)
 	generating -= key
@@ -269,30 +331,23 @@ SUBSYSTEM_DEF(quarry)
 // runs the cave generator, marks ores, scatters decorations, spawns mobs,
 // and places the escape ladder and the down-ladder. Returns the layer
 // record on success, null on failure.
-/datum/controller/subsystem/quarry/proc/generate_layer(depth)
+/datum/controller/subsystem/quarry/proc/generate_layer(depth, list/preset_feature_types = null)
 	var/datum/quarry_layer_config/cfg = select_config(depth)
 	if(!cfg)
 		log_game("SSquarry: no applicable config for depth [depth]; refusing to generate")
 		return null
 
+	var/_tl0 = world.timeofday
 	var/datum/map_template/quarry_layer/template = new
 	if(!template.load_new_z())
 		log_game("SSquarry: failed to load_new_z for depth [depth]")
 		return null
-
 	var/new_z = world.maxz
+	var/_tl1 = world.timeofday
 
-	// The substrate is already /turf/simulated/mineral/cave/quarry, matching
-	// the default config wall_turf. No ChangeTurf pass needed. If a config
-	// ever wants a non-default wall_turf, re-add a conditional pass here.
-
-	// Carve the cave. The generator subtype reads density / iterations from
-	// the config; passing seed=null leaves priority_process unset so the
-	// per-cell apply loop yields after every turf and the server stays
-	// responsive. The generating[key] re-entrancy guard above prevents
-	// concurrent runs at the same depth, so we don't need priority_process
-	// for safety.
+	// Carve the cave (cave_system/quarry logs its own apply/icon timings).
 	new /datum/random_map/automata/cave_system/quarry(cfg, 1, 1, new_z, QUARRY_LAYER_SIZE, QUARRY_LAYER_SIZE)
+	var/_tl2 = world.timeofday
 
 	// Bucket tiles for the placement passes that follow.
 	var/list/floor_candidates = list()
@@ -302,79 +357,107 @@ SUBSYSTEM_DEF(quarry)
 			wall_candidates += T
 		else
 			floor_candidates += T
+	var/_tl3 = world.timeofday
 	if(length(floor_candidates) < 2)
 		log_game("SSquarry: generator produced fewer than 2 floor tiles at depth [depth]")
 		return null
 
-	// Carve the elevator FIRST. It picks a 5x5 footprint and forces tiles
-	// regardless of cave shape, so it'd happily overwrite a rope or ladder
-	// placed earlier. Doing carving first means the rope/ladder/decoration
-	// passes below see a floor_candidates list with the elevator's
-	// footprint already excluded.
 	var/list/bay_tiles = carve_elevator_room(new_z, depth, floor_candidates, wall_candidates)
 	if(!length(bay_tiles))
 		log_game("SSquarry: failed to carve elevator room at depth [depth]")
 		return null
 	elevator.layer_bays["[depth]"] = bay_tiles
+	var/_tl4 = world.timeofday
 
-	// Ore placement: percent of walls become ore-bearing, ore type picked
-	// per tile from the config's weighted table.
-	if(cfg.ore_density > 0 && length(cfg.ore_table))
-		place_ores_in(wall_candidates, cfg)
+	// Build the layer record up front so the rolled features' build_goals
+	// can attach goals to it. Features are pure data (no runtime hooks)
+	// so the order of operations is: roll → aggregate → place → build.
+	var/datum/quarry_layer/L = new(depth)
+	L.z = new_z
+	L.config = cfg
+	// Pre-rolled features from a partial snapshot take precedence so
+	// the UI's goal preview matches what actually gets placed below.
+	L.feature_types = length(preset_feature_types) ? preset_feature_types : _quarry_roll_feature_types(cfg)
+	var/list/aggregated = _quarry_aggregate_features(L.feature_types, L)
+	var/list/instances = aggregated["instances"]
+	var/list/mob_table = aggregated["mob_table"]
+	var/list/decoration_table = aggregated["decoration_table"]
+	var/extra_mob_spawns = aggregated["extra_mob_spawns"]
+	var/extra_decoration_density = aggregated["extra_decoration_density"]
+	L.goals = aggregated["goals"]
 
-	if(length(floor_candidates) < 2)
-		log_game("SSquarry: too few floor tiles remain after elevator carve at depth [depth]")
+	// Resource placement: each feature draws its own veins. Wall
+	// features mark mineral walls with their ore; pool features
+	// ChangeTurf a connected floor cluster to their pool_turf so the
+	// upstream /obj/machinery/pump can extract reagents from it.
+	// Mob-only / decoration-only features have no placement step —
+	// their contributions are aggregated separately and applied via
+	// the spawn passes below.
+	for(var/datum/quarry_feature/F as anything in instances)
+		if(F.placement_type == "pool")
+			_quarry_place_pool_feature(F, floor_candidates)
+		else if(length(F.ore_contributions))
+			_quarry_place_wall_feature(F, wall_candidates)
+	var/_tl5 = world.timeofday
+
+	if(!length(floor_candidates))
+		log_game("SSquarry: no floor tiles remain after elevator carve at depth [depth]")
 		return null
 
-	// Pick the two structural tiles before decorations and mobs, so a
-	// decoration doesn't end up on top of the rope or descent ladder.
-	var/turf/rope_tile = pick(floor_candidates)
-	floor_candidates -= rope_tile
-	var/turf/ladder_tile = pick(floor_candidates)
-	floor_candidates -= ladder_tile
-
-	var/obj/structure/quarry_rope/rope = new(rope_tile)
-	var/obj/structure/ladder/quarry_descent/down_ladder = new(ladder_tile)
-
-	// Decoration placement: percent of remaining floor tiles get a deco.
-	if(cfg.decoration_density > 0 && length(cfg.decoration_table))
+	var/total_deco_density = cfg.decoration_density + extra_decoration_density
+	if(total_deco_density > 0 && length(decoration_table))
 		for(var/turf/T as anything in floor_candidates)
-			if(!prob(cfg.decoration_density))
+			if(!prob(total_deco_density))
 				continue
-			var/deco_type = pickweight(cfg.decoration_table)
+			var/deco_type = pickweight(decoration_table)
 			if(deco_type)
 				new deco_type(T)
+	var/_tl6 = world.timeofday
 
-	// Hostile mob spawn: mob_count random floor tiles each get one mob.
-	if(cfg.mob_count > 0 && length(cfg.mob_table))
+	var/total_mob_count = cfg.mob_count + extra_mob_spawns
+	// If no mob feature contributed to mob_table, fall back to the
+	// cfg's default_mob_table so the layer isn't sterile.
+	var/list/effective_mob_table = length(mob_table) ? mob_table : cfg.default_mob_table
+	if(total_mob_count > 0 && length(effective_mob_table))
 		var/spawned = 0
 		var/list/spawn_candidates = floor_candidates.Copy()
-		while(spawned < cfg.mob_count && length(spawn_candidates))
+		while(spawned < total_mob_count && length(spawn_candidates))
 			var/turf/T = pick(spawn_candidates)
 			spawn_candidates -= T
-			var/mob_type = pickweight(cfg.mob_table)
+			// Skip tiles inside player-built safe rooms (areas with a
+			// powered APC). At generation time this is a no-op since
+			// no rooms exist yet, but a respawn pass on a restored
+			// layer will honor any rooms players built last visit.
+			if(_quarry_tile_is_safe(T))
+				continue
+			var/mob_type = pickweight(effective_mob_table)
 			if(mob_type)
 				new mob_type(T)
 			spawned++
+	var/_tl7 = world.timeofday
 
-	var/datum/quarry_layer/L = new(depth)
-	L.z = new_z
 	L.loaded = TRUE
-	L.config = cfg
-	L.down_ladder = down_ladder
-	L.arrival_rope = rope
-	down_ladder.depth = depth
+	log_game("BENCH: generate_layer phases (depth [depth]) load_new_z=[(_tl1-_tl0)/10]s cave=[(_tl2-_tl1)/10]s bucket=[(_tl3-_tl2)/10]s carve=[(_tl4-_tl3)/10]s ore=[(_tl5-_tl4)/10]s deco=[(_tl6-_tl5)/10]s mobs=[(_tl7-_tl6)/10]s features=[length(L.feature_types)] goals=[length(L.goals)]")
 	return L
 
-// Carves a 3x3 elevator room out of the cave at a random valid location.
+// Carves a 3x3 elevator room out of the cave at a depth-deterministic
+// location. Same depth always gets the same elevator coordinates so a
+// snapshot's interior matches a re-generated layer's elevator placement
+// and the persistence overlay doesn't clash with the freshly-placed
+// elevator bay.
+//
 // Returns the 3x3 bay tiles in row-major order (matching surface bay).
 // Mutates floor_candidates and wall_candidates in place to remove any
 // tiles that the elevator footprint or approach corridor consumed.
 /datum/controller/subsystem/quarry/proc/carve_elevator_room(z, depth, list/floor_candidates, list/wall_candidates)
-	// Pick center such that the 5x5 fits and a 3-tile-deep approach
-	// corridor north of the door fits inside the map.
-	var/cx = rand(3, QUARRY_LAYER_SIZE - 2)
-	var/cy = rand(3, QUARRY_LAYER_SIZE - 5)
+	// Pick center deterministically from depth so restored layers land
+	// their elevator on the same tiles the snapshot was taken from.
+	// Each depth gets a stable (cx, cy) within the valid carve window
+	// (3..MAX-2 on x, 3..MAX-5 on y so the 5x5 footprint and the
+	// 3-tile north approach corridor both fit inside the map).
+	var/list/elev_xy = _quarry_elevator_xy_for(depth)
+	var/cx = elev_xy[1]
+	var/cy = elev_xy[2]
 
 	// Wall ring: perimeter of 5x5 centered on (cx, cy). The full north
 	// edge (3 wall tiles at dy=2) becomes three lift airlocks, matching
@@ -474,24 +557,23 @@ SUBSYSTEM_DEF(quarry)
 		exterior.is_call_panel = TRUE
 
 	return bay
-// The Z-index itself is not reclaimed (BYOND limitation).
-//
-// Cascade rule: if the next-deeper layer exists, is loaded, and has never
-// been entered, it is also unloaded. A never-occupied layer is a
-// pregenerated speculation that no longer has a viable player path —
-// reaching it requires descending from this layer, which no longer exists.
-// The cascade is recursive; in practice it only ever steps once because
-// pregen is one-ahead, but the loop is cheap and survives future changes.
+
+
+// Unload a layer: snapshot it to disk, qdel everything on the z,
+// turf-to-space the lot, drop the layer record. The z-index itself is
+// not reclaimed (BYOND limitation).
 /datum/controller/subsystem/quarry/proc/unload_layer(depth)
 	var/key = "[depth]"
 	var/datum/quarry_layer/L = layers[key]
-	if(!L?.loaded)
+	if(!L?.loaded || L.unloading)
 		return
+	L.unloading = TRUE
 
 	// If the elevator is currently parked at this depth, recall its bay
 	// contents to the surface before we wipe the Z. This preserves the
 	// "persistent progress" promise — items the player left in the lift
-	// don't get qdel'd along with the layer.
+	// don't get qdel'd along with the layer. Done synchronously because
+	// it has to finish before the wipe touches the bay.
 	if(elevator && elevator.current_depth == depth && !elevator.traveling)
 		var/list/origin_bay = elevator.bay_at(depth)
 		var/list/dest_bay = elevator.bay_at(0)
@@ -509,38 +591,89 @@ SUBSYSTEM_DEF(quarry)
 					AM.forceMove(dst_t)
 		elevator.current_depth = 0
 
-	var/quarry_z = L.z
-
-	// Snapshot the layer to disk before wiping so the next visit can
-	// restore exactly what the players left behind. Skip for layers that
-	// were never actually entered (a pregen that's getting cascade-
-	// unloaded has nothing player-meaningful to preserve).
-	if(L.ever_occupied)
-		snapshot_layer(depth, quarry_z)
-
 	// Drop the layer's bay reference. The doors get qdel'd along with the Z
 	// below, so just clear the list.
 	if(elevator)
 		elevator.layer_bays -= key
 		elevator.doors -= key
 
-	for(var/turf/T in block(locate(1, 1, quarry_z), locate(QUARRY_LAYER_SIZE, QUARRY_LAYER_SIZE, quarry_z)))
-		for(var/atom/movable/AM in T)
-			if(istype(AM, /mob/observer))
+	// Hand the slow part (snapshot + tile wipe) off so the SS tick
+	// returns immediately. The layer stays in `layers` and is marked
+	// `unloading` so the next periodic sweep doesn't try to unload it
+	// again while this is in flight.
+	INVOKE_ASYNC(src, PROC_REF(_finish_unload_layer), depth)
+
+
+// Async tail of unload_layer. Runs the snapshot (yielding as it walks
+// the 256x256 tile grid) and then the wipe pass (same). Both use
+// CHECK_TICK internally so a long-running unload only consumes idle
+// MC ticks instead of stalling the world.
+//
+// Safety: re-check is_layer_empty before each pass. If a player has
+// arrived on the z between unload trigger and now (shouldn't happen
+// given the elevator's bay-cleared check, but defensive), abort the
+// unload entirely so we don't delete them.
+/datum/controller/subsystem/quarry/proc/_finish_unload_layer(depth)
+	var/key = "[depth]"
+	var/datum/quarry_layer/L = layers[key]
+	if(!L)
+		return
+	var/quarry_z = L.z
+
+	if(!is_layer_empty(quarry_z))
+		log_game("SSquarry: aborting unload of depth [depth] (z [quarry_z]) — a player is on the z")
+		L.unloading = FALSE
+		return
+
+	// Snapshot the layer to disk before wiping so the next visit can
+	// restore exactly what the players left behind.
+	snapshot_layer(depth, quarry_z)
+
+	// Re-check before the destructive pass. Snapshot took time during
+	// which a player could in theory have arrived.
+	if(!is_layer_empty(quarry_z))
+		log_game("SSquarry: aborting wipe of depth [depth] (z [quarry_z]) — a player is on the z")
+		L.unloading = FALSE
+		return
+
+	// Wipe pass: qdel every movable so the z stops ticking AI and
+	// signal subscriptions. We deliberately do NOT ChangeTurf each
+	// tile to /turf/space — benchmark showed ChangeTurf costs ~380µs
+	// per tile and dominates wipe time (65k tiles × 380µs ≈ 25s).
+	// Leaving the turfs alone has no behavioural cost (the z is
+	// orphaned, nothing reaches it) and only keeps a small constant
+	// memory footprint per orphaned tile until restart.
+	//
+	// CHECK_TICK_HIGH_PRIORITY yields only above 95% usage so the
+	// wipe gets most of each MC tick. Batches per 4 rows.
+	var/row_batch = 0
+	for(var/y in 1 to QUARRY_LAYER_SIZE)
+		for(var/x in 1 to QUARRY_LAYER_SIZE)
+			var/turf/T = locate(x, y, quarry_z)
+			if(!isturf(T))
 				continue
-			qdel(AM)
-		T.ChangeTurf(/turf/space)
+			if(!length(T.contents))
+				continue
+			for(var/atom/movable/AM in T)
+				if(istype(AM, /mob/observer))
+					continue
+				qdel(AM)
+		row_batch++
+		if(row_batch >= 4)
+			row_batch = 0
+			CHECK_TICK_HIGH_PRIORITY
+			// Defensive: a player teleporting onto the z mid-wipe
+			// triggers an immediate abort. Better a half-wiped z
+			// than a deleted player.
+			if(!is_layer_empty(quarry_z))
+				log_game("SSquarry: stopping mid-wipe of depth [depth] (z [quarry_z]) — a player arrived on the z")
+				L.unloading = FALSE
+				return
 
 	L.loaded = FALSE
 	L.z = 0
-	L.down_ladder = null
-	L.arrival_rope = null
+	L.unloading = FALSE
 	layers -= key
-
-	// Cascade-unload any pregenerated descendant that is now orphaned.
-	var/datum/quarry_layer/next = layers["[depth + 1]"]
-	if(next?.loaded && !next.ever_occupied)
-		unload_layer(depth + 1)
 
 // Empty iff no /mob/living with an active mind (live client OR temporarily
 // disconnected body) is on the Z. Bodies of disconnected players keep the
@@ -552,3 +685,27 @@ SUBSYSTEM_DEF(quarry)
 		if(M.mind)
 			return FALSE
 	return TRUE
+
+
+// Deterministic (cx, cy) for a depth's elevator footprint. Same depth
+// always returns the same coordinates so snapshot/restore overlays
+// don't clash with a freshly-carved elevator. Adjacent depths get
+// spread across the map via a small mix so they don't visually clump.
+//
+// Returns a 2-element list: list(cx, cy). Both fall inside the carve
+// window described in carve_elevator_room (3..MAX-2 on x, 3..MAX-5 on
+// y) so a 5x5 footprint plus the 3-tile north approach corridor fit.
+//
+// Implementation note: DM uses 24-bit floats for numbers, so Knuth's
+// 32-bit multiplicative hash (depth * 2654435761) loses precision
+// during the multiply, and the subsequent bitwise mask + modulo
+// collapse to the bottom-left corner instead of spreading. Use small
+// prime multipliers and stay well inside 24-bit range — works
+// correctly across all reachable depths.
+/proc/_quarry_elevator_xy_for(depth)
+	var/x_window = QUARRY_LAYER_SIZE - 4  // 3..MAX-2 inclusive
+	var/y_window = QUARRY_LAYER_SIZE - 7  // 3..MAX-5 inclusive
+	// Two independent small-prime mixes for decorrelated x/y.
+	var/cx = 3 + ((depth * 73 + 19) % x_window)
+	var/cy = 3 + ((depth * 41 + 11) % y_window)
+	return list(cx, cy)

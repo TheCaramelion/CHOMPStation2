@@ -20,22 +20,19 @@
 	// /turf/simulated/mineral so make_floor() / make_wall() work in place.
 	var/turf/simulated/mineral/wall_turf = /turf/simulated/mineral/cave
 
-	// Ore-bearing walls. ore_density is percent of wall tiles that carry
-	// ore. ore_table is an associative list of ORE_X define -> weight; one
-	// is picked per ore-bearing wall.
+	// Baseline ore density (percent of wall tiles that carry ore).
+	// Feature-pool rolls populate the ore_table at generation time.
 	var/ore_density = 6
-	var/list/ore_table = list()
-
-	// Decorations placed on floor tiles. decoration_density is percent of
-	// floors that get a decoration. decoration_table is typepath -> weight.
-	// Use only non-dense decorations unless you want obstacles.
+	// Baseline decoration density (percent of floors that get a decoration).
+	// Feature-pool rolls add to this via extra_decoration_density.
 	var/decoration_density = 2
-	var/list/decoration_table = list()
-
-	// Hostile mob spawn at gen time. mob_count is the approximate number
-	// of mobs to spawn (not a percent). mob_table is mob typepath -> weight.
+	// Baseline hostile-mob spawn count for the layer. Feature-pool rolls
+	// add to this via extra_mob_spawns on the picked features.
 	var/mob_count = 0
-	var/list/mob_table = list()
+	// Baseline mob spawn table used when no mob feature rolls — keeps
+	// the layer from feeling sterile if the random feature picks
+	// happen to skip all mob features. Form: list(typepath = weight).
+	var/list/default_mob_table = list()
 
 	// Depth weights. Keys are range strings, values are pickweight values.
 	// Range syntax:
@@ -45,6 +42,17 @@
 	// At selection time SSquarry queries each config for its weight at the
 	// target depth, and pickweights across all non-zero-weight configs.
 	var/list/depth_weights = list()
+
+	// Pool of /datum/quarry_feature typepaths this biome can roll. At
+	// layer generation time the generator picks `feature_count_min` to
+	// `feature_count_max` distinct features from this pool. Each feature
+	// contributes ores, mobs, decorations, and goals (see
+	// /datum/quarry_feature).
+	var/list/feature_pool = list()
+	// Min/max features to roll per layer. Inclusive on both ends. Default
+	// 5-10 — enough variety per layer to feel different per visit.
+	var/feature_count_min = 5
+	var/feature_count_max = 10
 
 
 // Returns this config's selection weight at the given depth, or 0 if it

@@ -611,4 +611,3 @@ ranks - marines
 	name = "ranks (O-7 brigadier general)"
 	desc = "Insignia denoting the rank of Brigadier General."
 	icon_state = "armyrank_command"
-

@@ -1,7 +1,6 @@
 SUBSYSTEM_DEF(radiation)
 	name = "Radiation"
 	flags = SS_BACKGROUND | SS_NO_INIT
-
 	wait = 0.5 SECONDS
 
 	/// A list of radiation sources (/datum/radiation_pulse_information) that have yet to process.

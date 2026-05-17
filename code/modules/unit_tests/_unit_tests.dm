@@ -131,6 +131,8 @@
 #include "../../../modular_dq/code/unit_tests/dq_surgery_tests.dm"
 #include "../../../modular_dq/code/unit_tests/dq_bodyscanner_tests.dm"
 #include "../../../modular_dq/code/unit_tests/dq_audit_tests.dm"
+#include "../../../modular_dq/code/unit_tests/dq_quarry_persistence_tests.dm"
+#include "../../../modular_dq/code/unit_tests/dq_quarry_spawn_tests.dm"
 // DQAdd End
 // END_INCLUDE
 #ifdef REFERENCE_TRACKING_DEBUG //Don't try and parse this file if ref tracking isn't turned on. IE: don't parse ref tracking please mr linter

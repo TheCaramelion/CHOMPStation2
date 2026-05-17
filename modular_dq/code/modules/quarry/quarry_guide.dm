@@ -18,8 +18,8 @@ GLOBAL_LIST_INIT(quarry_guide_topics, list(
 
 			<p>This guide is the only thing you'll find around here that
 			isn't dust or dangerous. Read the topics on the left. The
-			important ones are <i>The Elevator</i> and <i>Descending
-			Deeper</i>.</p>
+			important one is <i>The Elevator</i> — it's how you get in,
+			how you get out, and how you go deeper.</p>
 
 			<p>When you're ready, close this window and click <b>Join Game</b>
 			in the lobby.</p>
@@ -66,14 +66,15 @@ GLOBAL_LIST_INIT(quarry_guide_topics, list(
 		"title" ="The Elevator",
 		"body" = {"
 			<p>One freight elevator services the whole quarry. It has a
-			3×3 cargo bay at every floor it stops on.</p>
+			3×3 cargo bay at every depth, and it's the <b>only</b> way in
+			or out — there are no ladders, no ropes, no shortcuts.</p>
 
 			<p><b>Inside the bay</b>, the south wall has a control panel.
-			Click it to send the elevator to its target floor. From the
-			surface, the elevator goes to the deepest <i>elevator stop</i>
-			you've unlocked: <b>1, 6, 11, 16, …</b> (the sequence 1 + 5k).
-			You only unlock deeper stops by manually descending via the
-			ladder system on procedural layers.</p>
+			On a layer, clicking it sends the elevator back up to the
+			surface. On the surface, you get two options: go to the
+			<i>deepest depth you've already visited</i>, or <i>descend
+			one deeper than you've ever been</i> (which generates the new
+			layer the first time you do it).</p>
 
 			<p><b>Outside the bay</b>, the NW-corner wall has a call panel.
 			Click it to summon the elevator to that floor if it's parked
@@ -88,35 +89,22 @@ GLOBAL_LIST_INIT(quarry_guide_topics, list(
 	"descending" = list(
 		"title" ="Descending Deeper",
 		"body" = {"
-			<p>Every procedurally-generated layer has a <b>down-shaft</b>
-			(a ladder labeled \"deep shaft\") somewhere in the cave. Click
-			it to climb down. The next-deeper layer is built on demand the
-			first time anyone descends.</p>
+			<p>Every descent past your previous deepest point uses the
+			elevator's <i>descend deeper</i> button. Pressing it generates
+			the next layer on the spot and sends the elevator down to it.
+			This is the only way to push the round's depth watermark
+			forward.</p>
 
-			<p>Layers are <b>one-way</b>: you cannot climb back up the
-			down-shaft. Use the elevator or the escape rope to return.</p>
+			<p>Layers are <b>persistent within a round</b>. The first time
+			you visit depth N, a fresh cave is generated. When the last
+			player leaves it, the layer's state is snapshotted to disk.
+			The next time someone visits depth N — even hours later — the
+			snapshot is restored: same mined-out tiles, same dropped loot,
+			same scaffolds. Hostile mobs are re-spawned because their
+			internal state doesn't round-trip cleanly.</p>
 
-			<p>Layers regenerate. If you leave a layer and the round's
-			deepest party moves below it, that layer unloads — when someone
-			comes back to that depth, a fresh cave is generated. Mining
-			progress on individual layers does <b>not</b> persist; ore that
-			you sent up the elevator <b>does</b>.</p>
-		"},
-	),
-
-	"escape" = list(
-		"title" ="The Escape Rope",
-		"body" = {"
-			<p>Every procedurally-generated layer has an <b>escape ladder</b>
-			(a glowing fixture) at the spot where descending players first
-			arrive. Click it, confirm the prompt, and after a brief climb you
-			are teleported back to the surface station room.</p>
-
-			<p>The rope works at any depth, regardless of whether the
-			elevator is reachable. It is your emergency exit. It does not
-			carry cargo — anything in your inventory comes with you, but
-			anything on the layer's floor stays behind and may be lost when
-			the layer unloads.</p>
+			<p>Ore you've sent up the elevator stays with you regardless
+			of what happens to the layer.</p>
 		"},
 	),
 
@@ -167,7 +155,7 @@ GLOBAL_LIST_INIT(quarry_guide_topics, list(
 /proc/quarry_guide_order()
 	return list(
 		"welcome", "layout", "mining", "elevator",
-		"descending", "escape", "coop", "dangers",
+		"descending", "coop", "dangers",
 	)
 
 

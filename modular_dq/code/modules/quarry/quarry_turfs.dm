@@ -23,3 +23,49 @@
 /turf/simulated/mineral/cave/quarry
 	sand_icon_path = 'icons/turf/outdoors.dmi'
 	sand_icon_state = "rock"
+
+// Hook GetDrilled so mining a quarry wall fires a node-mined event.
+// Captures mineral identity BEFORE the parent runs (the parent clears
+// `mineral` when it makes the floor), then dispatches after the drop
+// so we know the right item type. Non-quarry mineral walls keep their
+// upstream behavior — only this subtype tree intercepts.
+/turf/simulated/mineral/cave/quarry/GetDrilled(artifact_fail = 0)
+	var/captured_name = mineral?.name
+	var/captured_item = mineral?.ore
+	var/captured_z = z
+	var/captured_turf = src
+	. = ..()
+	if(SSquarry)
+		// Mining is noise. emit_noise handles both alerting nearby
+		// mobs and bumping the layer's danger meter, so we don't
+		// also call the legacy wall-mined danger hook.
+		SSquarry.emit_noise(captured_turf, QUARRY_NOISE_PICK, captured_turf)
+		if(captured_name)
+			SSquarry.on_layer_node_mined(captured_z, captured_name, captured_item)
+
+
+// Per-tier visual variants. Each 5-layer block uses its own subtype so
+// the carved-floor sand_icon_state and (optionally) the wall icon
+// differ between blocks. Today only the floor icon varies; the wall
+// uses the parent's icon. Extending with per-tier wall sprites later
+// is a one-line override.
+
+/turf/simulated/mineral/cave/quarry/shallows
+	// 1-5. Standard rocky floor.
+	sand_icon_state = "rock"
+
+/turf/simulated/mineral/cave/quarry/midmines
+	// 6-10. Darker, cooler stone.
+	sand_icon_state = "rock"
+
+/turf/simulated/mineral/cave/quarry/deeps
+	// 11-15. Damp, mineral-stained stone.
+	sand_icon_state = "rock"
+
+/turf/simulated/mineral/cave/quarry/abyss
+	// 16-20. Deeper, more uniform dark stone.
+	sand_icon_state = "rock"
+
+/turf/simulated/mineral/cave/quarry/core
+	// 21-25. Hot, glassy stone near the planet's core.
+	sand_icon_state = "rock"

@@ -573,4 +573,3 @@
 	siemens_coefficient = 0.9
 	w_class = ITEMSIZE_NORMAL
 	slot = ACCESSORY_SLOT_OVER
-

@@ -10,7 +10,25 @@
 // END_INTERNALS
 
 // BEGIN_FILE_DIR
-#define FILE_DIR .
+// DQEdit Start — was `#define FILE_DIR .`, which makes DreamMaker
+// recursively scan every subdirectory for resource references. With
+// ~5,600 files spread across hundreds of dirs that wastes seconds
+// per build. Replaced with explicit per-tree resource paths.
+#define FILE_DIR icons
+#define FILE_DIR sound
+#define FILE_DIR maps
+#define FILE_DIR interface
+#define FILE_DIR html
+#define FILE_DIR strings
+#define FILE_DIR config
+#define FILE_DIR modular_chomp/icons
+#define FILE_DIR modular_chomp/maps
+#define FILE_DIR modular_chomp/html
+#define FILE_DIR modular_chomp/strings
+#define FILE_DIR modular_chomp/sound
+#define FILE_DIR modular_dq/icons
+#define FILE_DIR modular_dq/maps
+// DQEdit End
 // END_FILE_DIR
 
 // BEGIN_PREFERENCES
@@ -367,6 +385,11 @@
 #include "code\__defines\traits\sources.dm"
 #include "code\__defines\verdigris\_verdigris.dm"
 #include "code\__defines\verdigris\random_map.dm"
+// DQAdd — quarry_defines.dm hoisted up here so the QUARRY_NOISE_*
+// and QUARRY_LAYER_SIZE macros are visible to early upstream files
+// (e.g. code/modules/projectiles/gun.dm) that the DQ noise hook
+// patches with markers.
+#include "modular_dq\code\modules\quarry\quarry_defines.dm"
 #include "code\_global_vars\__unsorted.dm"
 #include "code\_global_vars\_regexes.dm"
 #include "code\_global_vars\admin.dm"
@@ -5695,26 +5718,33 @@
 #include "modular_chomp\maps\~turfpacks\unsim_turfs\unsim_turfs_walls.dm"
 // BEGIN DQ MODULAR INCLUDES
 #include "modular_dq\code\modules\quarry\quarry_config.dm"
+#include "modular_dq\code\modules\quarry\raw_chem.dm"
+#include "modular_dq\code\modules\quarry\quarry_pool_turfs.dm"
+#include "modular_dq\code\modules\quarry\quarry_feature.dm"
+#include "modular_dq\code\modules\quarry\quarry_features.dm"
 #include "modular_dq\code\modules\quarry\quarry_configs.dm"
 #include "modular_dq\code\modules\quarry\quarry_turfs.dm"
 #include "modular_dq\code\modules\quarry\quarry_atmos_skip.dm"
 #include "modular_dq\code\modules\quarry\quarry_guide.dm"
-#include "modular_dq\code\modules\quarry\quarry_pregen_hook.dm"
 #include "modular_dq\code\modules\quarry\quarry_profile.dm"
 #include "modular_dq\code\modules\quarry\quarry_layer.dm"
-#include "modular_dq\code\modules\quarry\quarry_anchor.dm"
+#include "modular_dq\code\modules\quarry\quarry_goal.dm"
+#include "modular_dq\code\modules\quarry\quarry_goal_hooks.dm"
+#include "modular_dq\code\modules\quarry\quarry_danger.dm"
+#include "modular_dq\code\modules\quarry\quarry_events.dm"
+#include "modular_dq\code\modules\quarry\quarry_stalker_mobs.dm"
+#include "modular_dq\code\modules\quarry\quarry_noise.dm"
 #include "modular_dq\code\modules\quarry\quarry_elevator.dm"
 #include "modular_dq\code\modules\quarry\quarry_elevator_anchor.dm"
 #include "modular_dq\code\modules\quarry\quarry_elevator_panel.dm"
 #include "modular_dq\code\modules\quarry\quarry_controller.dm"
 #include "modular_dq\code\modules\quarry\quarry_persistence.dm"
 #include "modular_dq\code\modules\quarry\quarry_generator.dm"
-#include "modular_dq\code\modules\quarry\quarry_ladder.dm"
-#include "modular_dq\code\modules\quarry\quarry_rope.dm"
 #include "modular_dq\maps\submaps\deep_quarry\deep_quarry_areas.dm"
 #include "modular_dq\maps\submaps\deep_quarry\deep_quarry.dm"
 #include "modular_dq\code\modules\belly_overlay\belly_overlay_asset.dm"
 #include "modular_dq\code\modules\belly_overlay\belly_overlay_tgui.dm"
+#include "modular_dq\code\modules\client\tab_noop.dm"
 #include "modular_dq\code\modules\medical\_defines.dm"
 #include "modular_dq\code\modules\medical\causes\_cause.dm"
 #include "modular_dq\code\modules\medical\causes\causes.dm"

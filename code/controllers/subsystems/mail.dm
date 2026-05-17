@@ -2,9 +2,7 @@ SUBSYSTEM_DEF(mail)
 	name = "Mail"
 	wait = 60 SECONDS
 	priority = FIRE_PRIORITY_SUPPLY
-
 	flags = SS_NO_TICK_CHECK | SS_NO_INIT
-
 	var/mail_waiting = 0					// Pending mail
 	var/mail_per_process = 0.55				// Mail to be generated
 	var/admin_mail = list()					// Mail added by Spawn Mail

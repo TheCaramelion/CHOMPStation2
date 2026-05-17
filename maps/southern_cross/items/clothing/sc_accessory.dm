@@ -1,3 +1,4 @@
+#if !defined(SLIM) // DQAdd — gated under SLIM build
 //Pilot
 
 /obj/item/clothing/accessory/storage/webbing/pilot1
@@ -12,3 +13,4 @@
 	sprite_sheets = list(
 		SPECIES_TESHARI = 'icons/inventory/accessory/mob_teshari.dmi'
 	)
+#endif // !SLIM

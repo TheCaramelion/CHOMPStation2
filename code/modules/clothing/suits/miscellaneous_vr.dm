@@ -139,4 +139,3 @@
 	icon_state = "altevian-admiral"
 
 	species_restricted = list(SPECIES_ALTEVIAN)
-
