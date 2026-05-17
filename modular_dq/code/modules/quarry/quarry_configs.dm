@@ -52,6 +52,11 @@
 	wall_turf = /turf/simulated/mineral/cave/quarry/shallows
 	ore_density = 8
 	decoration_density = 1
+	biome_roster = list(
+		/datum/quarry_biome/stone_caverns = 50,
+		/datum/quarry_biome/damp_tunnels = 25,
+		/datum/quarry_biome/mushroom_grottos = 25,
+	)
 	mob_count = 2500
 	// Shallows: small fauna with hostile AI. Lizardmen patrol, scrubbles
 	// skitter underfoot, wolves prowl in packs, dinos snap. Nothing
@@ -100,6 +105,13 @@
 	wall_turf = /turf/simulated/mineral/cave/quarry/midmines
 	ore_density = 10
 	decoration_density = 2
+	biome_roster = list(
+		/datum/quarry_biome/stone_caverns = 35,
+		/datum/quarry_biome/crystal_pockets = 30,
+		/datum/quarry_biome/damp_tunnels = 15,
+		/datum/quarry_biome/sulfur_caves = 10,
+		/datum/quarry_biome/frozen_hollows = 10,
+	)
 	mob_count = 3000
 	// Midmines: mid-tier hostiles. Tunneler spiders show up, xenos
 	// patrol packs, chungus rumble through the corridors, and the
@@ -153,6 +165,13 @@
 	wall_turf = /turf/simulated/mineral/cave/quarry/deeps
 	ore_density = 14
 	decoration_density = 2
+	biome_roster = list(
+		/datum/quarry_biome/crystal_pockets = 25,
+		/datum/quarry_biome/sulfur_caves = 25,
+		/datum/quarry_biome/phoron_geology = 20,
+		/datum/quarry_biome/magma_vents = 15,
+		/datum/quarry_biome/bone_yards = 15,
+	)
 	mob_count = 3500
 	// Deeps: dangerous fauna. Raptors hunt in flocks, direwolves
 	// pack-charge, stalkers pick off stragglers, deathclaws guard the
@@ -205,6 +224,13 @@
 	wall_turf = /turf/simulated/mineral/cave/quarry/abyss
 	ore_density = 16
 	decoration_density = 2
+	biome_roster = list(
+		/datum/quarry_biome/magma_vents = 25,
+		/datum/quarry_biome/phoron_geology = 25,
+		/datum/quarry_biome/bone_yards = 20,
+		/datum/quarry_biome/sulfur_caves = 15,
+		/datum/quarry_biome/crystal_pockets = 15,
+	)
 	mob_count = 4000
 	// Abyss: brutal. Greatwolves and gryphons patrol, cryptdrakes
 	// guard ore veins, raptor flocks ambush. 500-1000 HP boss-tier
@@ -252,6 +278,12 @@
 	wall_turf = /turf/simulated/mineral/cave/quarry/core
 	ore_density = 18
 	decoration_density = 1
+	biome_roster = list(
+		/datum/quarry_biome/shattered_core = 50,
+		/datum/quarry_biome/magma_vents = 20,
+		/datum/quarry_biome/phoron_geology = 15,
+		/datum/quarry_biome/bone_yards = 15,
+	)
 	mob_count = 4500
 	// Core: end-tier. Cryptdrakes everywhere, deathclaw dens, big
 	// dragons, gryphon flocks. 800+ HP boss monsters mixed in.

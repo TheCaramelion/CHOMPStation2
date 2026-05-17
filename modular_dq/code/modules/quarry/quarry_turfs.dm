@@ -69,3 +69,42 @@
 /turf/simulated/mineral/cave/quarry/core
 	// 21-25. Hot, glassy stone near the planet's core.
 	sand_icon_state = "rock"
+
+
+// --- Biome wall subtypes ---------------------------------------------
+//
+// Each biome paints its territory with a distinctly-tinted wall.
+// `color` applies to both the wall sprite and its carved-floor
+// (sand_icon) variant, so a player walking from stone_caverns into
+// crystal_pockets sees the wall+floor color shift on the cell border.
+// Sprite states stay shared so this costs zero new art.
+
+/turf/simulated/mineral/cave/quarry/biome_stone
+	color = "#a8a8a8"
+
+/turf/simulated/mineral/cave/quarry/biome_crystal
+	color = "#9bd7ff"
+
+/turf/simulated/mineral/cave/quarry/biome_damp
+	color = "#7fb8c0"
+
+/turf/simulated/mineral/cave/quarry/biome_sulfur
+	color = "#d9c44b"
+
+/turf/simulated/mineral/cave/quarry/biome_mushroom
+	color = "#a8e3a0"
+
+/turf/simulated/mineral/cave/quarry/biome_magma
+	color = "#cc4a2a"
+
+/turf/simulated/mineral/cave/quarry/biome_frozen
+	color = "#cfe1ee"
+
+/turf/simulated/mineral/cave/quarry/biome_phoron
+	color = "#b86bd9"
+
+/turf/simulated/mineral/cave/quarry/biome_bone
+	color = "#d4c19a"
+
+/turf/simulated/mineral/cave/quarry/biome_shattered
+	color = "#553a6b"

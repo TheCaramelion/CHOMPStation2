@@ -349,6 +349,23 @@ SUBSYSTEM_DEF(quarry)
 	new /datum/random_map/automata/cave_system/quarry(cfg, 1, 1, new_z, QUARRY_LAYER_SIZE, QUARRY_LAYER_SIZE)
 	var/_tl2 = world.timeofday
 
+	// Build the biome map: each tile gets assigned a biome based on a
+	// smooth noise field. Empty roster falls back to single-biome
+	// behavior (every tile = config wall_turf).
+	var/list/biome_map = null
+	if(length(cfg.biome_roster))
+		biome_map = _quarry_build_biome_map(depth, cfg.biome_roster, 1, 1, QUARRY_LAYER_SIZE, QUARRY_LAYER_SIZE)
+		// Repaint walls with per-biome wall_turf. Floors stay as their
+		// (sand) appearance because make_floor toggles density on the
+		// same mineral type; the visual change is per-biome wall variant.
+		for(var/turf/simulated/mineral/T in block(locate(1, 1, new_z), locate(QUARRY_LAYER_SIZE, QUARRY_LAYER_SIZE, new_z)))
+			if(!T.density)
+				continue
+			var/datum/quarry_biome/B = _quarry_biome_at(biome_map, T)
+			if(!B?.wall_turf || T.type == B.wall_turf)
+				continue
+			T.ChangeTurf(B.wall_turf)
+
 	// Bucket tiles for the placement passes that follow.
 	var/list/floor_candidates = list()
 	var/list/wall_candidates = list()
@@ -405,32 +422,49 @@ SUBSYSTEM_DEF(quarry)
 		return null
 
 	var/total_deco_density = cfg.decoration_density + extra_decoration_density
-	if(total_deco_density > 0 && length(decoration_table))
+	if(total_deco_density > 0 && (length(decoration_table) || biome_map))
 		for(var/turf/T as anything in floor_candidates)
 			if(!prob(total_deco_density))
 				continue
-			var/deco_type = pickweight(decoration_table)
+			// Same biome-priority rule as mob spawning: biome's deco
+			// table wins at this tile if it has one, otherwise the
+			// aggregated feature table.
+			var/list/effective_deco = decoration_table
+			if(biome_map)
+				var/datum/quarry_biome/B = _quarry_biome_at(biome_map, T)
+				if(B && length(B.decoration_contributions))
+					effective_deco = B.decoration_contributions
+			if(!length(effective_deco))
+				continue
+			var/deco_type = pickweight(effective_deco)
 			if(deco_type)
 				new deco_type(T)
 	var/_tl6 = world.timeofday
 
 	var/total_mob_count = cfg.mob_count + extra_mob_spawns
-	// If no mob feature contributed to mob_table, fall back to the
-	// cfg's default_mob_table so the layer isn't sterile.
-	var/list/effective_mob_table = length(mob_table) ? mob_table : cfg.default_mob_table
-	if(total_mob_count > 0 && length(effective_mob_table))
+	// Fallback table when no biome-specific table applies at the
+	// picked tile. Feature-aggregated table takes priority, then the
+	// cfg's default_mob_table.
+	var/list/fallback_mob_table = length(mob_table) ? mob_table : cfg.default_mob_table
+	if(total_mob_count > 0 && (length(fallback_mob_table) || biome_map))
 		var/spawned = 0
 		var/list/spawn_candidates = floor_candidates.Copy()
 		while(spawned < total_mob_count && length(spawn_candidates))
 			var/turf/T = pick(spawn_candidates)
 			spawn_candidates -= T
-			// Skip tiles inside player-built safe rooms (areas with a
-			// powered APC). At generation time this is a no-op since
-			// no rooms exist yet, but a respawn pass on a restored
-			// layer will honor any rooms players built last visit.
 			if(_quarry_tile_is_safe(T))
 				continue
-			var/mob_type = pickweight(effective_mob_table)
+			// Prefer the biome's mob table at this specific tile. If
+			// the biome has none, fall back to the layer-wide table.
+			var/list/effective_table = fallback_mob_table
+			if(biome_map)
+				var/datum/quarry_biome/B = _quarry_biome_at(biome_map, T)
+				if(B && length(B.mob_contributions))
+					effective_table = B.mob_contributions
+			if(!length(effective_table))
+				spawned++
+				continue
+			var/mob_type = pickweight(effective_table)
 			if(mob_type)
 				new mob_type(T)
 			spawned++

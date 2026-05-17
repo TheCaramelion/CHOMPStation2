@@ -5718,6 +5718,8 @@
 #include "modular_chomp\maps\~turfpacks\unsim_turfs\unsim_turfs_walls.dm"
 // BEGIN DQ MODULAR INCLUDES
 #include "modular_dq\code\modules\quarry\quarry_config.dm"
+#include "modular_dq\code\modules\quarry\quarry_noise_field.dm"
+#include "modular_dq\code\modules\quarry\quarry_biome.dm"
 #include "modular_dq\code\modules\quarry\raw_chem.dm"
 #include "modular_dq\code\modules\quarry\quarry_pool_turfs.dm"
 #include "modular_dq\code\modules\quarry\quarry_feature.dm"

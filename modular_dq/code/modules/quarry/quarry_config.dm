@@ -18,7 +18,19 @@
 	// Turf type used for both walls and floors. The generator ChangeTurfs the
 	// loaded substrate to this type before carving. Must be a subtype of
 	// /turf/simulated/mineral so make_floor() / make_wall() work in place.
+	//
+	// Soft-deprecated in favor of biome_roster: if biome_roster is set,
+	// each tile gets its biome's wall_turf instead. wall_turf is now a
+	// fallback when no roster is declared.
 	var/turf/simulated/mineral/wall_turf = /turf/simulated/mineral/cave
+
+	// Biome roster for this layer. Form: list(biome_typepath = weight).
+	// At generation a smooth noise field is bucketed by these weights;
+	// each tile's biome controls its wall_turf, ore/mob/decoration
+	// tables, and ambient color. Higher weight = more of the layer.
+	// If empty, the layer falls back to the monolithic wall_turf +
+	// feature pool behavior.
+	var/list/biome_roster = list()
 
 	// Baseline ore density (percent of wall tiles that carry ore).
 	// Feature-pool rolls populate the ore_table at generation time.
