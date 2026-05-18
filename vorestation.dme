@@ -5734,6 +5734,7 @@
 #include "modular_dq\code\modules\quarry\quarry_goal_hooks.dm"
 #include "modular_dq\code\modules\quarry\quarry_danger.dm"
 #include "modular_dq\code\modules\quarry\quarry_events.dm"
+#include "modular_dq\code\modules\quarry\quarry_mob_moves.dm"
 #include "modular_dq\code\modules\quarry\quarry_stalker_mobs.dm"
 #include "modular_dq\code\modules\quarry\quarry_noise.dm"
 #include "modular_dq\code\modules\quarry\quarry_elevator.dm"

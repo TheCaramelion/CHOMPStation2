@@ -19,6 +19,10 @@
 	health = 90
 	melee_damage_lower = 6
 	melee_damage_upper = 14
+	// First mob wired to the move framework. Heavy bite gives the
+	// stalker a telegraphed special that doubles its damage on a
+	// successful land — see /datum/quarry_mob_move/test_heavy_bite.
+	quarry_move_pool = list(/datum/quarry_mob_move/test_heavy_bite)
 
 
 // --- Midmines: depth 6-10 ---------------------------------------------
