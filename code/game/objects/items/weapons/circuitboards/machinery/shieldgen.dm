@@ -36,7 +36,7 @@
 	board_type = new /datum/frame/frame_types/machine
 	build_path = /obj/machinery/shield_gen/external
 	req_components = list(
-							/obj/item/stock_parts/manipulator/pico = 2,
+							/obj/item/stock_parts/manipulator = 2,
 							/obj/item/stock_parts/subspace/transmitter = 1,
 							/obj/item/stock_parts/subspace/crystal = 1,
 							/obj/item/stock_parts/subspace/amplifier = 1,
@@ -48,7 +48,7 @@
 	board_type = new /datum/frame/frame_types/machine
 	build_path = /obj/machinery/shield_gen
 	req_components = list(
-							/obj/item/stock_parts/manipulator/pico = 2,
+							/obj/item/stock_parts/manipulator = 2,
 							/obj/item/stock_parts/subspace/transmitter = 1,
 							/obj/item/stock_parts/subspace/crystal = 1,
 							/obj/item/stock_parts/subspace/amplifier = 1,
@@ -60,7 +60,7 @@
 	board_type = new /datum/frame/frame_types/machine
 	build_path = /obj/machinery/shield_capacitor
 	req_components = list(
-							/obj/item/stock_parts/manipulator/pico = 2,
+							/obj/item/stock_parts/manipulator = 2,
 							/obj/item/stock_parts/subspace/sub_filter = 1,
 							/obj/item/stock_parts/subspace/treatment = 1,
 							/obj/item/stock_parts/subspace/analyzer = 1,

@@ -84,6 +84,7 @@
 	..()
 
 
+	dq_apply_material_synergies(src) // DQAdd
 // Shuts down the shield, removing all shield segments and unlocking generator settings.
 /obj/machinery/power/shield_generator/proc/shutdown_field()
 	for(var/obj/effect/shield/S in field_segments)
@@ -705,7 +706,7 @@
 		component_parts -= cap
 		qdel(cap)
 
-	component_parts += new /obj/item/stock_parts/capacitor/hyper(src)
+	component_parts += new /obj/item/stock_parts/capacitor(src)
 	component_parts += new /obj/item/smes_coil/super_capacity(src)
 	RefreshParts()
 	current_energy = max_energy

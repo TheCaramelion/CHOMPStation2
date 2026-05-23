@@ -1,6 +1,7 @@
 /datum/material/wood
 	name = MAT_WOOD
 	stack_type = /obj/item/stack/material/wood
+	material_class = MATCLASS_ORGANIC
 	icon_colour = "#9c5930"
 	integrity = 50
 	icon_base = "wood"
@@ -8,7 +9,7 @@
 	shard_type = SHARD_SPLINTER
 	shard_can_repair = 0 // you can't weld splinters back into planks
 	hardness = 15
-	weight = 18
+	density = 18
 	protectiveness = 8 // 28%
 	conductive = 0
 	conductivity = 1
@@ -100,7 +101,7 @@
 	icon_reinf = "reinf_stone"
 	integrity = 65	//a bit stronger than regular wood
 	hardness = 20
-	weight = 20	//likewise, heavier
+	density = 20	//likewise, heavier
 
 /datum/material/wood/hardwood/generate_recipes()
 	..()
@@ -187,7 +188,7 @@
 	icon_reinf = "reinf_stone"
 	integrity = 65
 	hardness = 20
-	weight = 20
+	density = 20
 
 /datum/material/wood/birch/generate_recipes()
 	..()
@@ -231,7 +232,7 @@
 	icon_reinf = "reinf_stone"
 	integrity = 65
 	hardness = 20
-	weight = 20
+	density = 20
 
 /datum/material/wood/pine/generate_recipes()
 	..()
@@ -275,7 +276,7 @@
 	icon_reinf = "reinf_stone"
 	integrity = 65
 	hardness = 20
-	weight = 20
+	density = 20
 
 /datum/material/wood/oak/generate_recipes()
 	..()
@@ -319,7 +320,7 @@
 	icon_reinf = "reinf_stone"
 	integrity = 65
 	hardness = 20
-	weight = 20
+	density = 20
 
 /datum/material/wood/acacia/generate_recipes()
 	..()
@@ -364,7 +365,7 @@
 	icon_reinf = "reinf_stone"
 	integrity = 65
 	hardness = 20
-	weight = 20
+	density = 20
 
 /datum/material/wood/redwood/generate_recipes()
 	..()

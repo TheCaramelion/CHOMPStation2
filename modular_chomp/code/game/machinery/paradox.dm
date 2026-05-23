@@ -39,6 +39,7 @@
 	chaos_eff = cap_rating
 
 
+	dq_apply_material_synergies(src) // DQAdd
 /obj/machinery/paradoxrift/process()
 	if(!(stat & NOPOWER))
 		return
@@ -66,11 +67,11 @@
 	icon_state = "medicalkit"
 
 /obj/random/portalloot/item_to_spawn()
-	return pick(prob(6);/obj/item/stock_parts/capacitor/omni,
-				prob(6);/obj/item/stock_parts/manipulator/omni,
-				prob(6);/obj/item/stock_parts/scanning_module/omni,
-				prob(6);/obj/item/stock_parts/matter_bin/omni,
-				prob(6);/obj/item/stock_parts/micro_laser/omni,
+	return pick(prob(6);/obj/item/stock_parts/capacitor,
+				prob(6);/obj/item/stock_parts/manipulator,
+				prob(6);/obj/item/stock_parts/scanning_module,
+				prob(6);/obj/item/stock_parts/matter_bin,
+				prob(6);/obj/item/stock_parts/micro_laser,
 				prob(6);/obj/item/stack/material/phoron,
 				prob(6);/obj/item/stack/material/deuterium,
 				prob(6);/obj/item/stack/material/tritium,
@@ -83,11 +84,11 @@
 	icon_state = "medicalkit"
 
 /obj/random/greaterportalloot/item_to_spawn()
-	return pick(prob(6);/obj/item/stock_parts/capacitor/omni,
-				prob(6);/obj/item/stock_parts/manipulator/omni,
-				prob(6);/obj/item/stock_parts/scanning_module/omni,
-				prob(6);/obj/item/stock_parts/matter_bin/omni,
-				prob(6);/obj/item/stock_parts/micro_laser/omni,
+	return pick(prob(6);/obj/item/stock_parts/capacitor,
+				prob(6);/obj/item/stock_parts/manipulator,
+				prob(6);/obj/item/stock_parts/scanning_module,
+				prob(6);/obj/item/stock_parts/matter_bin,
+				prob(6);/obj/item/stock_parts/micro_laser,
 				prob(4);/obj/random/smes_coil,
 				prob(4);/obj/random/bomb_supply,
 				prob(4);/obj/random/powercell,

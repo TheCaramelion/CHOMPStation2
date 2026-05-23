@@ -51,6 +51,7 @@ It is used to destroy hand-held objects and advance technological research. Used
 	T *= 0.1
 	decon_mod = clamp(T, 0, 1)
 
+	dq_apply_material_synergies(src) // DQAdd
 /obj/machinery/rnd/destructive_analyzer/update_icon()
 	var/current_item = loaded_item?.resolve()
 	if(panel_open)

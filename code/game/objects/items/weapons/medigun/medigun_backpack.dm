@@ -43,10 +43,10 @@
 	desc = "Contains a compact version of the bluespace medigun able to be used one handed, this portable unit digitizes and stores chems and battery power used by the attached gun."
 	icon_state = "mg-backpack_cmo"
 	item_state = "mg-backpack_cmo-onmob"
-	scapacitor = /obj/item/stock_parts/capacitor/adv
-	smanipulator = /obj/item/stock_parts/manipulator/nano
-	smodule = /obj/item/stock_parts/scanning_module/adv
-	slaser = /obj/item/stock_parts/micro_laser/high
+	scapacitor = /obj/item/stock_parts/capacitor
+	smanipulator = /obj/item/stock_parts/manipulator
+	smodule = /obj/item/stock_parts/scanning_module
+	slaser = /obj/item/stock_parts/micro_laser
 	bcell = /obj/item/cell/apc
 	tankmax = 60
 	brutecharge = 60

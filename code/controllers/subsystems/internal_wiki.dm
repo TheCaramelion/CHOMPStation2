@@ -835,9 +835,10 @@ SUBSYSTEM_DEF(internal_wiki)
 	var/obj/item/stack/stack_path = M.stack_type
 	SSinternal_wiki.add_icon(data, initial(stack_path.icon), initial(stack_path.icon_state), initial(M.icon_colour))
 	// Get internal data
+	// DQEdit — weight renamed to density; radioactivity is a component lookup.
 	data["integrity"] = M.integrity
 	data["hardness"] = M.hardness
-	data["weight"] = M.weight
+	data["weight"] = M.density
 	data["stack_size"] = initial(stack_path.max_amount) ? initial(stack_path.max_amount) : 0
 	var/supply_value = M.supply_conversion_value ? M.supply_conversion_value : 0
 	data["supply_points"] = supply_value
@@ -849,7 +850,7 @@ SUBSYSTEM_DEF(internal_wiki)
 	data["conductive"] = M.conductive
 	data["protectiveness"] = M.protectiveness
 	data["explosion_resistance"] = M.explosion_resistance
-	data["radioactivity"] = M.radioactivity
+	data["radioactivity"] = dq_material_radioactivity(M)
 	data["reflectivity"] = M.reflectivity
 	data["melting_point"] = M.melting_point
 	data["ignition_point"] = M.ignition_point

@@ -1,11 +1,12 @@
 /datum/material/flockium
 	name = MAT_FLOKIUM
 	//stack_type = /obj/item/stack/material/sandstone
+	material_class = MATCLASS_CERAMIC // DQEdit
 	icon_base = "flock"
 	icon_reinf = "flock"
 	icon_colour = "#FFFFFF"
 	//shard_type = SHARD_STONE_PIECE
-	weight = 30
+	density = 30 // DQEdit — weight renamed to density.
 	hardness = 200
 	protectiveness = 5 // 20%
 	conductive = 0

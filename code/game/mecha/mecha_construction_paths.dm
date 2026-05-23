@@ -338,7 +338,7 @@
 							"backkey"=IS_CROWBAR,
 							"desc"="Advanced capacitor is installed"),
 					//8
-					list("key"=/obj/item/stock_parts/capacitor/adv,
+					list("key"=/obj/item/stock_parts/capacitor,
 							"backkey"=IS_SCREWDRIVER,
 							"desc"="Advanced scanner module is secured"),
 					//9
@@ -346,7 +346,7 @@
 							"backkey"=IS_CROWBAR,
 							"desc"="Advanced scanner module is installed"),
 					//10
-					list("key"=/obj/item/stock_parts/scanning_module/adv,
+					list("key"=/obj/item/stock_parts/scanning_module,
 							"backkey"=IS_SCREWDRIVER,
 							"desc"="Targeting module is secured"),
 					//11
@@ -486,7 +486,7 @@
 				holder.icon_state = "gygax12"
 			else
 				user.visible_message(span_infoplain("[user] removes the advanced scanner module from [holder]."), span_infoplain("You remove the advanced scanner module from [holder]."))
-				new /obj/item/stock_parts/scanning_module/adv(get_turf(holder))
+				new /obj/item/stock_parts/scanning_module(get_turf(holder))
 				holder.icon_state = "gygax10"
 		if(8)
 			if(diff==FORWARD)
@@ -502,7 +502,7 @@
 				holder.icon_state = "gygax14"
 			else
 				user.visible_message(span_infoplain("[user] removes the advanced capacitor from [holder]."), span_infoplain("You remove the advanced capacitor from [holder]."))
-				new /obj/item/stock_parts/capacitor/adv(get_turf(holder))
+				new /obj/item/stock_parts/capacitor(get_turf(holder))
 				holder.icon_state = "gygax12"
 		if(6)
 			if(diff==FORWARD)
@@ -620,7 +620,7 @@
 							"backkey"=IS_CROWBAR,
 							"desc"="Advanced capacitor is installed"),
 					//8
-					list("key"=/obj/item/stock_parts/capacitor/adv,
+					list("key"=/obj/item/stock_parts/capacitor,
 							"backkey"=IS_SCREWDRIVER,
 							"desc"="Advanced scanner module is secured"),
 					//9
@@ -628,7 +628,7 @@
 							"backkey"=IS_CROWBAR,
 							"desc"="Advanced scanner module is installed"),
 					//10
-					list("key"=/obj/item/stock_parts/scanning_module/adv,
+					list("key"=/obj/item/stock_parts/scanning_module,
 							"backkey"=IS_SCREWDRIVER,
 							"desc"="Medical module is secured"),
 					//11
@@ -768,7 +768,7 @@
 				holder.icon_state = "gygax12"
 			else
 				user.visible_message(span_infoplain("[user] removes the advanced scanner module from [holder]."), span_infoplain("You remove the advanced scanner module from [holder]."))
-				new /obj/item/stock_parts/scanning_module/adv(get_turf(holder))
+				new /obj/item/stock_parts/scanning_module(get_turf(holder))
 				holder.icon_state = "gygax10"
 		if(8)
 			if(diff==FORWARD)
@@ -784,7 +784,7 @@
 				holder.icon_state = "gygax14"
 			else
 				user.visible_message(span_infoplain("[user] removes the advanced capacitor from [holder]."), span_infoplain("You remove the advanced capacitor from [holder]."))
-				new /obj/item/stock_parts/capacitor/adv(get_turf(holder))
+				new /obj/item/stock_parts/capacitor(get_turf(holder))
 				holder.icon_state = "gygax12"
 		if(6)
 			if(diff==FORWARD)
@@ -1123,7 +1123,7 @@
 							"backkey"=IS_CROWBAR,
 							"desc"="Advanced capacitor is installed"),
 					//8
-					list("key"=/obj/item/stock_parts/capacitor/adv,
+					list("key"=/obj/item/stock_parts/capacitor,
 							"backkey"=IS_SCREWDRIVER,
 							"desc"="Advanced scanner module is secured"),
 					//9
@@ -1131,7 +1131,7 @@
 							"backkey"=IS_CROWBAR,
 							"desc"="Advanced scanner module is installed"),
 					//10
-					list("key"=/obj/item/stock_parts/scanning_module/adv,
+					list("key"=/obj/item/stock_parts/scanning_module,
 							"backkey"=IS_SCREWDRIVER,
 							"desc"="Targeting module is secured"),
 					//11
@@ -1272,7 +1272,7 @@
 				holder.icon_state = "durand12"
 			else
 				user.visible_message(span_infoplain("[user] removes the advanced scanner module from [holder]."), span_infoplain("You remove the advanced scanner module from [holder]."))
-				new /obj/item/stock_parts/scanning_module/adv(get_turf(holder))
+				new /obj/item/stock_parts/scanning_module(get_turf(holder))
 				holder.icon_state = "durand10"
 		if(8)
 			if(diff==FORWARD)
@@ -1288,7 +1288,7 @@
 				holder.icon_state = "durand14"
 			else
 				user.visible_message(span_infoplain("[user] removes the advanced capacitor from [holder]."), span_infoplain("You remove the advanced capacitor from [holder]."))
-				new /obj/item/stock_parts/capacitor/adv(get_turf(holder))
+				new /obj/item/stock_parts/capacitor(get_turf(holder))
 				holder.icon_state = "durand12"
 		if(6)
 			if(diff==FORWARD)
@@ -2207,7 +2207,7 @@
 							"backkey"=IS_CROWBAR,
 							"desc"="The advanced capacitor is installed."),
 					//10
-					list("key"=/obj/item/stock_parts/capacitor/adv,
+					list("key"=/obj/item/stock_parts/capacitor,
 							"backkey"=IS_SCREWDRIVER,
 							"desc"="The targeting module is secured."),
 					//11
@@ -2347,7 +2347,7 @@
 				holder.icon_state = "pinnace12"
 			else
 				user.visible_message(span_infoplain("[user] removes the advanced capacitor from [holder]."), span_infoplain("You remove the advanced capacitor from [holder]."))
-				new /obj/item/stock_parts/capacitor/adv(get_turf(holder))
+				new /obj/item/stock_parts/capacitor(get_turf(holder))
 				holder.icon_state = "pinnace10"
 		if(8)
 			if(diff==FORWARD)
@@ -2490,7 +2490,7 @@
 							"backkey"=IS_CROWBAR,
 							"desc"="The advanced capacitor is installed."),
 					//10
-					list("key"=/obj/item/stock_parts/capacitor/adv,
+					list("key"=/obj/item/stock_parts/capacitor,
 							"backkey"=IS_SCREWDRIVER,
 							"desc"="The targeting module is secured."),
 					//11
@@ -2630,7 +2630,7 @@
 				holder.icon_state = "baron12"
 			else
 				user.visible_message(span_infoplain("[user] removes the advanced capacitor from [holder]."), span_infoplain("You remove the advanced capacitor from [holder]."))
-				new /obj/item/stock_parts/capacitor/adv(get_turf(holder))
+				new /obj/item/stock_parts/capacitor(get_turf(holder))
 				holder.icon_state = "baron10"
 		if(8)
 			if(diff==FORWARD)

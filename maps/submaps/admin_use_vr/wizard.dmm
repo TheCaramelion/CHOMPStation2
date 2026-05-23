@@ -479,7 +479,7 @@
 /area/wizard_station)
 "bg" = (
 /obj/structure/table/steel_reinforced,
-/obj/item/stock_parts/matter_bin/super,
+/obj/item/stock_parts/matter_bin,
 /turf/unsimulated/floor{
 	icon_state = "vault";
 	dir = 5

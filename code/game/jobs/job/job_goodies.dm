@@ -167,15 +167,15 @@
 		/obj/item/perfect_tele/one_beacon = 125,
 		/obj/item/clothing/shoes/bhop = 125,
 		/obj/item/inducer = 125,
-		/obj/item/stock_parts/manipulator/nano = 50,
-		/obj/item/stock_parts/capacitor/adv = 50,
-		/obj/item/stock_parts/scanning_module/adv = 50,
-		/obj/item/stock_parts/micro_laser/high = 50,
-		/obj/item/stock_parts/matter_bin/super = 10,
-		/obj/item/stock_parts/manipulator/pico = 10,
-		/obj/item/stock_parts/capacitor/super = 10,
-		/obj/item/stock_parts/scanning_module/phasic = 10,
-		/obj/item/stock_parts/micro_laser/ultra = 10
+		/obj/item/stock_parts/manipulator = 50,
+		/obj/item/stock_parts/capacitor = 50,
+		/obj/item/stock_parts/scanning_module = 50,
+		/obj/item/stock_parts/micro_laser = 50,
+		/obj/item/stock_parts/matter_bin = 10,
+		/obj/item/stock_parts/manipulator = 10,
+		/obj/item/stock_parts/capacitor = 10,
+		/obj/item/stock_parts/scanning_module = 10,
+		/obj/item/stock_parts/micro_laser = 10
 	)
 
 // Civilian
@@ -576,11 +576,11 @@
 		/obj/item/cell/hyper = 125,
 		/obj/item/pen/fountain6 = 75,
 		/obj/item/toy/plushie/borgplushie/drake/sci = 20,
-		/obj/item/stock_parts/matter_bin/hyper = 15,
-		/obj/item/stock_parts/manipulator/hyper = 15,
-		/obj/item/stock_parts/capacitor/hyper = 15,
-		/obj/item/stock_parts/scanning_module/hyper = 15,
-		/obj/item/stock_parts/micro_laser/hyper = 15
+		/obj/item/stock_parts/matter_bin = 15,
+		/obj/item/stock_parts/manipulator = 15,
+		/obj/item/stock_parts/capacitor = 15,
+		/obj/item/stock_parts/scanning_module = 15,
+		/obj/item/stock_parts/micro_laser = 15
 	)
 	mail_color = COMMS_COLOR_COMMAND
 
@@ -591,17 +591,17 @@
 		/obj/item/cell/super = 100,
 		/obj/item/cell/hyper = 100,
 		/obj/item/stack/material/plasteel{amount = 10} = 70,
-		/obj/item/stock_parts/matter_bin/adv = 45,
-		/obj/item/stock_parts/manipulator/nano = 45,
-		/obj/item/stock_parts/capacitor/adv = 45,
-		/obj/item/stock_parts/scanning_module/adv = 45,
-		/obj/item/stock_parts/micro_laser/high = 45,
+		/obj/item/stock_parts/matter_bin = 45,
+		/obj/item/stock_parts/manipulator = 45,
+		/obj/item/stock_parts/capacitor = 45,
+		/obj/item/stock_parts/scanning_module = 45,
+		/obj/item/stock_parts/micro_laser = 45,
 		/obj/item/stack/nanopaste/advanced = 30,
-		/obj/item/stock_parts/matter_bin/super = 5,
-		/obj/item/stock_parts/manipulator/pico = 5,
-		/obj/item/stock_parts/capacitor/super = 5,
-		/obj/item/stock_parts/scanning_module/phasic = 5,
-		/obj/item/stock_parts/micro_laser/ultra = 5
+		/obj/item/stock_parts/matter_bin = 5,
+		/obj/item/stock_parts/manipulator = 5,
+		/obj/item/stock_parts/capacitor = 5,
+		/obj/item/stock_parts/scanning_module = 5,
+		/obj/item/stock_parts/micro_laser = 5
 	)
 	mail_color = COMMS_COLOR_SCIENCE
 

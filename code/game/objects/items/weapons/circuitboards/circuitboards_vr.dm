@@ -45,7 +45,7 @@
 	board_type = new /datum/frame/frame_types/machine
 	req_components = list(
 							/obj/item/stack/cable_coil = 20,
-							/obj/item/stock_parts/capacitor/super = 3)
+							/obj/item/stock_parts/capacitor = 3)
 
 // Board for the bomb tester in bomb_tester_vr.dm
 /obj/item/circuitboard/bomb_tester
@@ -53,7 +53,7 @@
 	build_path = /obj/machinery/bomb_tester
 	board_type = new /datum/frame/frame_types/machine
 	req_components = list(
-							/obj/item/stock_parts/matter_bin/adv = 1,
+							/obj/item/stock_parts/matter_bin = 1,
 							/obj/item/stock_parts/scanning_module = 5)
 
 // Board for the timeclock terminal in timeclock_vr.dm

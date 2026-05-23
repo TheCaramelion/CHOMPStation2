@@ -40,10 +40,10 @@
 		pointer_icon_state = pick("red_laser","green_laser","blue_laser","purple_laser")
 
 /obj/item/laser_pointer/upgraded/Initialize(mapload)
-	. = ..(mapload, /obj/item/stock_parts/micro_laser/ultra)
+	. = ..(mapload, /obj/item/stock_parts/micro_laser)
 
 /obj/item/laser_pointer/ultimate/Initialize(mapload)
-	. = ..(mapload, /obj/item/stock_parts/micro_laser/omni)
+	. = ..(mapload, /obj/item/stock_parts/micro_laser)
 
 /obj/item/laser_pointer/attack(mob/living/M, mob/living/user, target_zone, attack_modifier)
 	laser_act(M, user)

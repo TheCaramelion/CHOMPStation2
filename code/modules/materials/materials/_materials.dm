@@ -209,10 +209,13 @@ GLOBAL_LIST_INIT(name_to_material, populate_material_list())
 
 	// Attributes
 	var/cut_delay = 0            // Delay in ticks when cutting through this wall.
-	var/radioactivity            // Radiation var. Used in wall and object processing to irradiate surroundings.
+	// DQEdit — radioactivity / luminescence moved out into
+	// /datum/component/material_radioactive and /material_luminescent
+	// (see modular_dq/code/modules/materials/material_components.dm).
+	// Readers query via dq_material_radioactivity() / dq_material_luminescence().
 	var/ignition_point           // K, point at which the material catches on fire.
 	var/melting_point = 1800     // K, walls will take damage if they're next to a fire hotter than this
-	var/integrity = 150          // General-use HP value for products.
+	// DQEdit — integrity moved into the property system below.
 	var/protectiveness = 10      // How well this material works as armor.  Higher numbers are better, diminishing returns applies.
 	var/opacity = 1              // Is the material transparent? 0.5< makes transparent walls/doors.
 	var/reflectivity = 0         // How reflective to light is the material?  Currently used for laser reflection and defense.
@@ -220,12 +223,51 @@ GLOBAL_LIST_INIT(name_to_material, populate_material_list())
 	var/negation = 0             // Objects that respect this will randomly absorb impacts with this var as the percent chance.
 	var/spatial_instability = 0  // Objects that have trouble staying in the same physical space by sheer laws of nature have this. Percent for respecting items to cause teleportation.
 	var/conductive = 1           // Objects without this var add NOCONDUCT to flags on spawn.
-	var/conductivity = null      // How conductive the material is. Iron acts as the baseline, at 10.
+	// DQEdit — conductivity moved into the property system below.
 	var/list/composite_material  // If set, object matter var will be a list containing these values.
-	var/luminescence
-	var/radiation_resistance = 0 // Radiation resistance, which is added on top of a material's weight for blocking radiation. Needed to make lead special without superrobust weapons.
+	// DQEdit — luminescence moved into /datum/component/material_luminescent.
+	var/radiation_resistance = 0 // Radiation resistance, which is added on top of a material's density for blocking radiation. Needed to make lead special without superrobust weapons.
 	var/supply_conversion_value  // Supply points per sheet that this material sells for.
 	var/can_sharpen = TRUE // Is this material compatible with a sharpening kit?
+
+	// DQAdd Start — material property system.
+	//
+	// material_class is one of MATCLASS_METAL/CRYSTAL/ORGANIC/CERAMIC and
+	// drives smelter routing, alloy rules, and per-class stat ranges when
+	// this material is rolled dynamically by SSquarry.
+	//
+	// The eleven property vars below are read-heavy numeric stats. Every
+	// material can carry every stat (default 0). Static materials declare
+	// what's gameplay-relevant; /datum/material/dynamic rolls all of them
+	// from class-aware ranges at creation time. There are no implicit
+	// upstream-style defaults — 0 means "this material does not
+	// contribute to that axis."
+	//
+	// Behavior properties (luminescence, radioactivity, toxicity) live on
+	// /datum/component subtypes attached to the material; see
+	// modular_dq/code/modules/materials/material_components.dm. They're
+	// queried via dq_material_luminescence/radioactivity/toxicity which
+	// return the component magnitude or 0.
+	var/material_class = MATCLASS_METAL
+	// Mechanical
+	var/hardness = 0
+	var/density = 0                  // Was upstream `weight`.
+	var/integrity = 0
+	var/elasticity = 0
+	var/brittleness = 0              // Debuff stat: high brittleness = parts can shatter.
+	// Thermal
+	var/heat_resistance = 0
+	var/thermal_insulation = 0
+	// Electrical / magnetic
+	var/conductivity = 0
+	var/magnetism = 0
+	// Chemical
+	var/reactivity = 0
+	var/corrosion_resistance = 0
+	// Trait holder (component-driven behaviors attached at New() or roll
+	// time live as full /datum/component children on this material).
+	var/list/traits
+	// DQAdd End
 
 	// Placeholder vars for the time being, todo properly integrate windows/light tiles/rods.
 	var/created_window
@@ -234,9 +276,7 @@ GLOBAL_LIST_INIT(name_to_material, populate_material_list())
 	var/wire_product
 	var/list/window_options = list()
 
-	// Damage values.
-	var/hardness = 60            // Prob of wall destruction by hulk, used for edge damage in weapons.  Also used for bullet protection in armor.
-	var/weight = 20              // Determines blunt damage/throwforce for weapons.
+	// DQEdit — hardness/weight moved into the property system above.
 
 	// Noise when someone is faceplanted onto a table made of this material.
 	var/tableslam_noise = 'sound/weapons/tablehit1.ogg'
@@ -293,7 +333,7 @@ GLOBAL_LIST_INIT(name_to_material, populate_material_list())
 
 // Weapons handle applying a divisor for this value locally.
 /datum/material/proc/get_blunt_damage()
-	return weight //todo
+	return density // DQEdit — was `weight`, renamed to density in the new system.
 
 // Return the matter comprising this material.
 /datum/material/proc/get_matter()
@@ -313,9 +353,12 @@ GLOBAL_LIST_INIT(name_to_material, populate_material_list())
 /datum/material/proc/can_open_material_door(mob/living/user)
 	return 1
 
-// Currently used for weapons and objects made of uranium to irradiate things.
+// DQEdit — was `(radioactivity>0)`. Radioactivity now lives on a
+// /datum/component/material_radioactive attached to materials that
+// emit. Items made from such materials still need to process for
+// irradiation.
 /datum/material/proc/products_need_process()
-	return (radioactivity>0) //todo
+	return dq_material_radioactivity(src) > 0
 
 // Used by walls when qdel()ing to avoid neighbor merging.
 /datum/material/placeholder

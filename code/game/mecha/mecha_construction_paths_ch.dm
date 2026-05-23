@@ -59,7 +59,7 @@
 							"backkey"=IS_CROWBAR,
 							"desc"="Advanced capacitor is installed"),
 					//8
-					list("key"=/obj/item/stock_parts/capacitor/adv,
+					list("key"=/obj/item/stock_parts/capacitor,
 							"backkey"=IS_SCREWDRIVER,
 							"desc"="Advanced scanner module is secured"),
 					//9
@@ -67,7 +67,7 @@
 							"backkey"=IS_CROWBAR,
 							"desc"="Advanced scanner module is installed"),
 					//10
-					list("key"=/obj/item/stock_parts/scanning_module/adv,
+					list("key"=/obj/item/stock_parts/scanning_module,
 							"backkey"=IS_SCREWDRIVER,
 							"desc"="Targeting module is secured"),
 					//11
@@ -206,7 +206,7 @@
 				holder.icon_state = "scarab_chip4"
 			else
 				user.visible_message("[user] removes the advanced scanner module from [holder].", "You remove the advanced scanner module from [holder].")
-				new /obj/item/stock_parts/scanning_module/adv(get_turf(holder))
+				new /obj/item/stock_parts/scanning_module(get_turf(holder))
 				holder.icon_state = "scarab_chip3"
 		if(8)
 			if(diff==FORWARD)
@@ -222,7 +222,7 @@
 				holder.icon_state = "scarab_chip5"
 			else
 				user.visible_message("[user] removes the advanced capacitor from [holder].", "You remove the advanced capacitor from [holder].")
-				new /obj/item/stock_parts/capacitor/adv(get_turf(holder))
+				new /obj/item/stock_parts/capacitor(get_turf(holder))
 				holder.icon_state = "scarab_chip5"
 		if(6)
 			if(diff==FORWARD)

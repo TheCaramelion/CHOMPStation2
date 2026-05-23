@@ -32,11 +32,11 @@
 /turf/simulated/floor/tiled/dark,
 /area/submap/eclipseprison)
 "du" = (
-/obj/item/stock_parts/capacitor/omni,
-/obj/item/stock_parts/capacitor/omni,
-/obj/item/stock_parts/capacitor/omni,
-/obj/item/stock_parts/capacitor/omni,
-/obj/item/stock_parts/scanning_module/omni,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/scanning_module,
 /obj/structure/table/marble,
 /obj/effect/floor_decal/corner/paleblue/diagonal,
 /turf/simulated/floor/tiled/freezer{
@@ -401,11 +401,11 @@
 /turf/simulated/floor/tiled/dark,
 /area/submap/eclipseprison)
 "zB" = (
-/obj/item/stock_parts/matter_bin/omni,
-/obj/item/stock_parts/matter_bin/omni,
-/obj/item/stock_parts/matter_bin/omni,
-/obj/item/stock_parts/matter_bin/omni,
-/obj/item/stock_parts/scanning_module/omni,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/scanning_module,
 /obj/structure/table/marble,
 /obj/effect/floor_decal/corner/paleblue/diagonal,
 /turf/simulated/floor/tiled/freezer{
@@ -448,11 +448,11 @@
 /turf/simulated/floor/tiled/red,
 /area/submap/eclipseprison)
 "Et" = (
-/obj/item/stock_parts/manipulator/omni,
-/obj/item/stock_parts/manipulator/omni,
-/obj/item/stock_parts/manipulator/omni,
-/obj/item/stock_parts/manipulator/omni,
-/obj/item/stock_parts/scanning_module/omni,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/scanning_module,
 /obj/structure/table/marble,
 /obj/effect/floor_decal/corner/paleblue/diagonal,
 /turf/simulated/floor/tiled/freezer{
@@ -622,11 +622,11 @@
 /turf/simulated/floor/tiled/dark,
 /area/submap/eclipseprison)
 "NK" = (
-/obj/item/stock_parts/micro_laser/omni,
-/obj/item/stock_parts/micro_laser/omni,
-/obj/item/stock_parts/micro_laser/omni,
-/obj/item/stock_parts/micro_laser/omni,
-/obj/item/stock_parts/scanning_module/omni,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/scanning_module,
 /obj/structure/table/marble,
 /obj/effect/floor_decal/corner/paleblue/diagonal,
 /turf/simulated/floor/tiled/freezer{

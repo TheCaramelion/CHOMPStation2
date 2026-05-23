@@ -1639,9 +1639,9 @@
 	dir = 1
 	},
 /obj/structure/table/rack,
-/obj/item/stock_parts/micro_laser/omni,
-/obj/item/stock_parts/scanning_module/hyper,
-/obj/item/stock_parts/manipulator/omni,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/manipulator,
 /turf/simulated/floor,
 /area/awaymission/hiddeneclipse/baseneon)
 "gc" = (
@@ -1649,9 +1649,9 @@
 	dir = 1
 	},
 /obj/structure/table/rack,
-/obj/item/stock_parts/micro_laser/hyper,
-/obj/item/stock_parts/scanning_module/omni,
-/obj/item/stock_parts/manipulator/hyper,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/manipulator,
 /turf/simulated/floor,
 /area/awaymission/hiddeneclipse/baseneon)
 "gd" = (

@@ -204,6 +204,7 @@
 	if(wire_rate)
 		desc += "<br>It is capable of repairing burn damage."
 
+	dq_apply_material_synergies(src) // DQAdd
 /obj/machinery/recharge_station/proc/build_overlays()
 	cut_overlays()
 	switch(round(chargepercentage()))

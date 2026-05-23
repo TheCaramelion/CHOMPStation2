@@ -1227,8 +1227,8 @@
 	name = "qpad parts"
 	},
 /obj/item/bluespace_crystal,
-/obj/item/stock_parts/capacitor/hyper,
-/obj/item/stock_parts/manipulator/hyper,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/manipulator,
 /obj/item/stack/cable_coil{
 	amount = 15
 	},

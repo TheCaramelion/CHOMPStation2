@@ -79,6 +79,14 @@
 /datum/quarry_feature/proc/build_goals(datum/quarry_layer/L)
 	return list()
 
+/// Per-layer setup hook called after instantiation, before any tables
+/// are read by the placer. Lets features with depth-dependent state
+/// (e.g. exotic_vein, which pulls the band's rolled materials) populate
+/// their contributions when they know which layer they're on. Default:
+/// no-op.
+/datum/quarry_feature/proc/on_layer_setup(datum/quarry_layer/L)
+	return
+
 
 /// Roll N distinct feature typepaths from cfg.feature_pool. N is
 /// clamped to [cfg.feature_count_min, cfg.feature_count_max] and
@@ -126,6 +134,7 @@
 		if(!ispath(feat_type, /datum/quarry_feature))
 			continue
 		var/datum/quarry_feature/F = new feat_type
+		F.on_layer_setup(L)
 		instances += F
 		for(var/k in F.mob_contributions)
 			mob_table[k] = (mob_table[k] || 0) + F.mob_contributions[k]

@@ -755,8 +755,8 @@
 "cz" = (
 /obj/structure/table/standard,
 /obj/item/mmi/digital/robot,
-/obj/item/stock_parts/capacitor/adv,
-/obj/item/stock_parts/scanning_module/adv,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/scanning_module,
 /turf/simulated/floor/tiled,
 /area/submap/Rockybase)
 "cA" = (

@@ -49,11 +49,11 @@
 		/obj/item/stock_parts/micro_laser = 40,
 		/obj/item/stock_parts/matter_bin = 40,
 		/obj/item/stock_parts/matter_bin = 40,
-		/obj/item/stock_parts/capacitor/adv = 20,
-		/obj/item/stock_parts/scanning_module/adv = 20,
-		/obj/item/stock_parts/manipulator/nano = 20,
-		/obj/item/stock_parts/micro_laser/high = 20,
-		/obj/item/stock_parts/matter_bin/adv = 20
+		/obj/item/stock_parts/capacitor = 20,
+		/obj/item/stock_parts/scanning_module = 20,
+		/obj/item/stock_parts/manipulator = 20,
+		/obj/item/stock_parts/micro_laser = 20,
+		/obj/item/stock_parts/matter_bin = 20
 	)
 
 /obj/structure/salvageable/machine/Initialize(mapload)
@@ -77,7 +77,7 @@
 		/obj/item/computer_hardware/processor_unit = 40,
 		/obj/item/computer_hardware/card_slot = 40,
 		/obj/item/computer_hardware/card_slot = 40,
-		/obj/item/stock_parts/capacitor/adv = 30,
+		/obj/item/stock_parts/capacitor = 30,
 		/obj/item/computer_hardware/network_card/advanced = 20
 	)
 /obj/structure/salvageable/computer/Initialize(mapload)
@@ -102,11 +102,11 @@
 		/obj/item/stock_parts/matter_bin = 40,
 		/obj/item/stock_parts/matter_bin = 40,
 		/obj/item/stock_parts/matter_bin = 40,
-		/obj/item/stock_parts/capacitor/adv = 20,
-		/obj/item/stock_parts/micro_laser/high = 20,
-		/obj/item/stock_parts/micro_laser/high = 20,
-		/obj/item/stock_parts/matter_bin/adv = 20,
-		/obj/item/stock_parts/matter_bin/adv = 20,
+		/obj/item/stock_parts/capacitor = 20,
+		/obj/item/stock_parts/micro_laser = 20,
+		/obj/item/stock_parts/micro_laser = 20,
+		/obj/item/stock_parts/matter_bin = 20,
+		/obj/item/stock_parts/matter_bin = 20,
 		/obj/item/stack/material/steel{amount = 20} = 40,
 		/obj/item/stack/material/glass{amount = 20} = 40,
 		/obj/item/stack/material/plastic{amount = 20} = 40,

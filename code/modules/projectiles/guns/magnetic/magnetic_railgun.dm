@@ -15,7 +15,7 @@
 	projectile_type = /obj/item/projectile/bullet/magnetic/slug
 
 	cell = /obj/item/cell/device/weapon //CHOMP Edit.
-	capacitor = /obj/item/stock_parts/capacitor/adv
+	capacitor = /obj/item/stock_parts/capacitor
 	loaded = /obj/item/rcd_ammo/large
 	removable_components = TRUE //CHOMP Edit.
 
@@ -55,7 +55,7 @@
 	icon_state = "heavy_railgun"
 
 	cell = /obj/item/cell/infinite
-	capacitor = /obj/item/stock_parts/capacitor/super
+	capacitor = /obj/item/stock_parts/capacitor
 	fire_delay = 0.1
 
 	slowdown = 2
@@ -83,7 +83,7 @@
 	item_state = "z8carbine"
 
 	cell = /obj/item/cell/device/weapon //CHOMP Edit.
-	capacitor = /obj/item/stock_parts/capacitor/adv
+	capacitor = /obj/item/stock_parts/capacitor
 	removable_components = TRUE //CHOMP Edit.
 
 	fire_delay = 0.1
@@ -215,7 +215,7 @@
 	item_state = "z8carbine"
 
 	cell = /obj/item/cell/device/weapon //CHOMP Edit.
-	capacitor = /obj/item/stock_parts/capacitor/adv
+	capacitor = /obj/item/stock_parts/capacitor
 	removable_components = TRUE //CHOMPstation Edit.
 
 	slot_flags = SLOT_BELT|SLOT_BACK //CHOMPstation Edit. This is a carbine.

@@ -1,5 +1,6 @@
 /datum/material/diona
 	name = MAT_BIOMASS
+	material_class = MATCLASS_ORGANIC
 	icon_colour = null
 	stack_type = null
 	integrity = 600
@@ -15,12 +16,13 @@
 
 /datum/material/chitin
 	name = MAT_CHITIN
+	material_class = MATCLASS_ORGANIC
 	icon_colour = "#8d6653"
 	stack_type = /obj/item/stack/material/chitin
 	icon_base = "solid"
 	icon_reinf = "reinf_mesh"
 	integrity = 60
-	weight = 10
+	density = 10
 	ignition_point = T0C+400
 	melting_point = T0C+500
 	protectiveness = 20

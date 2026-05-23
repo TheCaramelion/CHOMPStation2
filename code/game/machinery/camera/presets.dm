@@ -238,7 +238,7 @@ GLOBAL_LIST_INIT(engineering_networks, list(
 	update_coverage()
 
 /obj/machinery/camera/proc/upgradeXRay()
-	assembly.upgrades.Add(new /obj/item/stock_parts/scanning_module/adv(assembly))
+	assembly.upgrades.Add(new /obj/item/stock_parts/scanning_module(assembly))
 	setPowerUsage()
 	update_coverage()
 

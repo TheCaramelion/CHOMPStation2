@@ -325,9 +325,10 @@
 /datum/material/wax
 	name = MAT_WAX
 	stack_type = /obj/item/stack/material/wax
+	material_class = MATCLASS_ORGANIC // DQEdit
 	icon_colour = "#fff343"
 	melting_point = T0C+300
-	weight = 1
+	density = 1 // DQEdit — weight renamed to density.
 	pass_stack_colors = TRUE
 	supply_conversion_value = 0.5
 

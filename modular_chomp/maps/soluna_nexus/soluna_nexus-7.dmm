@@ -20873,7 +20873,7 @@
 /area/shuttle/large_escape_pod3/centcom)
 "shC" = (
 /obj/structure/table/steel_reinforced,
-/obj/item/stock_parts/matter_bin/super,
+/obj/item/stock_parts/matter_bin,
 /turf/unsimulated/floor{
 	dir = 5;
 	icon_state = "vault"

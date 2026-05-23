@@ -241,15 +241,17 @@
 	return
 
 /obj/structure/simple_door/process()
-	if(!material.radioactivity)
+	// DQEdit — material.radioactivity moved to a component; query the helper.
+	var/rad = dq_material_radioactivity(material)
+	if(!rad)
 		return
 	radiation_pulse(
 		src,
 		max_range = 5,
 		threshold = RAD_MEDIUM_INSULATION,
-		chance = round((material.radioactivity * 0.33), 0.1),
+		chance = round((rad * 0.33), 0.1),
 		minimum_exposure_time = URANIUM_RADIATION_MINIMUM_EXPOSURE_TIME,
-		strength = material.radioactivity
+		strength = rad
 	)
 
 /obj/structure/simple_door/iron/Initialize(mapload,material_name)

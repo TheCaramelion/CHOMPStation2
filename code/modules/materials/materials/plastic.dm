@@ -1,12 +1,13 @@
 /datum/material/plastic
 	name = MAT_PLASTIC
 	stack_type = /obj/item/stack/material/plastic
+	material_class = MATCLASS_ORGANIC
 	flags = MATERIAL_BRITTLE
 	icon_base = "solid"
 	icon_reinf = "reinf_over"
 	icon_colour = "#CCCCCC"
 	hardness = 10
-	weight = 12
+	density = 12
 	protectiveness = 5 // 20%
 	conductive = 0
 	conductivity = 2 // For the sake of material armor diversity, we're gonna pretend this plastic is a good insulator.
@@ -59,13 +60,14 @@
 /datum/material/cardboard
 	name = MAT_CARDBOARD
 	stack_type = /obj/item/stack/material/cardboard
+	material_class = MATCLASS_ORGANIC
 	flags = MATERIAL_BRITTLE
 	integrity = 10
 	icon_base = "solid"
 	icon_reinf = "reinf_over"
 	icon_colour = "#AAAAAA"
 	hardness = 1
-	weight = 1
+	density = 1
 	protectiveness = 0 // 0%
 	conductive = 0
 	ignition_point = T0C+232 //"the temperature at which book-paper catches fire, and burns." close enough
@@ -101,12 +103,13 @@
 	name = MAT_FOAM
 	display_name = MAT_FOAM
 	use_name = MAT_FOAM
+	material_class = MATCLASS_ORGANIC
 	flags = MATERIAL_PADDING
 	ignition_point = T0C+232
 	melting_point = T0C+300
 	icon_colour = "#ff9900"
 	hardness = 1
-	weight = 1
+	density = 1
 	protectiveness = 0 // 0%
 	conductive = 0
 	can_sharpen = FALSE

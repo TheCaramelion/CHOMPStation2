@@ -56,6 +56,7 @@
 	paste_inefficiency = paste_rating
 	..()
 
+	dq_apply_material_synergies(src) // DQAdd
 /obj/machinery/protean_reconstitutor/update_icon()
 	cut_overlays()
 	if(stat & (NOPOWER|BROKEN) || !anchored)

@@ -60,6 +60,7 @@
 /* Currently part upgrades do nothing
 /obj/machinery/botany/RefreshParts()
 	..()
+	dq_apply_material_synergies(src) // DQAdd
 */
 
 /obj/machinery/botany/Destroy()
