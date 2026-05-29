@@ -14,19 +14,29 @@
 	var/list/list_value = preferences.read_preference(list_type)
 	if(!islist(list_value))
 		return
+	// Mutate a Copy() so update_preference_by_type sees a distinct reference and treats
+	// it as a write (recently_updated_keys + save_batch_dirty), not a same-ref no-op that
+	// would silently drop the prune on the next save flush.
+	list_value = list_value.Copy()
+	var/changed = FALSE
 	var/pref_species = preferences.read_preference(/datum/preference/choiced/species)
 	var/synth = preferences.read_preference(/datum/preference/toggle/human/dirty_synth)
 	var/meat = preferences.read_preference(/datum/preference/toggle/human/gross_meatbag)
-	for(var/datum/trait/path as anything in list_value)
+	for(var/datum/trait/path as anything in list_value.Copy())
 		if(!(path in whitelist))
 			list_value -= path
+			changed = TRUE
 			continue
 		if(pref_species != SPECIES_CUSTOM && !(path in everyone_whitelist))
 			list_value -= path
+			changed = TRUE
 			continue
 		var/take_flags = initial(path.can_take)
 		if((synth && !(take_flags & SYNTHETICS)) || (meat && !(take_flags & ORGANICS)))
 			list_value -= path
+			changed = TRUE
+	if(changed)
+		preferences.update_preference_by_type(list_type, list_value)
 
 
 /datum/preference_constraint/synth_flag_from_organs

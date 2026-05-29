@@ -42,11 +42,15 @@
 	var/datum/species/S = GLOB.all_species[new_value]
 	if(!S)
 		return
+	// Use isnull/isnum rather than truthy checks — a species with a legitimate min_age = 0
+	// (legal for some custom species) would otherwise silently disable clamping.
 	var/min_age = S.min_age
 	var/max_age = S.max_age
-	if(!min_age || !max_age)
+	if(!isnum(min_age) || !isnum(max_age) || max_age < min_age)
 		return
 	var/age = preferences.read_preference(/datum/preference/numeric/human/age)
+	if(!isnum(age))
+		return
 	preferences.update_preference_by_type(/datum/preference/numeric/human/age, max(min(age, max_age), min_age))
 
 

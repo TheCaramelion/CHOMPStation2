@@ -82,5 +82,6 @@ jobs:
         if: always() && steps.compile_tests.outcome == 'success'
         uses: tgstation/byond-client-compatibility-check@v3
         with:
+          # DQEdit — renamed from vorestation.dmb
           dmb-location: deepquarry.dmb
           max-required-client-version: ${{inputs.max_required_byond_client}}

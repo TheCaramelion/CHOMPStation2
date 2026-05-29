@@ -161,8 +161,10 @@
 		return list()
 	var/list/result = list()
 	var/list/default_items = islist(gear_list["_default"]) ? gear_list["_default"] : list()
+	// Deep-copy metadata so a spawn-time tweak_item that rewrites its own metadata
+	// (e.g. randomized reagent fills) can't bleed back into the savefile's default loadout.
 	for(var/name in default_items)
-		result[name] = default_items[name]
+		result[name] = check_list_copy(default_items[name])
 	if(!job_title || !islist(gear_list[job_title]))
 		return result
 	var/list/per_job = gear_list[job_title]
@@ -176,7 +178,8 @@
 				var/datum/gear/existing = GLOB.gear_datums[existing_name]
 				if(existing && existing.slot == G.slot)
 					result -= existing_name
-		result[name] = per_job[name]
+		// Per-job metadata also gets a deep copy — same reasoning.
+		result[name] = check_list_copy(per_job[name])
 	return result
 
 /// Like get_loadout_for_job but also returns the set of item names that came from the

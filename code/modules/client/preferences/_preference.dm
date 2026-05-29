@@ -373,10 +373,25 @@ GLOBAL_LIST_INIT(preference_entries_by_key, init_preference_entries_by_key())
 	// cascade below is one flush. begin/end nest safely.
 	begin_update_batch()
 
+	// Snapshot the old value before overwriting the cache. For list-typed prefs the cache
+	// may already share a reference with the caller (read_preference returns a reference,
+	// and most editors mutate it in place before calling update). Without this copy,
+	// constraints diffing old_value against new_value would see both pointing at the same
+	// post-mutation list — i.e. always equal. Copy() is shallow; nested mutations still
+	// bleed, but the top-level list shape is captured.
 	var/old_value = value_cache[preference.type]
+	if(islist(old_value))
+		var/list/L = old_value
+		old_value = L.Copy()
 
 	recently_updated_keys |= preference.type
-	value_cache[preference.type] = new_value
+	// Also copy on the way in: stash an independent snapshot in the cache so future
+	// mutations of `new_value` by the caller don't bleed into other readers.
+	if(islist(new_value))
+		var/list/N = new_value
+		value_cache[preference.type] = N.Copy()
+	else
+		value_cache[preference.type] = new_value
 	save_batch_dirty = TRUE
 
 	// Fan out constraints triggered by this key.

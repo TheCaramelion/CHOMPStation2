@@ -187,6 +187,16 @@ If you cherry-pick a change from an open VOREStation or CHOMP PR, keep the origi
 - **CI dislikes comments mid-multi-line-list.** Don't insert an edit marker between the elements of a `list(...)` that spans lines; mark above or below instead.
 - **Don't add markers to whitespace-only changes.** Just don't make whitespace-only changes to upstream files — they invite merge conflicts for nothing.
 
+### 5g. `// DQRemoved:` for disabled includes
+
+A common pattern in `deepquarry.dme` is disabling an upstream `#include` line rather than deleting it, so the next merge engineer can see what's gone and why. Use the prefix `// DQRemoved:` for these:
+
+```
+// DQRemoved: #include "modular_chomp\maps\submaps\foo.dm"
+```
+
+Grep `DQRemoved` to find every disabled include in one shot. This is the only place we use a marker other than `DQEdit` / `DQAdd`; everywhere else stick to the two recommended forms.
+
 ---
 
 ## 6. DM coding standards (enforced)

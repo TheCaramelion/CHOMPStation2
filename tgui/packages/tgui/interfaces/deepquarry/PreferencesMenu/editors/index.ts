@@ -14,7 +14,6 @@ import { OccupationEditor } from './OccupationEditor';
 import { OrgansEditor } from './OrgansEditor';
 import { PersistenceEditor } from './PersistenceEditor';
 import { PlaceholderEditor } from './PlaceholderEditor';
-import { StartingKitEditor } from './StartingKitEditor';
 import { TraitPicker } from './TraitPicker';
 import { UnderwearPicker } from './UnderwearPicker';
 import { VoreMessagesEditor } from './VoreMessagesEditor';
@@ -35,7 +34,6 @@ export const PREF_EDITORS: Record<string, ComponentType<EditorProps>> = {
   occupation: OccupationEditor,
   organs: OrgansEditor,
   persistence: PersistenceEditor,
-  starting_kit: StartingKitEditor,
   trait_picker: TraitPicker,
   underwear: UnderwearPicker,
   vore_messages: VoreMessagesEditor,

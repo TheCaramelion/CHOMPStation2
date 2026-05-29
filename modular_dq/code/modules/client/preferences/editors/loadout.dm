@@ -65,6 +65,17 @@
 /proc/dq_gear_tweak_compact(kind)
 	return (kind in list("boolean", "tf_toggle", "modal_button"))
 
+/// Whether changing this tweak's metadata changes the *visual* worn appearance — i.e.
+/// whether a preview rebuild is warranted. Color/recolor/matrix change pixel data,
+/// /path/ changes the underlying subtype's icon. Everything else (custom name/desc,
+/// collar tag, reagents, ringtone, implant location, digestable flag, tf spawn) is
+/// metadata-only and a rebuild would burn ~100 ms per keystroke for no visible effect.
+/proc/dq_gear_tweak_affects_preview(datum/gear_tweak/gt)
+	return istype(gt, /datum/gear_tweak/color) \
+		|| istype(gt, /datum/gear_tweak/recolor) \
+		|| istype(gt, /datum/gear_tweak/path) \
+		|| istype(gt, /datum/gear_tweak/matrix_recolor)
+
 /// For "choice" tweaks, returns the list of valid choice labels. For others, returns null.
 /proc/dq_gear_tweak_choices(datum/gear_tweak/gt)
 	if(istype(gt, /datum/gear_tweak/path))
@@ -389,7 +400,6 @@
 		"max_gear_cost" = MAX_GEAR_COST,
 		"job_defaults" = job_defaults,
 		"preview_job" = preview_job ? preview_job.title : null,
-		"backbag_choice" = null,  // DQEdit — backbag pref deleted; field kept for client compat.
 		"starting_kit" = sk_data,
 		"underwear" = uw_data,
 	)
@@ -500,10 +510,40 @@
 		return istype(player_tail, /datum/sprite_accessory/tail/taur/drake)
 	return TRUE
 
+/// Server-side enforcement of the same species/taur gates the catalog applies to React.
+/// A forged Topic could otherwise call toggle_gear/set_body_slot with any gear name and
+/// pollute the savefile with items the spawn path will reject anyway. Single point of
+/// truth so the catalog and write-path can't drift.
+/datum/preference_editor/loadout/proc/_gear_permitted_for(datum/gear/G, datum/preferences/preferences)
+	if(!G)
+		return FALSE
+	var/pref_species = preferences.read_preference(/datum/preference/choiced/species)
+	var/datum/species/spec = pref_species ? GLOB.all_species[pref_species] : null
+	var/base_species = spec?.base_species
+	if(G.whitelisted && pref_species && G.whitelisted != pref_species && G.whitelisted != base_species)
+		return FALSE
+	var/tail_style = preferences.read_preference(/datum/preference/text/human/tail_style)
+	var/datum/sprite_accessory/tail/player_tail
+	if(tail_style && GLOB.tail_styles_list)
+		player_tail = GLOB.tail_styles_list[tail_style]
+	if(!taur_item_allowed(G, player_tail))
+		return FALSE
+	return TRUE
+
 /// Returns the loadout key currently being edited ("_default" or a job title).
+/// Validates against the user's current job priorities — if a player toggles a job to
+/// `off` while editing it, the saved gear_slot becomes stale; fall back to `_default`
+/// instead of silently editing an orphan loadout.
 /datum/preference_editor/loadout/proc/_current_slot(datum/preferences/preferences)
 	var/key = preferences.read_preference(/datum/preference/text/human/gear_slot)
 	if(!istext(key) || !length(key))
+		return "_default"
+	if(key == "_default")
+		return key
+	// Confirm the job is still on the player's priority list.
+	var/list/priorities = preferences.read_preference(/datum/preference/job_priorities) || list()
+	if(!(key in priorities))
+		preferences.update_preference_by_type(/datum/preference/text/human/gear_slot, "_default")
 		return "_default"
 	return key
 
@@ -553,7 +593,7 @@
 
 		if("toggle_gear")
 			var/datum/gear/G = GLOB.gear_datums[params["gear"]]
-			if(!G)
+			if(!G || !_gear_permitted_for(G, preferences))
 				return PREF_UPDATE_REJECTED
 			var/slot = _current_slot(preferences)
 			var/list/active = _active_list(preferences, slot)
@@ -570,7 +610,7 @@
 		if("set_body_slot")
 			// Replaces (or adds, for multi-slots) the item occupying body_slot.
 			var/datum/gear/G = GLOB.gear_datums[params["gear"]]
-			if(!G)
+			if(!G || !_gear_permitted_for(G, preferences))
 				return PREF_UPDATE_REJECTED
 			var/body_slot_str = "[params["body_slot"]]"
 			var/expected = slot_key_for(G)
@@ -700,9 +740,14 @@
 					value = ""
 				if(jobban_isbanned(user, "Custom loadout"))
 					return PREF_UPDATE_REJECTED
-				// Cap to a reasonable length so the savefile can't grow forever.
-				if(length(value) > MAX_MESSAGE_LEN)
-					value = copytext(value, 1, MAX_MESSAGE_LEN)
+				// Strip HTML tags before persisting — a custom_name with <script> would
+				// otherwise reach the loadout panel via dangerouslySetInnerHTML, and a
+				// custom_desc with <img onerror> would fire in any examine context.
+				value = strip_html_simple(value)
+				// Multibyte-safe length cap. length_char + copytext_char count code points,
+				// not bytes — a Unicode emoji is 1 char even though it's 4 bytes on disk.
+				if(length_char(value) > MAX_MESSAGE_LEN)
+					value = copytext_char(value, 1, MAX_MESSAGE_LEN + 1)
 			else
 				// Unknown kind — refuse rather than write garbage.
 				return PREF_UPDATE_REJECTED
@@ -718,7 +763,8 @@
 			active[gear_name] = item_meta
 			gear_list[loadout_key] = active
 			preferences.update_preference_by_type(/datum/preference/gear_list, gear_list)
-			preferences.update_preview_icon()
+			if(dq_gear_tweak_affects_preview(gt))
+				preferences.update_preview_icon()
 			return PREF_UPDATE_ACCEPTED
 
 		if("pick_tweak_color")
@@ -881,7 +927,10 @@
 			var/mode = value["mode"]
 			if(!(mode in list("off", "tint", "palette", "matrix")))
 				return PREF_UPDATE_REJECTED
-			// Validate the value-by-mode shape so the savefile can't grow garbage.
+			// Validate-and-reconstruct: never persist the caller's dict directly — it may
+			// carry stray params keys, and writing back the same reference would mutate the
+			// React-supplied object visible to anything holding it. Always assemble a fresh
+			// {mode, value} pair.
 			switch(mode)
 				if("off")
 					value = list("mode" = "off")
@@ -889,6 +938,7 @@
 					var/c = value["value"]
 					if(!istext(c) || length(c) < 4 || copytext(c, 1, 2) != "#")
 						return PREF_UPDATE_REJECTED
+					value = list("mode" = "tint", "value" = c)
 				if("palette")
 					var/list/swaps = value["value"]
 					if(!islist(swaps))
@@ -907,8 +957,7 @@
 					var/list/m = value["value"]
 					if(islist(m) && length(m) > 0 && length(m) < 12)
 						return PREF_UPDATE_REJECTED
-					if(!islist(m))
-						value["value"] = list()
+					value = list("mode" = "matrix", "value" = islist(m) ? m : list())
 			var/loadout_key = _current_slot(preferences)
 			var/list/gear_list = preferences.read_preference(/datum/preference/gear_list) || list()
 			var/list/active = gear_list[loadout_key] || list()
@@ -937,13 +986,9 @@
 			preferences.update_preview_icon()
 			return PREF_UPDATE_ACCEPTED
 
-		if("copy_to_slot")
-			var/list/gear_list = preferences.read_preference(/datum/preference/gear_list) || list()
-			var/slot = _current_slot(preferences)
-			var/dest = clamp(text2num(params["dest"]), 1, CONFIG_GET(number/loadout_slots))
-			gear_list["[dest]"] = check_list_copy(gear_list["[slot]"])
-			preferences.update_preference_by_type(/datum/preference/gear_list, gear_list)
-			return PREF_UPDATE_ACCEPTED
+		// copy_to_slot was a dead remnant of the numeric-slot model. Under the title-keyed
+		// shape it would text2num("Captain") → null → write gear_list["1"] (garbage key).
+		// React never called it; removed.
 
 	return PREF_UPDATE_UNCHANGED
 

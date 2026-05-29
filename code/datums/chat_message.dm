@@ -128,9 +128,11 @@ GLOBAL_LIST_EMPTY(runechat_image_cache)
 		// Always force it back to a pref if they have one
 		if(ismob(target))
 			var/mob/M = target
+			// DQEdit Start — runechat_color migrated to /datum/preference
 			if(M?.client?.prefs && M.client.prefs.read_preference(/datum/preference/color/human/runechat_color) != COLOR_BLACK)
 				c = M.client.prefs.read_preference(/datum/preference/color/human/runechat_color)
 				cd = M.client.prefs.read_preference(/datum/preference/color/human/runechat_color)
+			// DQEdit End
 		dq_set_chat_color_cache(target, c, target.name, cd)
 
 	// Get rid of any URL schemes that might cause BYOND to automatically wrap something in an anchor tag

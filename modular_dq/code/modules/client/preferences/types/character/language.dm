@@ -30,8 +30,13 @@
 /datum/preference/text/human/preferred_language/get_pref_choices(datum/preferences/preferences)
 	if(!GLOB.all_languages)
 		return null
+	// GLOB.all_languages is keyed by name (strings) — a typed-for filters every entry.
+	// Iterate keys directly, look up the language datum, skip non-datum/inactive entries.
 	var/list/out = list()
-	for(var/datum/language/L in GLOB.all_languages)
+	for(var/key in GLOB.all_languages)
+		var/datum/language/L = GLOB.all_languages[key]
+		if(!istype(L))
+			continue
 		out += L.name
 	return out
 

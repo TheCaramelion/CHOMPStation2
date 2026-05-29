@@ -49,7 +49,12 @@
 	return null
 
 /datum/preference/numeric/nif_durability/is_valid(value)
-	return isnull(value) || isnum(value)
+	// Tighter than the default isnum check: durability seeded with `null` means "no NIF
+	// installed" and the nif_durability_hydration constraint relies on isnull(...) to
+	// know it should hydrate from the spawned NIF's initial. sanitize_float coerces null
+	// to 0 silently, so 0 would otherwise sneak in and skip hydration. Treat 0 the same
+	// as null here so the constraint catches both.
+	return isnull(value) || (isnum(value) && value > 0)
 
 /datum/preference/numeric/nif_durability/apply_to_human(mob/living/carbon/human/target, value)
 	return

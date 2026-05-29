@@ -16,6 +16,7 @@ cp tools/ci/ci_config.txt ci_test/config/config.txt
 cp maps/$MAP.json ci_test/data/next_map.json
 
 cd ci_test
+# DQEdit — renamed from vorestation.dmb
 DreamDaemon deepquarry.dmb -close -trusted -verbose -params "log-directory=ci"
 
 cd ..

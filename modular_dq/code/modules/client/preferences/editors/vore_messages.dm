@@ -25,7 +25,7 @@
 
 	switch(action)
 		if("add_message")
-			var/text = trim(params["text"] || "")
+			var/text = strip_html_simple(trim(params["text"] || ""))
 			if(!text || length(text) > 400)
 				return PREF_UPDATE_REJECTED
 			if(messages.len >= 10)
@@ -35,7 +35,7 @@
 			return PREF_UPDATE_ACCEPTED
 		if("edit_message")
 			var/index = text2num(params["index"])
-			var/text = trim(params["text"] || "")
+			var/text = strip_html_simple(trim(params["text"] || ""))
 			if(!index || index < 1 || index > messages.len)
 				return PREF_UPDATE_REJECTED
 			if(!text || length(text) > 400)

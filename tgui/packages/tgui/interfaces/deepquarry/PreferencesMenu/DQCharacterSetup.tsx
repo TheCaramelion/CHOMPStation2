@@ -64,7 +64,7 @@ const titleCase = (s: string) =>
 
 const labelForCategory = (key: string) => CATEGORY_LABELS[key] ?? titleCase(key);
 
-export const DQCharacterSetup = (props) => {
+export const DQCharacterSetup = () => {
   const { act, data } = useBackend<CharacterSetupData>();
   const categories = data.dq_categories ?? [];
   const [selected, setSelected] = useState<string | null>(

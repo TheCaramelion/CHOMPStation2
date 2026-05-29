@@ -41,9 +41,14 @@ GLOBAL_LIST_INIT(preference_constraints_by_trigger, init_preference_constraints_
 /// Called whenever a triggering pref is updated. `changed_key` is the key that triggered;
 /// `old_value` and `new_value` are the values before/after the change. The constraint
 /// should read from / write to the prefs datum directly via read_preference and
-/// write_preference_by_type as needed.
+/// update_preference_by_type as needed.
 ///
-/// IMPORTANT: writes from inside a constraint do NOT re-trigger other constraints.
-/// If you need cascading behavior, do it explicitly inside this proc.
+/// CASCADE BEHAVIOR: writes via update_preference_by_type from inside a constraint DO
+/// re-trigger any constraint listening on the written key. The cascade depth is capped at
+/// PREF_CONSTRAINT_MAX_DEPTH (see /datum/preferences/proc/update_preference) so a pair of
+/// constraints that mutually trigger each other crashes loudly via stack_trace instead of
+/// stack-bombing. If you need to write a pref WITHOUT triggering further constraints
+/// (e.g. for a simple value clamp), call write_preference_by_type instead — it bypasses
+/// the cascade entirely.
 /datum/preference_constraint/proc/apply(datum/preferences/preferences, changed_key, old_value, new_value)
 	return

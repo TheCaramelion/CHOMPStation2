@@ -100,6 +100,9 @@ export const PrefWidget = ({ item }: Props) => {
 
     case 'color': {
       const hex = String(item.value ?? '#000000');
+      // Color picking is a BYOND-side modal — tgui-core has no native color input. Fire
+      // dq_pick_color and let the DM middleware open tgui_color_picker; the resulting
+      // write comes back through the normal data-poll flow.
       return (
         <Stack align="center">
           <Stack.Item>
@@ -107,7 +110,7 @@ export const PrefWidget = ({ item }: Props) => {
           </Stack.Item>
           <Stack.Item>
             <Button
-              onClick={() => sendUpdate(act, item.key, 'pickcolor')}
+              onClick={() => act('dq_pick_color', { key: item.key })}
             >
               {hex}
             </Button>
@@ -189,11 +192,11 @@ export const PrefWidget = ({ item }: Props) => {
     case 'editor':
       return null;
 
-    case 'auto':
     default:
-      // 'auto' should have been resolved by /datum/preference.get_widget() on the DM side.
-      // If we land here, something registered a pref without picking a widget — render a
-      // text input rather than a read-only display so it's at least editable.
+      // 'auto' (the expected fallthrough) plus any unknown widget kind. 'auto' should have
+      // been resolved by /datum/preference.get_widget() on the DM side; if we land here,
+      // something registered a pref without picking a widget — render a text input rather
+      // than a read-only display so it's at least editable.
       return (
         <Input
           fluid

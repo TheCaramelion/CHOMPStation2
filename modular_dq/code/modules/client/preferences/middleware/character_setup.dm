@@ -185,6 +185,22 @@ GLOBAL_LIST_INIT(dq_collapsed_groups, list(
 			preferences.update_preference(pref, value)
 			return TRUE
 
+		// Color picker for /datum/preference/color/* widgets. The React side has no
+		// reliable native color input, so it asks BYOND to open tgui_color_picker; the
+		// chosen value is written through the same update_preference path so constraints
+		// and apply-hooks fire identically to a typed write.
+		if("dq_pick_color")
+			var/key = params["key"]
+			var/datum/preference/pref = GLOB.preference_entries_by_key[key]
+			if(!pref)
+				return FALSE
+			var/current = preferences.read_preference(pref.type)
+			var/new_color = tgui_color_picker(ui.user, "Pick a color", "Color", current || "#000000")
+			if(!new_color)
+				return TRUE  // user cancelled; nothing to write
+			preferences.update_preference(pref, new_color)
+			return TRUE
+
 		// Atomic multi-pref operation handled by a registered editor.
 		if("dq_editor_action")
 			var/editor_key = params["editor"]

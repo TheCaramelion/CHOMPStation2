@@ -55,8 +55,17 @@ export const CanvasBackedImage = (props: {
     };
   }, [props.render, size]);
 
+  // imageRendering: 'pixelated' — the OffscreenCanvas draws at 1 px = 1 source-px, but at
+  // HiDPI scaling the <img> picks bilinear by default and DMI sprites end up blurry.
   return bitmap ? (
-    <img src={bitmap} width={size} height={size} draggable={false} alt="" />
+    <img
+      src={bitmap}
+      width={size}
+      height={size}
+      draggable={false}
+      alt=""
+      style={{ imageRendering: 'pixelated' }}
+    />
   ) : null;
 };
 

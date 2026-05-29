@@ -11,7 +11,7 @@ import {
 } from './data';
 import { GamePreferenceWindow } from './GamePreferenceWindow';
 
-export const PreferencesMenu = (props) => {
+export const PreferencesMenu = () => {
   const { data } = useBackend<PreferencesMenuData>();
 
   const window = data.window;

@@ -140,7 +140,6 @@ type LoadoutData = {
   max_gear_cost: number;
   job_defaults: Record<string, string>;
   preview_job: string | null;
-  backbag_choice: string | null;
   starting_kit: StartingKitData;
   underwear: UnderwearData;
 };
@@ -282,9 +281,7 @@ export const LoadoutBuilder = ({ data, staticData }: EditorProps) => {
   const uw = d.underwear ?? ({ selections: {} } as UnderwearData);
   const uws = s.underwear ?? ({ categories: {} } as UnderwearStatic);
 
-  const allItems: CatalogItem[] = Object.values(s.categories ?? {}).flatMap(
-    (xs) => xs,
-  );
+  const allItems: CatalogItem[] = Object.values(s.categories ?? {}).flat();
   // Role filter: scoped to the loadout currently being edited.
   //   "_default"   → union of every prioritized job (the default fronts all of them)
   //   <job_title>  → just that job
@@ -313,7 +310,7 @@ export const LoadoutBuilder = ({ data, staticData }: EditorProps) => {
       ? 'Underwear'
       : (slotById(filterSlot)?.label ?? filterSlot);
 
-  const otherOccupants = d.by_body_slot?.['other'] ?? [];
+  const otherOccupants = d.by_body_slot?.other ?? [];
   // DQEdit — backbag pref deleted; "no bag" sentinel is gone. The job's outfit always
   // equips a canonical backpack, so the "items in Other won't spawn" warning would
   // require checking both loadout back slot AND job's back default; not worth detecting
@@ -1173,10 +1170,10 @@ const TweakRow = ({
         />
       );
     }
-    case 'modal':
     default: {
-      // Complex tweaks (matrix recolor, contents, tablet/laptop, item_tf_spawn) keep
-      // the legacy "Change" button → tgui_input_X modal flow.
+      // 'modal' (the only explicit kind landing here) plus any unknown kind: keeps the
+      // legacy "Change" button → tgui_input_X modal flow. Complex tweaks (matrix recolor,
+      // contents, tablet/laptop, item_tf_spawn) all route through this path.
       return (
         <Stack mb={0.25} align="center">
           <Stack.Item grow fontSize="0.85em">
@@ -1188,10 +1185,12 @@ const TweakRow = ({
               }}
             >
               {displayString ? (
-                <Box
-                  inline
-                  dangerouslySetInnerHTML={{ __html: String(displayString) }}
-                />
+                // Render as text, not HTML. /datum/gear_tweak/*.get_contents() returns plain
+                // labels ("Reagents: Beer"), not markup — and any user-supplied piece
+                // (custom_name, custom_desc, collar_tag) is now strip_html_simple'd at write
+                // time. Text rendering closes the dangerouslySetInnerHTML XSS hole without
+                // losing anything meaningful.
+                <Box inline>{String(displayString)}</Box>
               ) : (
                 <Box inline color="grey" italic>
                   {tweak.label}: not set

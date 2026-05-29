@@ -95,6 +95,12 @@
 
 /datum/gear/standard_pda/New()
 	..()
+	// Pin the ringtone tweak at a known index. Metadata is stored as a string-keyed dict
+	// {"<idx>": <value>}, so changing the parent's gear_tweaks ordering would silently
+	// reassign saved metadata to the wrong tweak. The PDA only has the parent defaults
+	// (recolor, custom_name, custom_desc) ahead of this — appending at the end is stable
+	// for now, but document the contract so future parent reorders trigger a save migration
+	// rather than a silent reshuffle.
 	gear_tweaks += GLOB.gear_tweak_pda_ringtone
 
 // Custom tweak — ringtone is per-PDA, stored as gear metadata, applied to the spawned
