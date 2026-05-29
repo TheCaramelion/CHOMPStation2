@@ -32,7 +32,7 @@
 		if(jobban_isbanned(O, JOB_AI) && jobban_isbanned(O, JOB_CYBORG))
 			continue
 		if(O.client)
-			if(O.client.prefs.be_special & BE_AI)
+			if(O.client.prefs.read_preference(/datum/preference/numeric/human/be_special) & BE_AI) // DQEdit — migrated
 				question(O.client)
 
 /obj/item/mmi/digital/posibrain/proc/question(client/C)
@@ -45,7 +45,7 @@
 		if(response == "Yes")
 			transfer_personality(C.mob)
 		else if (response == "Never for this round")
-			C.prefs.be_special ^= BE_AI
+			C.prefs.update_preference_by_type(/datum/preference/numeric/human/be_special, C.prefs.read_preference(/datum/preference/numeric/human/be_special) ^ BE_AI) // DQEdit — migrated
 
 
 /obj/item/mmi/digital/posibrain/transfer_identity(mob/living/carbon/H)

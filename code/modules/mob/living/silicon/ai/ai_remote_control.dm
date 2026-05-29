@@ -51,7 +51,7 @@
 		soul_link(/datum/soul_link/shared_body, src, target)
 		deployed_shell = target
 		if(src.client) //CHOMPADDITION: Resize shell based on our preffered size
-			target.resize(src.client.prefs.size_multiplier) //CHOMPADDITION: Resize shell based on our preffered size
+			target.resize(src.client.prefs.read_preference(/datum/preference/numeric/human/size_multiplier)) //CHOMPADDITION: Resize shell based on our preffered size
 		target.deploy_init(src)
 		mind.transfer_to(target)
 		if(target.first_transfer)

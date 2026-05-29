@@ -335,7 +335,6 @@ const BandedList = (props: {
         {inBand.map((e) => (
           <Button
             key={e.id}
-            transparent
             compact
             color={band.color}
             onClick={() => props.onClick(e.id)}
@@ -682,7 +681,6 @@ const ConditionDetail = (props: {
                       ) : null}
                       <Button
                         compact
-                        transparent
                         onClick={() => props.goToReagent(r.id)}
                       >
                         {r.name}
@@ -699,7 +697,6 @@ const ConditionDetail = (props: {
                   <Button
                     key={x.id}
                     compact
-                    transparent
                     onClick={() =>
                       x.kind === 'condition'
                         ? props.goToCondition(x.id)
@@ -796,7 +793,6 @@ const ConditionDetail = (props: {
             .map((s) => (
               <Button
                 key={s.id}
-                transparent
                 compact
                 color="good"
                 onClick={() => props.goToSurgery(s.id)}
@@ -840,7 +836,6 @@ const ConditionDetail = (props: {
                   >
                     {g.cause_id ? (
                       <Button
-                        transparent
                         compact
                         onClick={() => props.goToCause(g.cause_id as string)}
                       >
@@ -868,7 +863,6 @@ const ConditionDetail = (props: {
                       .map((cond) => (
                         <Button
                           key={cond.id}
-                          transparent
                           compact
                           onClick={() => props.goToCondition(cond.id)}
                         >
@@ -1071,7 +1065,6 @@ const ReagentDetail = (props: {
               </Box>
               <Button
                 compact
-                transparent
                 onClick={() => props.goToCondition(s.id)}
               >
                 {s.name}
@@ -1089,7 +1082,6 @@ const ReagentDetail = (props: {
                 <Button
                   key={o.id}
                   compact
-                  transparent
                   onClick={() => props.goToReagent(o.id)}
                 >
                   {o.name}
@@ -1100,7 +1092,6 @@ const ReagentDetail = (props: {
               </Box>
               <Button
                 compact
-                transparent
                 onClick={() => props.goToCondition(x.id)}
               >
                 {x.name}
@@ -1119,7 +1110,6 @@ const ReagentDetail = (props: {
             {r.overdose.condition_id && r.overdose.condition_name ? (
               <Button
                 compact
-                transparent
                 onClick={() =>
                   props.goToCondition(r.overdose!.condition_id!)
                 }
@@ -1141,7 +1131,6 @@ const ReagentDetail = (props: {
                 <Button
                   key={d.id}
                   compact
-                  transparent
                   color="good"
                   onClick={() => props.goToCondition(d.id)}
                 >
@@ -1183,7 +1172,6 @@ const ReagentDetail = (props: {
                   <Box inline ml="2px">
                     <Button
                       compact
-                      transparent
                       onClick={() => props.goToReagent(ing.id)}
                     >
                       {ing.name}
@@ -1212,7 +1200,6 @@ const ReagentDetail = (props: {
                     <Button
                       key={c.id}
                       compact
-                      transparent
                       onClick={() => props.goToReagent(c.id)}
                     >
                       {c.name}
@@ -1228,7 +1215,6 @@ const ReagentDetail = (props: {
                     <Button
                       key={c.id}
                       compact
-                      transparent
                       onClick={() => props.goToReagent(c.id)}
                     >
                       {c.name}
@@ -1250,7 +1236,6 @@ const ReagentDetail = (props: {
               <Button
                 key={u.id}
                 compact
-                transparent
                 onClick={() => props.goToReagent(u.id)}
               >
                 {u.name}
@@ -1416,7 +1401,6 @@ const CauseDetail = (props: {
                   {inBand.map((d) => (
                     <Button
                       key={`${d.o.id}-${d.band.match}`}
-                      transparent
                       compact
                       color={band.color}
                       onClick={() => props.goToCondition(d.o.id)}
@@ -1535,7 +1519,6 @@ const SurgeryDetail = (props: {
             .map((t) => (
               <Button
                 key={t.id}
-                transparent
                 compact
                 color="good"
                 onClick={() => props.goToCondition(t.id)}

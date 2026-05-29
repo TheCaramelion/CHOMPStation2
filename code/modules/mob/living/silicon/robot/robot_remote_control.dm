@@ -115,7 +115,7 @@ GLOBAL_LIST_EMPTY(available_ai_shells)
 		AI.deployed_shell = target
 		target.deploy_init(AI)
 		if(src.client) //CHOMPADDITION: Resize shell based on our preffered size
-			target.resize(src.client.prefs.size_multiplier) //CHOMPADDITION: Resize shell based on our preffered size
+			target.resize(src.client.prefs.read_preference(/datum/preference/numeric/human/size_multiplier)) //CHOMPADDITION: Resize shell based on our preffered size
 		mind.transfer_to(target)
 		if(target.first_transfer)
 			target.first_transfer = FALSE

@@ -71,7 +71,7 @@ SUBSYSTEM_DEF(pai)
 		return FALSE
 	if(jobban_isbanned(user, "pAI"))
 		return FALSE
-	if(!(user.client.prefs.be_special & BE_PAI))
+	if(!(user.client.prefs.read_preference(/datum/preference/numeric/human/be_special) & BE_PAI))
 		return FALSE
 	if(check_is_delayed(REF(user)))
 		return FALSE

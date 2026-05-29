@@ -416,7 +416,7 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 				continue
 			if(isobserver(player) && !ghosts_only)
 				continue
-			if(!role || (player.client.prefs.be_special & role))
+			if(!role || (player.client.prefs.read_preference(/datum/preference/numeric/human/be_special) & role))
 				log_game("[player.key] had [antag_id] enabled, so we are drafting them.")
 				candidates |= player.mind
 	else
@@ -427,7 +427,7 @@ GLOBAL_LIST_EMPTY(additional_antag_types)
 
 		// Get a list of all the people who want to be the antagonist for this round
 		for(var/mob/new_player/player in players)
-			if(!role || (player.client.prefs.be_special & role))
+			if(!role || (player.client.prefs.read_preference(/datum/preference/numeric/human/be_special) & role))
 				log_game("[player.key] had [antag_id] enabled, so we are drafting them.")
 				candidates += player.mind
 				players -= player

@@ -44,7 +44,7 @@
 	return input
 
 /datum/preference/name/apply_to_human(mob/living/carbon/human/target, value)
-	return // Handled in copy_to_mob
+	return // DQEdit — real_name handled by /datum/preference_apply_hook/name_sanitization (it needs cross-pref species data); nickname overrides this proc below.
 
 /datum/preference/name/apply_to_living(mob/living/target, value)
 	return
@@ -93,3 +93,6 @@
 
 /datum/preference/name/nickname/create_default_value()
 	return null
+
+/datum/preference/name/nickname/apply_to_human(mob/living/carbon/human/target, value)
+	target.nickname = value // DQEdit — was handled in Bay copy_to_mob, now per-pref

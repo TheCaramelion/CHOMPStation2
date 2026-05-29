@@ -6,7 +6,7 @@ NC='\033[0m'
 source $HOME/BYOND/byond/bin/byondsetup
 
 # Clean up between steps so Juke doesn't refuse to recompile with different -D options
-rm vorestation.dmb
+rm deepquarry.dmb
 
 # Copy example configs
 cp config/example/* config/
@@ -28,6 +28,6 @@ fi
 # Extra map tests for example have it set to false
 if [ $RUN -eq 1 ];
 then
-  DreamDaemon vorestation.dmb -close -invisible -trusted -verbose -params "log-directory=ci"
+  DreamDaemon deepquarry.dmb -close -invisible -trusted -verbose -params "log-directory=ci"
   cat data/logs/ci/clean_run.lk
 fi

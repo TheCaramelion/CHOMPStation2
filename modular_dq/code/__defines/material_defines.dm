@@ -4,7 +4,7 @@
 // subtypes (e.g. material_class = MATCLASS_METAL in code/modules/
 // materials/materials/_materials.dm), so they need to be visible at
 // parse time before those upstream files are reached. This file is
-// included early in vorestation.dme alongside quarry_defines.dm; the
+// included early in deepquarry.dme alongside quarry_defines.dm; the
 // rest of the property system (datum classes, ranges, helpers) lives
 // in modular_dq/code/modules/materials/material_properties.dm and
 // only references these defines.

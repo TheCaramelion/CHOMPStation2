@@ -1,137 +1,19 @@
-#define SAVEFILE_VERSION_MIN	8
-#define SAVEFILE_VERSION_MAX	19
+// DQEdit — savefile is single-version on this fork. No legacy migrations carried over.
+#define SAVEFILE_VERSION_MAX	1
 
-/*
-SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Carn
-	This proc checks if the current directory of the savefile S needs updating
-	It is to be used by the load_character and load_preferences procs.
-	(S.cd == "/" is preferences, S.cd == "/character[integer]" is a character slot, etc)
-
-	if the current directory's version is below SAVEFILE_VERSION_MIN it will simply wipe everything in that directory
-	(if we're at root "/" then it'll just wipe the entire savefile, for instance.)
-
-	if its version is below SAVEFILE_VERSION_MAX but above the minimum, it will load data but later call the
-	respective update_preferences() or update_character() proc.
-	Those procs allow coders to specify format changes so users do not lose their setups and have to redo them again.
-
-	Failing all that, the standard sanity checks are performed. They simply check the data is suitable, reverting to
-	initial() values if necessary.
-*/
 /datum/preferences/proc/save_data_needs_update(list/save_data)
-	if(!save_data) // empty list, either savefile isnt loaded or its a new char
+	// DQEdit — empty list = new char; anything else with the current version = fine; anything else = stale, wipe it.
+	if(!save_data)
 		return -1
-	if(!save_data["version"]) // special case: if there is no version key, such as in character slots before v12
-		return -3
-	if(save_data["version"] < SAVEFILE_VERSION_MIN)
-		return -2
-	if(save_data["version"] < SAVEFILE_VERSION_MAX)
-		return save_data["version"]
-	return -1
-
-//should these procs get fairly long
-//just increase SAVEFILE_VERSION_MIN so it's not as far behind
-//SAVEFILE_VERSION_MAX and then delete any obsolete if clauses
-//from these procs.
-//This only really meant to avoid annoying frequent players
-//if your savefile is 3 months out of date, then 'tough shit'.
+	if(save_data["version"] == SAVEFILE_VERSION_MAX)
+		return -1
+	return -2
 
 /datum/preferences/proc/update_preferences(current_version, datum/json_savefile/S)
-	// Migration from BYOND savefiles to JSON: Important milemark.
-	// if(current_version < 11)
+	return // DQEdit — no migrations on this fork.
 
-	// Migration for client preferences
-	if(current_version < 13)
-		log_world("[client_ckey] preferences migrating from [current_version] to v13....")
-		to_chat(client, span_danger("Migrating savefile from version [current_version] to v13..."))
-
-		migration_13_preferences(S)
-
-		log_world("[client_ckey] preferences successfully migrated from [current_version] to v13.")
-		to_chat(client, span_danger("v13 savefile migration complete."))
-
-	// Migration for nifs
-	if(current_version < 14)
-		log_world("[client_ckey] preferences migrating from [current_version] to v14....")
-		to_chat(client, span_danger("Migrating savefile from version [current_version] to v14..."))
-
-		migration_14_nifs(S)
-
-		log_world("[client_ckey] preferences successfully migrated from [current_version] to v14.")
-		to_chat(client, span_danger("v14 savefile migration complete."))
-
-	// Migration for nifs, again, to get rid of the /device path
-	if(current_version < 15)
-		log_world("[client_ckey] preferences migrating from [current_version] to v15....")
-		to_chat(client, span_danger("Migrating savefile from version [current_version] to v15..."))
-
-		migration_15_nif_path(S)
-
-		log_world("[client_ckey] preferences successfully migrated from [current_version] to v15.")
-		to_chat(client, span_danger("v15 savefile migration complete."))
-
-	// Migration for colors
-	if(current_version < 16)
-		log_world("[client_ckey] preferences migrating from [current_version] to v16....")
-		to_chat(client, span_danger("Migrating savefile from version [current_version] to v16..."))
-
-		migration_16_colors(S)
-
-		log_world("[client_ckey] preferences successfully migrated from [current_version] to v16.")
-		to_chat(client, span_danger("v16 savefile migration complete."))
-
-	// Migration for old named tails so downstream doesn't have their savefiles borked
-	if(current_version < 17)
-		log_world("[client_ckey] preferences migrating from [current_version] to v17....")
-		to_chat(client, span_danger("Migrating savefile from version [current_version] to v17..."))
-
-		migration_17_tails(S)
-
-		log_world("[client_ckey] preferences successfully migrated from [current_version] to v17.")
-		to_chat(client, span_danger("v17 savefile migration complete."))
-
-	// Migration for jukebox volume from 0-1 to 0-100
-	if(current_version < 18)
-		log_world("[client_ckey] preferences migrating from [current_version] to v18....")
-		to_chat(client, span_danger("Migrating savefile from version [current_version] to v18..."))
-
-		migration_18_jukebox(S)
-
-		log_world("[client_ckey] preferences successfully migrated from [current_version] to v18.")
-		to_chat(client, span_danger("v18 savefile migration complete."))
-
-	// Migration for pai to tg pregs
-	if(current_version < 19)
-		log_world("[client_ckey] preferences migrating from [current_version] to v19....")
-		to_chat(client, span_danger("Migrating savefile from version [current_version] to v19..."))
-
-		migration_19_paifile(S)
-
-		log_world("[client_ckey] preferences successfully migrated from [current_version] to v19.")
-		to_chat(client, span_danger("v19 savefile migration complete."))
 /datum/preferences/proc/update_character(current_version, list/save_data)
-	// Migration from BYOND savefiles to JSON: Important milemark.
-	if(current_version == -3)
-		// Add a version field inside each character
-		save_data["version"] = SAVEFILE_VERSION_MAX
-
-/// Migrates from byond savefile to json savefile
-/datum/preferences/proc/try_savefile_type_migration()
-	log_world("[client_ckey] preferences migrating from savefile to JSON...")
-	to_chat(client, span_danger("Savefile migration to JSON in progress..."))
-
-	load_path(client.ckey, "preferences.sav") // old save file
-	var/old_path = path
-	load_path(client.ckey)
-	if(!fexists(old_path))
-		return
-	var/datum/json_savefile/json_savefile = new(path)
-	json_savefile.import_byond_savefile(new /savefile(old_path))
-	json_savefile.save()
-
-	log_world("[client_ckey] preferences successfully migrated from savefile to JSON.")
-	to_chat(client, span_danger("Savefile migration to JSON is complete."))
-
-	return TRUE
+	return // DQEdit — no migrations on this fork.
 
 /datum/preferences/proc/load_path(ckey, filename = "preferences.json")
 	if(!ckey || !load_and_save)
@@ -192,8 +74,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		fcopy(savefile.path, bacpath) //byond helpfully lets you use a savefile for the first arg.
 		update_preferences(needs_update, savefile) //needs_update = savefile_version if we need an update (positive integer)
 
-		// Load general prefs after applying migrations
-		player_setup.load_preferences(savefile)
+		// DQEdit — Bay player_setup.load_preferences chain deleted; PREFERENCE_PLAYER prefs
+		// load via the per-pref read() path triggered by read_preference() in apply_all_client_preferences().
 
 		//save the updated version
 		var/old_default_slot = default_slot
@@ -212,9 +94,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		default_slot = old_default_slot
 		// max_save_slots = old_max_save_slots
 		save_preferences()
-	else
-		// Load general prefs
-		player_setup.load_preferences(savefile)
+	// DQEdit — Bay player_setup.load_preferences chain deleted; see comment above.
 
 	return TRUE
 
@@ -223,7 +103,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		CRASH("Attempted to save the preferences of [client] without a savefile. This should have been handled by load_preferences()")
 	savefile.set_entry("version", SAVEFILE_VERSION_MAX) //updates (or failing that the sanity checks) will ensure data is not invalid at load. Assume up-to-date
 
-	player_setup.save_preferences(savefile)
+	// DQEdit — Bay player_setup.save_preferences chain deleted; per-pref write() handles persistence.
 
 	for(var/preference_type in GLOB.preference_entries)
 		var/datum/preference/preference = GLOB.preference_entries[preference_type]
@@ -286,11 +166,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		value_cache -= preference.type
 		read_preference(preference.type)
 
-	// It has to be a list or load_character freaks out
-	if(!save_data)
-		player_setup.load_character(list())
-	else
-		player_setup.load_character(save_data)
+	// DQEdit — Bay player_setup.load_character chain deleted; pre-cache loop above already
+	// loaded every PREFERENCE_CHARACTER pref from save_data via read_preference().
 
 	//try to fix any outdated data if necessary
 	//preference updating will handle saving the updated data for us.
@@ -325,7 +202,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			write_preference(preference, preference.pref_serialize(value_cache[preference.type]))
 
 	save_data["version"] = SAVEFILE_VERSION_MAX //load_character will sanitize any bad data, so assume up-to-date.
-	player_setup.save_character(save_data)
+	// DQEdit — Bay player_setup.save_character chain deleted; per-pref write() handles persistence.
 
 	return TRUE
 
@@ -340,7 +217,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	slot = sanitize_integer(slot, 1, CONFIG_GET(number/character_slots), initial(default_slot))
 	if(slot != default_slot)
 		default_slot = slot
-		nif_path = nif_durability = nif_savedata = null //VOREStation Add - Don't copy NIF
+		// DQEdit Start — Don't copy NIF to the new slot; clear migrated /datum/preference values.
+		update_preference_by_type(/datum/preference/nif_path, null)
+		update_preference_by_type(/datum/preference/numeric/nif_durability, null)
+		update_preference_by_type(/datum/preference/nif_savedata, list())
+		// DQEdit End
 		savefile.set_entry("default_slot", slot)
 
 	// Clear stale data before overwriting.
@@ -349,8 +230,20 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	return TRUE
 
 /datum/preferences/proc/sanitize_preferences()
-	player_setup.sanitize_setup()
+	// DQEdit — walk the /datum/preference registry and run each entry's sanitize() against
+	// its currently-cached value. Per-pref sanitizers live in _pref_sanitizers.dm.
+	// Cross-pref invariants are enforced by /datum/preference_constraint subtypes after
+	// each update; this proc just makes sure the load-time values are clean.
+	begin_update_batch()
+	for(var/pref_type in GLOB.preference_entries)
+		var/datum/preference/pref = GLOB.preference_entries[pref_type]
+		if(pref.savefile_identifier != PREFERENCE_CHARACTER)
+			continue
+		var/current = read_preference(pref_type)
+		var/sanitized = pref.sanitize(current, src)
+		if(sanitized != current)
+			update_preference_by_type(pref_type, sanitized)
+	end_update_batch()
 	return TRUE
 
 #undef SAVEFILE_VERSION_MAX
-#undef SAVEFILE_VERSION_MIN

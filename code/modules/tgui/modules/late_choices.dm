@@ -8,17 +8,17 @@
 	return STATUS_INTERACTIVE
 
 /proc/get_user_job_priority(mob/user, datum/job/job)
+	// DQEdit — was: GetJobDepartment(job, level) & job.flag bitwise check per level.
 	. = 0
-
 	if(!user?.client?.prefs)
 		return
-
-	if(user.client.prefs.GetJobDepartment(job, 1) & job.flag)
-		. = 1
-	else if(user.client.prefs.GetJobDepartment(job, 2) & job.flag)
-		. = 2
-	else if(user.client.prefs.GetJobDepartment(job, 3) & job.flag)
-		. = 3
+	switch(user.client.prefs.get_job_priority(job.title))
+		if("high")
+			. = 1
+		if("med")
+			. = 2
+		if("low")
+			. = 3
 
 /proc/department_flag_to_name(department)
 	switch(department)

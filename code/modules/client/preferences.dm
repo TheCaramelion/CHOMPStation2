@@ -17,34 +17,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	//game-preferences
 	var/lastchangelog = ""				//Saved changlog filesize to detect if there was a change // CHOMPAdd
-	var/be_special = 0					//Special role selection
 
-	//character preferences
-	var/b_type = DEFAULT_BLOOD_TYPE		//blood type (not-chooseable)
-	var/blood_reagents = "default"		//blood restoration reagents
-	var/headset = 1						//headset type
-	var/backbag = 2						//backpack type
-	var/pdachoice = 1					//PDA type
-	//var/shoe_hater = FALSE				//If true, will spawn with no shoes //CHOMPRemove, remove RS No shoes
-	var/no_jacket = FALSE				//if true, will not spawn with outfit's jacket/outer layer
-	var/h_style = "Bald"				//Hair type
-	var/grad_style = "none"				//Gradient style
-	var/f_style = "Shaved"				//Face hair type
-	var/s_tone = -75						//Skin tone
-	var/species_preview                 //Used for the species selection window.
-	var/list/alternate_languages = list() //Secondary language(s)
-	var/list/language_prefixes = list() //Language prefix keys
-	var/list/language_custom_keys = list() //Language custom call keys
-	var/list/gear_list = list()			//Custom/fluff item loadouts.
-	var/gear_slot = 1					//The current gear save slot
-	var/list/traits						//Traits which modifier characters for better or worse (mostly worse).
-	var/synth_color	= 0					//Lets normally uncolorable synth parts be colorable.
-	var/synth_markings = 1				//Enable/disable markings on synth parts.
-	var/digitigrade = 0
-
-		//Some faction information.
-	var/antag_faction = "None"			//Antag associated faction.
-	var/antag_vis = "Hidden"			//How visible antag association is to others.
+	// DQEdit — be_special, b_type, blood_reagents, headset, backbag, pdachoice, no_jacket,
+	// h_style, grad_style, f_style, s_tone, alternate_languages, language_prefixes,
+	// language_custom_keys, gear_list, gear_slot, traits (legacy alias), synth_color,
+	// synth_markings, digitigrade, antag_faction, antag_vis all migrated to /datum/preference
+	// subtypes. species_preview was unused; deleted.
 
 		//Mob preview
 	var/list/char_render_holders		//Should only be a key-value list of north/south/east/west = atom/movable/screen.
@@ -66,24 +44,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	// maps each organ to either null(intact), "cyborg" or "amputated"
 	// will probably not be able to do this for head and torso ;)
 
-	var/list/body_markings = list() // "name" = "#rgbcolor" //VOREStation Edit: "name" = list(BP_HEAD = list("on" = <enabled>, "color" = "#rgbcolor"), BP_TORSO = ...)
-
-	var/list/flavor_texts = list()
-	var/list/flavour_texts_robot = list()
-	var/custom_link = null
-
-	var/exploit_record = ""
+	// DQEdit — body_markings, flavor_texts, flavour_texts_robot, custom_link, exploit_record migrated to /datum/preference subtypes.
 
 	var/client/client = null
 	var/client_ckey = null
 
-	// Communicator identity data
-	var/communicator_visibility = 0
+	// DQEdit — communicator_visibility/ringtone migrated to /datum/preference subtypes.
 
-	/// Default ringtone for character; if blank, use job default.
-	var/ringtone = null
-
-	var/datum/category_collection/player_setup_collection/player_setup
+	// DQEdit — Bay player_setup chain deleted; per-pref sanitize/save/load handles everything.
 	var/datum/browser/panel
 
 	var/lastnews // Hash of last seen lobby news content.
@@ -99,6 +67,18 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	/// The json savefile for this datum
 	var/datum/json_savefile/savefile
 
+	// DQAdd — when non-zero, defers save flushes inside a transactional update_many() block.
+	var/save_batch_depth = 0
+	/// Set when at least one save would have fired during the current batch.
+	var/save_batch_dirty = FALSE
+	/// Depth counter for nested constraint cascades. The runner refuses to recurse past
+	/// PREF_CONSTRAINT_MAX_DEPTH so a constraint that triggers itself (directly or
+	/// transitively through another constraint) crashes loudly instead of stack-bombing.
+	var/constraint_cascade_depth = 0
+	/// Re-entry guard for update_preview_icon(). apply_hooks that write prefs as a side
+	/// effect would otherwise re-trigger preview generation and infinite-recurse.
+	var/updating_preview_icon = FALSE
+
 /datum/preferences/New(client/C)
 	client = C
 
@@ -109,18 +89,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		client_ckey = C.ckey
 		load_and_save = !IsGuestKey(C.key)
 		load_path(C.ckey)
-		if(load_and_save && !fexists(path))
-			try_savefile_type_migration()
+		// DQEdit — no legacy BYOND savefile migration on this fork.
 	else
 		CRASH("attempted to create a preferences datum without a client or mock!")
 	load_savefile()
 
-	// Legacy code
-	gear_list = list()
-	gear_slot = 1
-	// End legacy code
-
-	player_setup = new(src)
+	// DQEdit — Bay player_setup instantiation deleted; new system needs no setup datum.
 
 	var/loaded_preferences_successfully = load_preferences()
 	if(loaded_preferences_successfully)
@@ -130,7 +104,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	// Didn't load a character, so let's randomize
 	set_biological_gender(pick(MALE, FEMALE))
 	update_preference_by_type(/datum/preference/name/real_name, random_name(read_preference(/datum/preference/choiced/gender/identifying), read_preference(/datum/preference/choiced/species)))
-	b_type = RANDOM_BLOOD_TYPE
+	update_preference_by_type(/datum/preference/text/human/b_type, RANDOM_BLOOD_TYPE) // DQEdit — migrated
 
 	if(client)
 		apply_all_client_preferences()
@@ -141,9 +115,29 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 /datum/preferences/Destroy()
 	QDEL_LIST_ASSOC_VAL(char_render_holders)
-	QDEL_NULL(middleware)
+	// DQEdit — `middleware` is a list of /datum/preference_middleware; QDEL_NULL would
+	// pass the list itself to qdel and trip the "lists should not be qdel'd" runtime.
+	// QDEL_LIST iterates and qdels each entry then clears the list.
+	QDEL_LIST(middleware)
 	value_cache = null
 	return ..()
+
+// DQAdd Start — transactional batching for constraint cascades and editor actions.
+// Wrap multiple update_preference() calls in update_many(); all the writes are coalesced
+// into a single save flush at the end. Calls nest safely.
+/datum/preferences/proc/begin_update_batch()
+	save_batch_depth += 1
+
+/datum/preferences/proc/end_update_batch()
+	save_batch_depth -= 1
+	if(save_batch_depth < 0)
+		stack_trace("end_update_batch() called more times than begin_update_batch() on [client_ckey]'s prefs")
+		save_batch_depth = 0
+	if(save_batch_depth == 0 && save_batch_dirty)
+		save_batch_dirty = FALSE
+		save_character()
+		save_preferences()
+// DQAdd End
 
 /datum/preferences/proc/ShowChoices(mob/user)
 	if(!user || !user.client)
@@ -180,7 +174,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		BG.pref = src
 		LAZYSET(char_render_holders, "BG", BG)
 		client.screen |= BG
-	BG.icon_state = bgstate
+	BG.icon_state = read_preference(/datum/preference/text/human/bgstate) // DQEdit — migrated
 	BG.screen_loc = preview_screen_locs["BG"]
 
 	for(var/D in GLOB.cardinal)
@@ -230,7 +224,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	if(href_list["save"])
 		if(save_character())
-			to_chat(usr,span_notice("Character [player_setup?.preferences?.read_preference(/datum/preference/name/real_name)] saved!"))
+			to_chat(usr,span_notice("Character [read_preference(/datum/preference/name/real_name)] saved!")) // DQEdit — was player_setup.preferences.read_preference
 		save_preferences()
 	else if(href_list["reload"])
 		load_preferences(TRUE)
@@ -264,8 +258,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	return 1
 
 /datum/preferences/proc/copy_to(mob/living/carbon/human/character, icon_updates = TRUE)
-	// Sanitizing rather than saving as someone might still be editing when copy_to occurs.
-	player_setup.sanitize_setup()
+	// DQEdit — sanitize via the new registry-walking sanitize_preferences() instead of the
+	// deleted Bay player_setup.sanitize_setup() chain.
+	sanitize_preferences()
 
 	// This needs to happen before anything else becuase it sets some variables.
 	character.set_species(read_preference(/datum/preference/choiced/species))
@@ -274,20 +269,30 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		// write_ instead of update_ to avoid update_preference_by_type calling copy_to again.
 		write_preference_by_type(/datum/preference/name/real_name, random_name(read_preference(/datum/preference/choiced/gender/identifying), read_preference(/datum/preference/choiced/species)))
 
-	// Ask the preferences datums to apply their own settings to the new mob
-	player_setup.copy_to_mob(character)
-
+	// DQEdit — apply pipeline:
+	//   1. Per-pref apply() walks every PREFERENCE_CHARACTER pref in priority order.
+	//   2. /datum/preference_apply_hook subtypes run after, for cross-pref orchestration that
+	//      doesn't fit a single pref (name sanitization, species/trait synthesis, organ apply,
+	//      markings overlay rebuild, NIF spawn, body backup, finalize).
+	//   Bay player_setup.copy_to_mob() is no longer called; all its logic has moved to
+	//   per-pref apply_to_human and /datum/preference_apply_hook subtypes.
 	for(var/datum/preference/preference as anything in get_preferences_in_priority_order())
 		if(preference.savefile_identifier != PREFERENCE_CHARACTER)
 			continue
 
-		preference.apply_pref_to(character, read_preference(preference.type))
+		preference.apply(character, read_preference(preference.type), src)
 
-	// Sync up all their organs and species one final time
+	for(var/datum/preference_apply_hook/hook as anything in GLOB.preference_apply_hooks)
+		if(hook.skip_on_preview && ismannequin(character))
+			continue
+		hook.apply(character, src)
+
+	// Sync up all their organs one final time. force_update_limbs + regenerate_icons are
+	// already handled by /datum/preference_apply_hook/finalize; we still need the body /
+	// mutation / underwear / hair passes that aren't part of the hook.
 	character.force_update_organs()
 
 	if(icon_updates)
-		character.force_update_limbs()
 		character.update_icons_body()
 		character.update_mutations()
 		character.update_underwear()
@@ -378,188 +383,88 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		user.client?.prefs_vr.load_vore()
 		ShowChoices(user)
 
+// DQEdit — vanity_copy_to rewritten to ride the same /datum/preference apply pipeline as
+// copy_to(), with a curated list of "vanity-scope" pref types so we only touch appearance/
+// identity bits. The bool flags select which subsets get copied; the heavy lifting
+// (species-filtered accessory resolution, markings overlay rebuild, name sanitization
+// with surname injection) is delegated to the existing apply_hooks.
+//
+// This replaces what was a ~200-line snowflake duplicate-write proc.
 /datum/preferences/proc/vanity_copy_to(mob/living/carbon/human/character, copy_name, copy_flavour = TRUE, copy_ooc_notes = FALSE, convert_to_prosthetics = FALSE, apply_bloodtype = TRUE)
-	//snowflake copy_to, does not copy anything but the vanity things
-	//does not check if the name is the same, do that in any proc that calls this proc
-	/*
-	name, nickname, flavour, OOC notes
-	gender, sex
-	custom species name, custom bodytype, weight, scale, scaling center, sound type, sound freq
-	custom say verbs
-	ears, wings, tail, hair, facial hair
-	ears colors, wings colors, tail colors
-	body color, prosthetics (if they're a protean) (convert to DSI if protean and not prosthetic), eye color, hair color etc
-	markings
-	custom synth markings toggle, custom synth color toggle
-	digitigrade
-	blood color
-	*/
-	if (copy_name)
-		var/char_real_name = read_preference(/datum/preference/name/real_name)
-		if(CONFIG_GET(flag/humans_need_surnames))
-			var/firstspace = findtext(char_real_name, " ")
-			var/name_length = length(char_real_name)
-			if(!firstspace)	//we need a surname
-				char_real_name += " [pick(GLOB.last_names)]"
-			else if(firstspace == name_length)
-				char_real_name += "[pick(GLOB.last_names)]"
-		character.real_name = char_real_name
-		character.name = character.real_name
-		if(character.dna)
-			character.dna.real_name = character.real_name
-		character.nickname = read_preference(/datum/preference/name/nickname)
-	character.gender = read_preference(/datum/preference/choiced/gender/biological)
-	character.identifying_gender = read_preference(/datum/preference/choiced/gender/identifying)
+	// Atomic batch so any constraint cascades from the writes below coalesce into one save.
+	PREF_TRANSACTION_BEGIN(src)
 
-	character.h_style	= h_style
+	for(var/preference_type in GLOB.vanity_pref_types)
+		// b_type is skipped unless apply_bloodtype; flavor_texts unless copy_flavour;
+		// ooc_notes_* unless copy_ooc_notes; name/nickname unless copy_name.
+		if(preference_type == /datum/preference/text/human/b_type && !apply_bloodtype)
+			continue
+		if(preference_type == /datum/preference/flavor_texts && !copy_flavour)
+			continue
+		if((preference_type == /datum/preference/name/real_name || preference_type == /datum/preference/name/nickname) && !copy_name)
+			continue
+		if(preference_type in GLOB.vanity_ooc_pref_types)
+			if(!copy_ooc_notes)
+				continue
+		var/datum/preference/pref = GLOB.preference_entries[preference_type]
+		if(!pref)
+			continue
+		pref.apply(character, read_preference(preference_type), src)
 
-	var/datum/preference/color/hair_color = GLOB.preference_entries[/datum/preference/color/human/hair_color]
-	hair_color.apply_pref_to(character, read_preference(/datum/preference/color/human/hair_color))
+	// Cross-pref orchestration that the per-pref apply() can't express alone.
+	if(copy_name)
+		var/datum/preference_apply_hook/name_sanitization/name_hook = locate() in GLOB.preference_apply_hooks
+		if(name_hook)
+			name_hook.apply(character, src)
 
-	var/datum/preference/color/grad_color = GLOB.preference_entries[/datum/preference/color/human/grad_color]
-	grad_color.apply_pref_to(character, read_preference(/datum/preference/color/human/grad_color))
+	var/datum/preference_apply_hook/gender/gender_hook = locate() in GLOB.preference_apply_hooks
+	if(gender_hook)
+		gender_hook.apply(character, src)
 
-	character.f_style	= f_style
-	character.s_tone	= s_tone
-	character.h_style	= h_style
-	character.grad_style= grad_style
-	character.f_style	= f_style
-	character.grad_style= grad_style
-	if(apply_bloodtype)
-		character.dna.b_type= b_type //This actually just straight up kills whoever uses it if the blood types aren't compatible in TF
-	character.synth_color = synth_color
+	var/datum/preference_apply_hook/accessories/accessory_hook = locate() in GLOB.preference_apply_hooks
+	if(accessory_hook)
+		accessory_hook.apply(character, src)
 
-	var/datum/preference/color/synth_color_color = GLOB.preference_entries[/datum/preference/color/human/synth_color]
-	synth_color_color.apply_pref_to(character, read_preference(/datum/preference/color/human/synth_color))
+	var/datum/preference_apply_hook/markings/markings_hook = locate() in GLOB.preference_apply_hooks
+	if(markings_hook)
+		markings_hook.apply(character, src)
 
-	character.synth_markings = synth_markings
-
-	var/list/ear_styles = get_available_styles(GLOB.ear_styles_list)
-	character.ear_style =  ear_styles[ear_style]
-
-	var/datum/preference/color/ears_color1 = GLOB.preference_entries[/datum/preference/color/human/ears_color1]
-	ears_color1.apply_pref_to(character, read_preference(/datum/preference/color/human/ears_color1))
-
-	var/datum/preference/color/ears_color2 = GLOB.preference_entries[/datum/preference/color/human/ears_color2]
-	ears_color2.apply_pref_to(character, read_preference(/datum/preference/color/human/ears_color2))
-
-	var/datum/preference/color/ears_color3 = GLOB.preference_entries[/datum/preference/color/human/ears_color3]
-	ears_color3.apply_pref_to(character, read_preference(/datum/preference/color/human/ears_color3))
-
-	character.ear_secondary_style = ear_styles[ear_secondary_style]
-	character.ear_secondary_colors = SANITIZE_LIST(ear_secondary_colors)
-
-	var/list/tail_styles = get_available_styles(GLOB.tail_styles_list)
-	character.tail_style = tail_styles[tail_style]
-
-	var/datum/preference/color/tail_color1 = GLOB.preference_entries[/datum/preference/color/human/tail_color1]
-	tail_color1.apply_pref_to(character, read_preference(/datum/preference/color/human/tail_color1))
-
-	var/datum/preference/color/tail_color2 = GLOB.preference_entries[/datum/preference/color/human/tail_color2]
-	tail_color2.apply_pref_to(character, read_preference(/datum/preference/color/human/tail_color2))
-
-	var/datum/preference/color/tail_color3 = GLOB.preference_entries[/datum/preference/color/human/tail_color3]
-	tail_color3.apply_pref_to(character, read_preference(/datum/preference/color/human/tail_color3))
-
-	var/list/wing_styles = get_available_styles(GLOB.wing_styles_list)
-	character.wing_style = wing_styles[wing_style]
-
-	var/datum/preference/color/wing_color1 = GLOB.preference_entries[/datum/preference/color/human/wing_color1]
-	wing_color1.apply_pref_to(character, read_preference(/datum/preference/color/human/wing_color1))
-
-	var/datum/preference/color/wing_color2 = GLOB.preference_entries[/datum/preference/color/human/wing_color2]
-	wing_color2.apply_pref_to(character, read_preference(/datum/preference/color/human/wing_color2))
-
-	var/datum/preference/color/wing_color3 = GLOB.preference_entries[/datum/preference/color/human/wing_color3]
-	wing_color3.apply_pref_to(character, read_preference(/datum/preference/color/human/wing_color3))
-
-	var/datum/preference/numeric/wing_alpha = GLOB.preference_entries[/datum/preference/numeric/human/wing_alpha]
-	wing_alpha.apply_pref_to(character, read_preference(/datum/preference/numeric/human/wing_alpha))
-
-	var/datum/preference/numeric/skin_color = GLOB.preference_entries[/datum/preference/color/human/skin_color]
-	skin_color.apply_pref_to(character, read_preference(/datum/preference/color/human/skin_color))
-
-	var/datum/preference/color/human/eyes_color = GLOB.preference_entries[/datum/preference/color/human/eyes_color]
-	eyes_color.apply_pref_to(character, read_preference(/datum/preference/color/human/eyes_color))
-
-	character.set_gender(read_preference(/datum/preference/choiced/gender/biological))
-
-	// Destroy/cyborgize organs and limbs.
-	if (convert_to_prosthetics) //should only really be run for proteans
+	// Protean reconstitutor path — same prosthetic conversion logic the old proc had.
+	if(convert_to_prosthetics)
 		var/list/pref_organ_data = read_preference(/datum/preference/organ_data)
 		var/list/pref_rlimb_data = read_preference(/datum/preference/rlimb_data)
 		var/list/organs_to_edit = list()
-		for (var/name in list(BP_TORSO, BP_HEAD, BP_GROIN, BP_L_ARM, BP_R_ARM, BP_L_HAND, BP_R_HAND, BP_L_LEG, BP_R_LEG, BP_L_FOOT, BP_R_FOOT))
+		for(var/name in list(BP_TORSO, BP_HEAD, BP_GROIN, BP_L_ARM, BP_R_ARM, BP_L_HAND, BP_R_HAND, BP_L_LEG, BP_R_LEG, BP_L_FOOT, BP_R_FOOT))
 			var/obj/item/organ/external/O = character.organs_by_name[name]
-			if (O)
+			if(O)
 				var/x = organs_to_edit.Find(O.parent_organ)
-				if (x == 0)
+				if(x == 0)
 					organs_to_edit += name
 				else
-					organs_to_edit.Insert(x+(O.robotic == ORGAN_NANOFORM ? 1 : 0), name)
+					organs_to_edit.Insert(x + (O.robotic == ORGAN_NANOFORM ? 1 : 0), name)
 		for(var/name in organs_to_edit)
 			var/status = pref_organ_data[name]
 			var/obj/item/organ/external/O = character.organs_by_name[name]
-			if(O)
-				if(status == "amputated")
-					continue
-				else if(status == "cyborg")
-					O.robotize(pref_rlimb_data[name])
+			if(!O)
+				continue
+			if(status == "amputated")
+				continue
+			else if(status == "cyborg")
+				O.robotize(pref_rlimb_data[name])
+			else
+				var/bodytype
+				var/_custom_base = read_preference(/datum/preference/text/human/custom_base)
+				var/datum/species/selected_species = GLOB.all_species[read_preference(/datum/preference/choiced/species)]
+				if(selected_species.selects_bodytype && _custom_base)
+					bodytype = _custom_base
 				else
-					var/bodytype
-					var/datum/species/selected_species = GLOB.all_species[read_preference(/datum/preference/choiced/species)]
-					if(selected_species.selects_bodytype && custom_base) //Everyone technically has custom_base set to HUMAN, but only some species actually select it.
-						bodytype = custom_base
-					else
-						bodytype = selected_species.get_bodytype()
-					var/dsi_company = GLOB.dsi_to_species[bodytype]
-					if (!dsi_company)
-						dsi_company = "DSI - Adaptive"
-					O.robotize(dsi_company)
+					bodytype = selected_species.get_bodytype()
+				var/dsi_company = GLOB.dsi_to_species[bodytype] || "DSI - Adaptive"
+				O.robotize(dsi_company)
 
-	for(var/N in character.organs_by_name)
-		var/obj/item/organ/external/O = character.organs_by_name[N]
-		if(O)
-			O.markings.Cut()
-
-	var/priority = 0
-	for(var/M in body_markings)
-		priority += 1
-		var/datum/sprite_accessory/marking/mark_datum = GLOB.body_marking_styles_list[M]
-
-		for(var/BP in mark_datum.body_parts)
-			var/obj/item/organ/external/O = character.organs_by_name[BP]
-			if(O)
-				if(!islist(body_markings[M][BP]))
-					continue
-				O.markings[M] = list("color" = body_markings[M][BP]["color"], "datum" = mark_datum, "priority" = priority, "on" = body_markings[M][BP]["on"])
-	character.markings_len = priority
-
-	if (copy_flavour)
-		character.flavor_texts["general"]	= flavor_texts["general"]
-		character.flavor_texts["head"]		= flavor_texts["head"]
-		character.flavor_texts["face"]		= flavor_texts["face"]
-		character.flavor_texts["eyes"]		= flavor_texts["eyes"]
-		character.flavor_texts["torso"]		= flavor_texts["torso"]
-		character.flavor_texts["arms"]		= flavor_texts["arms"]
-		character.flavor_texts["hands"]		= flavor_texts["hands"]
-		character.flavor_texts["legs"]		= flavor_texts["legs"]
-		character.flavor_texts["feet"]		= flavor_texts["feet"]
-	if (copy_ooc_notes)
-		character.ooc_notes 				= read_preference(/datum/preference/text/living/ooc_notes)
-		character.ooc_notes_dislikes 		= read_preference(/datum/preference/text/living/ooc_notes_dislikes)
-		character.ooc_notes_likes 			= read_preference(/datum/preference/text/living/ooc_notes_likes)
-		character.ooc_notes_favs 			= read_preference(/datum/preference/text/living/ooc_notes_favs)
-		character.ooc_notes_maybes 			= read_preference(/datum/preference/text/living/ooc_notes_maybes)
-		character.ooc_notes_style 			= read_preference(/datum/preference/toggle/living/ooc_notes_style)
-
-	character.weight			= weight_vr
-	character.weight_gain		= weight_gain
-	character.weight_loss		= weight_loss
-	character.fuzzy				= fuzzy
-	character.offset_override	= offset_override
-	character.voice_freq		= voice_freq
-	character.resize(size_multiplier, animate = FALSE, ignore_prefs = TRUE)
+	// Size-trait overlay still needs to run for the vanity case (the trait_synthesis
+	// apply_hook is intentionally NOT called here — we don't want produceCopy()).
+	character.species?.blood_color = read_preference(/datum/preference/color/human/blood_color)
 
 	var/list/traits_to_copy = list(/datum/trait/neutral/tall,
 									/datum/trait/neutral/taller,
@@ -573,31 +478,28 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									/datum/trait/neutral/thinner,
 									/datum/trait/neutral/micro_size_down,
 									/datum/trait/neutral/micro_size_up)
-	//reset all the above trait vars
-	if (character.species)
+	if(character.species)
 		character.species.micro_size_mod = 0
 		character.species.icon_scale_x = 1
 		character.species.icon_scale_y = 1
-		for (var/trait in neu_traits)
-			if (trait in traits_to_copy)
+		for(var/trait in read_preference(/datum/preference/neu_traits))
+			if(trait in traits_to_copy)
 				var/datum/trait/instance = GLOB.all_traits[trait]
-				if (!instance)
+				if(!instance)
 					continue
 				for(var/key, value in instance.var_changes)
 					character.species.vars[key] = value
 	character.update_transform()
 
-	if(!voice_sound)
-		character.voice_sounds_list = DEFAULT_TALK_SOUNDS
-	else
-		character.voice_sounds_list = get_talk_sound(voice_sound)
-
-	character.species?.blood_color = blood_color
-
+	// Snowflake shapeshifter bodytype derivation — this is what makes vanity_copy_to
+	// different from the standard apply pipeline. Resolve the custom_base into the species'
+	// vanity_base_fit so the shapeshifter renders the new body without losing the original
+	// species datum.
+	var/_custom_base = read_preference(/datum/preference/text/human/custom_base)
 	var/datum/species/selected_species = GLOB.all_species[read_preference(/datum/preference/choiced/species)]
 	var/bodytype_selected
-	if(selected_species.selects_bodytype && custom_base)
-		bodytype_selected = custom_base
+	if(selected_species.selects_bodytype && _custom_base)
+		bodytype_selected = _custom_base
 	else
 		bodytype_selected = selected_species.get_bodytype(character)
 	character.dna.base_species = bodytype_selected
@@ -608,17 +510,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	if(istype(character.species, /datum/species/shapeshifter))
 		GLOB.wrapped_species_by_ref["\ref[character]"] = bodytype_selected
 
-	character.custom_species	= custom_species
-	character.custom_say		= lowertext(trim(custom_say))
-	character.custom_ask		= lowertext(trim(custom_ask))
-	character.custom_whisper	= lowertext(trim(custom_whisper))
-	character.custom_exclaim	= lowertext(trim(custom_exclaim))
-
-	character.digitigrade = digitigrade
-
+	// Finalize: same post-apply work the /datum/preference_apply_hook/finalize hook does.
 	for(var/obj/item/clothing/O in character.contents)
 		O.handle_digitigrade(character)
-
-	character.dna.ResetUIFrom(character)
+	if(character.dna)
+		character.dna.ResetUIFrom(character)
 	character.force_update_limbs()
 	character.regenerate_icons()
+
+	PREF_TRANSACTION_END(src)

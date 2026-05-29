@@ -51,7 +51,9 @@
 
 	var/mob/living/silicon/ai/O = ..(move)
 	if(O)
-		O.flavor_text = O.client?.prefs?.flavor_texts["general"]
+		// DQEdit — migrated flavor_texts
+		var/list/_flavor_texts = O.client?.prefs?.read_preference(/datum/preference/flavor_texts)
+		O.flavor_text = LAZYACCESS(_flavor_texts, "general")
 		return O
 
 	return ..(move)
@@ -122,15 +124,17 @@
 
 	// Lorefolks say it may be so.
 	if(O.client && O.client.prefs)
-		var/datum/preferences/B = O.client.prefs
-		if(LANGUAGE_ROOTGLOBAL in B.alternate_languages)
+		// DQEdit Start — migrated alternate_languages
+		var/list/_alt_languages = O.client.prefs.read_preference(/datum/preference/alternate_languages)
+		if(LANGUAGE_ROOTGLOBAL in _alt_languages)
 			O.add_language(LANGUAGE_ROOTGLOBAL, 1)
-		if(LANGUAGE_ROOTLOCAL in B.alternate_languages)
+		if(LANGUAGE_ROOTLOCAL in _alt_languages)
 			O.add_language(LANGUAGE_ROOTLOCAL, 1)
 // CHOMPedit Start - Hivemind is now available
-		if(LANGUAGE_HIVEMIND in B.alternate_languages)
+		if(LANGUAGE_HIVEMIND in _alt_languages)
 			O.add_language(LANGUAGE_HIVEMIND, 1)
 // CHOMPedit End
+		// DQEdit End
 
 	O.on_mob_init()
 
@@ -182,12 +186,14 @@
 		O.mmi.transfer_identity(src)
 
 	if(O.client && O.client.prefs)
+		// DQEdit Start — migrated alternate_languages/size_multiplier/fuzzy/custom_speech_bubble
 		var/datum/preferences/B = O.client.prefs
-		for(var/language in B.alternate_languages)
+		for(var/language in B.read_preference(/datum/preference/alternate_languages))
 			O.add_language(language)
-		O.resize(B.size_multiplier, animate = TRUE, ignore_prefs = TRUE)
-		O.fuzzy = B.fuzzy
-		O.custom_speech_bubble = B.custom_speech_bubble
+		O.resize(B.read_preference(/datum/preference/numeric/human/size_multiplier), animate = TRUE, ignore_prefs = TRUE)
+		O.fuzzy = B.read_preference(/datum/preference/toggle/human/fuzzy)
+		O.custom_speech_bubble = B.read_preference(/datum/preference/text/human/custom_speech_bubble)
+		// DQEdit End
 
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_BORGIFY, O)
 

@@ -449,7 +449,7 @@ GLOBAL_LIST_EMPTY(sacrificed)
 		if(!O.client)	continue
 		if(!O.MayRespawn()) continue
 		if(O.mind && O.mind.current && O.mind.current.stat != DEAD)	continue
-		if(!(O.client.prefs.be_special & BE_CULTIST)) continue
+		if(!(O.client.prefs.read_preference(/datum/preference/numeric/human/be_special) & BE_CULTIST)) continue
 		ghost = O
 		break
 	if(!ghost)

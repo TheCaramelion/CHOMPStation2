@@ -98,6 +98,7 @@
 #include "decl_tests.dm"
 #include "disease_tests.dm"
 #include "dq_medical_tests.dm"
+#include "dq_preferences_tests.dm"
 #include "focus_only_tests.dm"
 #include "font_awesome_icons.dm"
 #include "genetics_tests.dm"
