@@ -364,6 +364,12 @@ GLOBAL_LIST_INIT(preference_entries_by_key, init_preference_entries_by_key())
 		return FALSE
 
 	var/new_value = preference.pref_deserialize(preference_value, src)
+	// DQEdit — validate(src, new_value) is the contextual gate. write() still re-checks
+	// is_valid structurally. This sequencing means a forged Topic that satisfies the
+	// shape but fails the entity-level rule (e.g. an unowned trait, a non-pickable gear
+	// for the wearer's species) is rejected before write() ever touches the cache.
+	if(!preference.validate(src, new_value))
+		return FALSE
 	var/success = preference.write(null, new_value)
 
 	if(!success)
@@ -436,10 +442,31 @@ GLOBAL_LIST_INIT(preference_entries_by_key, init_preference_entries_by_key())
 /// Checks that a given value is valid.
 /// Must be overriden by subtypes.
 /// Any type can be passed through.
+/// Pure structural check: is `value` shaped correctly for this preference, in isolation?
+/// Stays context-free so it can be called from serialization paths (write(), savefile load)
+/// that have no /datum/preferences handle. Subtypes override to tighten the shape.
+///
+/// For rules that depend on the rest of the prefs state (species-gated allowances,
+/// cross-pref budgets, entity-declared whitelists), override validate() instead.
 /datum/preference/proc/is_valid(value)
 	SHOULD_NOT_SLEEP(TRUE)
 	SHOULD_CALL_PARENT(FALSE)
 	CRASH("`is_valid()` was not implemented for [type]!")
+
+// DQAdd Start — validate(prefs, value): the contextual gate for runtime writes.
+//
+// is_valid stays the structural check (used by write() / serialization round-trips).
+// validate is what update_preference calls: it runs is_valid first, then any per-instance
+// contextual checks that need to read other prefs or consult entity-declared rules.
+//
+// Subtypes that need contextual validation (e.g. /datum/preference/typed_list/traits)
+// override validate to walk the value and delegate per-entry checks to the entity's own
+// is_*_takeable_by(prefs) method. That keeps the "is this trait legal?" rule on the trait
+// itself rather than scattered across is_valid overrides on every list-shaped pref.
+/datum/preference/proc/validate(datum/preferences/preferences, value)
+	SHOULD_NOT_SLEEP(TRUE)
+	return is_valid(value)
+// DQAdd End
 
 /// Returns data to be sent to users in the menu
 /datum/preference/proc/compile_ui_data(mob/user, value)

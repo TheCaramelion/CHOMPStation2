@@ -1,16 +1,29 @@
-// DQAdd — Trait list constraints. Strip any trait that's no longer valid for the current
-// species or synth/meatbag flags.
+// DQAdd — Trait list cleanup constraint.
+//
+// The write path's typed_list/traits.validate already rejects an unpickable trait coming
+// from the user. This constraint is for state that becomes unpickable *because of another
+// pref change*: the player flips species, toggles synth, switches to meatbag — their
+// previously-valid traits may not survive the new context. We prune any that don't.
+//
+// Both the typed_list validate AND this constraint route through the entity rule
+// is_trait_takeable_by(), so the "is this trait legal?" logic exists in exactly one
+// place. The constraint adds only what the entity can't know: which structural bucket
+// each savefile-loaded trait belongs in (positive/neutral/negative).
+//
+// Triggers on changes to the trait lists themselves too — that's a no-op now because
+// validate already gated the write, but keeps the constraint correct if someone ever
+// writes a trait list via write_preference_by_type (which bypasses validate).
 
 /datum/preference_constraint/traits_species_filter
 	triggers = list("pos_traits", "neu_traits", "neg_traits", "species", "dirty_synth", "gross_meatbag")
 	affects = list("pos_traits", "neu_traits", "neg_traits")
 
 /datum/preference_constraint/traits_species_filter/apply(datum/preferences/preferences, changed_key, old_value, new_value)
-	prune_traits(preferences, /datum/preference/pos_traits, GLOB.positive_traits, GLOB.everyone_traits_positive)
-	prune_traits(preferences, /datum/preference/neu_traits, GLOB.neutral_traits, GLOB.everyone_traits_neutral)
-	prune_traits(preferences, /datum/preference/neg_traits, GLOB.negative_traits, GLOB.everyone_traits_negative)
+	prune_traits(preferences, /datum/preference/typed_list/traits/pos_traits, GLOB.positive_traits)
+	prune_traits(preferences, /datum/preference/typed_list/traits/neu_traits, GLOB.neutral_traits)
+	prune_traits(preferences, /datum/preference/typed_list/traits/neg_traits, GLOB.negative_traits)
 
-/datum/preference_constraint/traits_species_filter/proc/prune_traits(datum/preferences/preferences, list_type, list/whitelist, list/everyone_whitelist)
+/datum/preference_constraint/traits_species_filter/proc/prune_traits(datum/preferences/preferences, list_type, list/bucket_whitelist)
 	var/list/list_value = preferences.read_preference(list_type)
 	if(!islist(list_value))
 		return
@@ -19,20 +32,15 @@
 	// would silently drop the prune on the next save flush.
 	list_value = list_value.Copy()
 	var/changed = FALSE
-	var/pref_species = preferences.read_preference(/datum/preference/choiced/species)
-	var/synth = preferences.read_preference(/datum/preference/toggle/human/dirty_synth)
-	var/meat = preferences.read_preference(/datum/preference/toggle/human/gross_meatbag)
-	for(var/datum/trait/path as anything in list_value.Copy())
-		if(!(path in whitelist))
+	for(var/path in list_value.Copy())
+		// Bucket-structural check: the trait must still be in this bucket's whitelist.
+		// (A trait moving from positive→neutral on a code change leaves a stale entry.)
+		if(!(path in bucket_whitelist))
 			list_value -= path
 			changed = TRUE
 			continue
-		if(pref_species != SPECIES_CUSTOM && !(path in everyone_whitelist))
-			list_value -= path
-			changed = TRUE
-			continue
-		var/take_flags = initial(path.can_take)
-		if((synth && !(take_flags & SYNTHETICS)) || (meat && !(take_flags & ORGANICS)))
+		// Entity-level rule. Single source of truth — see entity_validation.dm.
+		if(!is_trait_takeable_by(path, preferences))
 			list_value -= path
 			changed = TRUE
 	if(changed)

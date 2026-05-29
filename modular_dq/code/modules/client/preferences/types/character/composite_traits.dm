@@ -62,97 +62,58 @@
 	return
 
 
-/datum/preference/pos_traits
+// Trait list prefs — structural shape (list-of-/datum/trait-paths) and contextual
+// pickability (species gates, can_take, category) all owned by /datum/preference/typed_list/traits.
+// No bespoke is_valid / pref_deserialize / pref_serialize needed; the base handles them.
+//
+// `required_category` is the only per-bucket declaration.
+
+/datum/preference/typed_list/traits/pos_traits
 	savefile_key = "pos_traits"
 	savefile_identifier = PREFERENCE_CHARACTER
 	category = PREFERENCE_CATEGORY_MANUALLY_RENDERED
 	can_randomize = FALSE
+	required_category = TRAIT_TYPE_POSITIVE
 
-/datum/preference/pos_traits/create_default_value()
-	return list()
-
-/datum/preference/pos_traits/pref_deserialize(input, datum/preferences/preferences)
-	if(!islist(input))
-		return list()
-	return input
-
-/datum/preference/pos_traits/pref_serialize(input)
-	if(!islist(input))
-		return list()
-	return check_list_copy(input)
-
-/datum/preference/pos_traits/is_valid(value)
-	return islist(value)
-
-/datum/preference/pos_traits/apply_to_human(mob/living/carbon/human/target, value)
+/datum/preference/typed_list/traits/pos_traits/apply_to_human(mob/living/carbon/human/target, value)
 	return
-/datum/preference/pos_traits/apply_to_living(mob/living/target, value)
+/datum/preference/typed_list/traits/pos_traits/apply_to_living(mob/living/target, value)
 	return
-/datum/preference/pos_traits/apply_to_silicon(mob/living/silicon/target, value)
+/datum/preference/typed_list/traits/pos_traits/apply_to_silicon(mob/living/silicon/target, value)
 	return
-/datum/preference/pos_traits/apply_to_animal(mob/living/simple_mob/target, value)
+/datum/preference/typed_list/traits/pos_traits/apply_to_animal(mob/living/simple_mob/target, value)
 	return
 
 
-/datum/preference/neu_traits
+/datum/preference/typed_list/traits/neu_traits
 	savefile_key = "neu_traits"
 	savefile_identifier = PREFERENCE_CHARACTER
 	category = PREFERENCE_CATEGORY_MANUALLY_RENDERED
 	can_randomize = FALSE
+	required_category = TRAIT_TYPE_NEUTRAL
 
-/datum/preference/neu_traits/create_default_value()
-	return list()
-
-/datum/preference/neu_traits/pref_deserialize(input, datum/preferences/preferences)
-	if(!islist(input))
-		return list()
-	return input
-
-/datum/preference/neu_traits/pref_serialize(input)
-	if(!islist(input))
-		return list()
-	return check_list_copy(input)
-
-/datum/preference/neu_traits/is_valid(value)
-	return islist(value)
-
-/datum/preference/neu_traits/apply_to_human(mob/living/carbon/human/target, value)
+/datum/preference/typed_list/traits/neu_traits/apply_to_human(mob/living/carbon/human/target, value)
 	return
-/datum/preference/neu_traits/apply_to_living(mob/living/target, value)
+/datum/preference/typed_list/traits/neu_traits/apply_to_living(mob/living/target, value)
 	return
-/datum/preference/neu_traits/apply_to_silicon(mob/living/silicon/target, value)
+/datum/preference/typed_list/traits/neu_traits/apply_to_silicon(mob/living/silicon/target, value)
 	return
-/datum/preference/neu_traits/apply_to_animal(mob/living/simple_mob/target, value)
+/datum/preference/typed_list/traits/neu_traits/apply_to_animal(mob/living/simple_mob/target, value)
 	return
 
 
-/datum/preference/neg_traits
+/datum/preference/typed_list/traits/neg_traits
 	savefile_key = "neg_traits"
 	savefile_identifier = PREFERENCE_CHARACTER
 	category = PREFERENCE_CATEGORY_MANUALLY_RENDERED
 	can_randomize = FALSE
+	required_category = TRAIT_TYPE_NEGATIVE
 
-/datum/preference/neg_traits/create_default_value()
-	return list()
-
-/datum/preference/neg_traits/pref_deserialize(input, datum/preferences/preferences)
-	if(!islist(input))
-		return list()
-	return input
-
-/datum/preference/neg_traits/pref_serialize(input)
-	if(!islist(input))
-		return list()
-	return check_list_copy(input)
-
-/datum/preference/neg_traits/is_valid(value)
-	return islist(value)
-
-/datum/preference/neg_traits/apply_to_human(mob/living/carbon/human/target, value)
+/datum/preference/typed_list/traits/neg_traits/apply_to_human(mob/living/carbon/human/target, value)
 	return
-/datum/preference/neg_traits/apply_to_living(mob/living/target, value)
+/datum/preference/typed_list/traits/neg_traits/apply_to_living(mob/living/target, value)
 	return
-/datum/preference/neg_traits/apply_to_silicon(mob/living/silicon/target, value)
+/datum/preference/typed_list/traits/neg_traits/apply_to_silicon(mob/living/silicon/target, value)
 	return
-/datum/preference/neg_traits/apply_to_animal(mob/living/simple_mob/target, value)
+/datum/preference/typed_list/traits/neg_traits/apply_to_animal(mob/living/simple_mob/target, value)
 	return

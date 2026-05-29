@@ -23,9 +23,9 @@
 		preferences.write_preference_by_type(/datum/preference/toggle/human/gross_meatbag, 1)
 		preferences.write_preference_by_type(/datum/preference/toggle/human/dirty_synth, 0)
 
-	var/list/pos_traits = preferences.read_preference(/datum/preference/pos_traits)
-	var/list/neu_traits = preferences.read_preference(/datum/preference/neu_traits)
-	var/list/neg_traits = preferences.read_preference(/datum/preference/neg_traits)
+	var/list/pos_traits = preferences.read_preference(/datum/preference/typed_list/traits/pos_traits)
+	var/list/neu_traits = preferences.read_preference(/datum/preference/typed_list/traits/neu_traits)
+	var/list/neg_traits = preferences.read_preference(/datum/preference/typed_list/traits/neg_traits)
 	var/datum/species/S = target.species
 	if(!S)
 		return

@@ -482,7 +482,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		character.species.micro_size_mod = 0
 		character.species.icon_scale_x = 1
 		character.species.icon_scale_y = 1
-		for(var/trait in read_preference(/datum/preference/neu_traits))
+		for(var/trait in read_preference(/datum/preference/typed_list/traits/neu_traits)) // DQEdit — typed_list pref base
 			if(trait in traits_to_copy)
 				var/datum/trait/instance = GLOB.all_traits[trait]
 				if(!instance)

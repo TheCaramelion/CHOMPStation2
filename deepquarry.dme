@@ -5733,6 +5733,11 @@
 #include "modular_dq\code\modules\client\preferences\_preference_constraint.dm"
 #include "modular_dq\code\modules\client\preferences\_preference_editor.dm"
 #include "modular_dq\code\modules\client\preferences\_preference_apply_hook.dm"
+// DQAdd — typed_list base + trait subtype must load before composite_traits.dm
+// (and any other future typed_list subtype) since they're parent types.
+#include "modular_dq\code\modules\client\preferences\_preference_typed_list.dm"
+#include "modular_dq\code\modules\client\preferences\_preference_typed_list_traits.dm"
+#include "modular_dq\code\modules\client\preferences\entity_validation.dm"
 #include "modular_dq\code\modules\client\preferences\_pref_metadata.dm"
 #include "modular_dq\code\modules\client\preferences\_pref_sanitizers.dm"
 #include "modular_dq\code\modules\client\preferences\_vanity_pref_types.dm"

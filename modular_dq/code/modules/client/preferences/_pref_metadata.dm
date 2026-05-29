@@ -160,9 +160,9 @@ GLOBAL_LIST_INIT(pref_metadata_table, init_pref_metadata_table())
 	tag_pref(., /datum/preference/numeric/human/alternate_option, "occupation", null, PREF_WIDGET_HIDDEN)
 
 	//// TRAITS ////
-	tag_pref(., /datum/preference/pos_traits, "traits", null, PREF_WIDGET_HIDDEN)
-	tag_pref(., /datum/preference/neu_traits, "traits", null, PREF_WIDGET_HIDDEN)
-	tag_pref(., /datum/preference/neg_traits, "traits", null, PREF_WIDGET_HIDDEN)
+	tag_pref(., /datum/preference/typed_list/traits/pos_traits, "traits", null, PREF_WIDGET_HIDDEN)
+	tag_pref(., /datum/preference/typed_list/traits/neu_traits, "traits", null, PREF_WIDGET_HIDDEN)
+	tag_pref(., /datum/preference/typed_list/traits/neg_traits, "traits", null, PREF_WIDGET_HIDDEN)
 	tag_pref(., /datum/preference/numeric/human/starting_trait_points, "traits", null, PREF_WIDGET_HIDDEN)
 	tag_pref(., /datum/preference/numeric/human/max_traits, "traits", null, PREF_WIDGET_HIDDEN)
 	tag_pref(., /datum/preference/numeric/human/traits_cheating, "traits", null, PREF_WIDGET_HIDDEN)

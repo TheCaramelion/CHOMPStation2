@@ -16,9 +16,9 @@
 	pref_keys = list("pos_traits", "neu_traits", "neg_traits", "blood_color", "traits_cheating", "starting_trait_points", "max_traits")
 
 /datum/preference_editor/trait_picker/build_ui_data(datum/preferences/preferences)
-	var/list/pos_traits = preferences.read_preference(/datum/preference/pos_traits) || list()
-	var/list/neu_traits = preferences.read_preference(/datum/preference/neu_traits) || list()
-	var/list/neg_traits = preferences.read_preference(/datum/preference/neg_traits) || list()
+	var/list/pos_traits = preferences.read_preference(/datum/preference/typed_list/traits/pos_traits) || list()
+	var/list/neu_traits = preferences.read_preference(/datum/preference/typed_list/traits/neu_traits) || list()
+	var/list/neg_traits = preferences.read_preference(/datum/preference/typed_list/traits/neg_traits) || list()
 
 	var/points_used = 0
 	for(var/T in (pos_traits + neu_traits + neg_traits))
@@ -99,11 +99,11 @@
 /datum/preference_editor/trait_picker/proc/pref_for_category(category_key)
 	switch(category_key)
 		if("pos")
-			return /datum/preference/pos_traits
+			return /datum/preference/typed_list/traits/pos_traits
 		if("neu")
-			return /datum/preference/neu_traits
+			return /datum/preference/typed_list/traits/neu_traits
 		if("neg")
-			return /datum/preference/neg_traits
+			return /datum/preference/typed_list/traits/neg_traits
 
 /datum/preference_editor/trait_picker/proc/simplify_trait_list(list/traits)
 	var/list/out = list()

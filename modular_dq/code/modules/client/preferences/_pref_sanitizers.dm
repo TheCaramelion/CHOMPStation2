@@ -137,14 +137,17 @@
 	return value || "Unset"
 
 // ----- Trait list type guards -----
+// Structural guards only — the typed_list base's pref_deserialize already does the
+// per-entry typepath check on load, so by the time sanitize sees the value it's already
+// a list of trait paths. Keep these as a defensive backstop.
 
-/datum/preference/pos_traits/sanitize(value, datum/preferences/preferences)
+/datum/preference/typed_list/traits/pos_traits/sanitize(value, datum/preferences/preferences)
 	return islist(value) ? value : list()
 
-/datum/preference/neu_traits/sanitize(value, datum/preferences/preferences)
+/datum/preference/typed_list/traits/neu_traits/sanitize(value, datum/preferences/preferences)
 	return islist(value) ? value : list()
 
-/datum/preference/neg_traits/sanitize(value, datum/preferences/preferences)
+/datum/preference/typed_list/traits/neg_traits/sanitize(value, datum/preferences/preferences)
 	return islist(value) ? value : list()
 
 // ----- Blood -----

@@ -46,10 +46,10 @@
 			to_chat(src,span_warning("You have to name your custom species. Do this on the VORE tab in character setup."))
 
 	//Check traits/costs
-	// DQEdit Start — migrated traits prefs
-	var/list/_pos_traits = client.prefs.read_preference(/datum/preference/pos_traits)
-	var/list/_neu_traits = client.prefs.read_preference(/datum/preference/neu_traits)
-	var/list/_neg_traits = client.prefs.read_preference(/datum/preference/neg_traits)
+	// DQEdit Start — migrated traits prefs (typed_list base)
+	var/list/_pos_traits = client.prefs.read_preference(/datum/preference/typed_list/traits/pos_traits)
+	var/list/_neu_traits = client.prefs.read_preference(/datum/preference/typed_list/traits/neu_traits)
+	var/list/_neg_traits = client.prefs.read_preference(/datum/preference/typed_list/traits/neg_traits)
 	var/list/megalist = _pos_traits + _neu_traits + _neg_traits
 	var/points_left = client.prefs.read_preference(/datum/preference/numeric/human/starting_trait_points)
 	var/traits_left = client.prefs.read_preference(/datum/preference/numeric/human/max_traits)
