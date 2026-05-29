@@ -13,7 +13,11 @@
 
 	var/list/all_underwear = preferences.read_preference(/datum/preference/all_underwear)
 	var/list/all_underwear_metadata = preferences.read_preference(/datum/preference/all_underwear_metadata)
-	for(var/underwear_category_name in all_underwear)
+	// Iterate a copy; the loop conditionally removes from the same list and DM doesn't
+	// guarantee defined behavior for mutation-during-iteration. read_preference already
+	// returns a Copy() for list values so the cache is safe either way; this is purely
+	// for iteration correctness.
+	for(var/underwear_category_name in all_underwear.Copy())
 		var/datum/category_group/underwear/underwear_category = GLOB.global_underwear.categories_by_name[underwear_category_name]
 		if(!underwear_category)
 			all_underwear -= underwear_category_name

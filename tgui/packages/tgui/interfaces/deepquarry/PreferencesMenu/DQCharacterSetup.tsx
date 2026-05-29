@@ -67,9 +67,16 @@ const labelForCategory = (key: string) => CATEGORY_LABELS[key] ?? titleCase(key)
 export const DQCharacterSetup = () => {
   const { act, data } = useBackend<CharacterSetupData>();
   const categories = data.dq_categories ?? [];
-  const [selected, setSelected] = useState<string | null>(
-    categories.length > 0 ? categories[0].category : null,
-  );
+  const [selected, setSelected] = useState<string | null>(null);
+
+  // Land on the first available category once data arrives. Without this, the initial
+  // poll with empty `categories` locks `selected = null` and the tab strip renders
+  // unhighlighted until the user clicks something.
+  useEffect(() => {
+    if (!selected && categories.length > 0) {
+      setSelected(categories[0].category);
+    }
+  }, [categories, selected]);
 
   const selectedPage =
     categories.find((p) => p.category === selected) ?? categories[0];

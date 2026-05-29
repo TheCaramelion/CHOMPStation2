@@ -5,7 +5,7 @@
 // Groups with `collapsed: true` from the server render as collapsed-by-default Sections
 // that the user can expand. Used for niche content (records, OOC notes, PAI, NIF, etc).
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, Button, LabeledList, Section } from 'tgui-core/components';
 import { getEditor } from './editors';
 import { PrefWidget } from './PrefWidget';
@@ -44,7 +44,13 @@ const GroupBlock = ({
   const editors = group.items.filter((i) => i.type === 'editor');
   const hasTitle = !!group.group;
   const isCollapsible = hasTitle && !!group.collapsed;
+  // Track the *server-declared* default so a later state change (server flips a group
+  // from collapsed → expanded due to a constraint or other condition) re-applies.
+  // Without resync, the local state captures only the initial mount value.
   const [expanded, setExpanded] = useState<boolean>(!isCollapsible);
+  useEffect(() => {
+    setExpanded(!isCollapsible);
+  }, [isCollapsible]);
 
   // Bare-frame mode: no group title and no widgets — just render the editors directly.
   if (!hasTitle && widgets.length === 0) {

@@ -131,12 +131,10 @@ GLOBAL_DATUM_INIT(gear_tweak_unified_recolor, /datum/gear_tweak/recolor, new)
 		return null
 	if(!working)
 		return null
-	// Defensive second clone: when `source` is a file path (vs a fresh /icon instance),
-	// BYOND's `new /icon(file)` may hand back an icon that shares its backing file
-	// resource until a write happens. SwapColor would then mutate the shared resource
-	// visible to other clients. Re-instantiating from `working` guarantees we own the
-	// underlying bitmap before any color edit.
-	working = new /icon(working)
+	// `new /icon(source)` always returns an /icon datum with its own bitmap copy regardless
+	// of whether source is a file path or another /icon. The defensive second clone we
+	// briefly carried here was redundant — the codebase's other SwapColor sites in
+	// _helpers/icons.dm use a single new(src) + SwapColor and don't bleed.
 	for(var/orig in swaps)
 		var/new_color = swaps[orig]
 		if(istext(new_color) && new_color != orig)

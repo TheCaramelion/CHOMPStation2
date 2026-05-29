@@ -288,16 +288,36 @@ GLOBAL_LIST_INIT(preference_entries_by_key, init_preference_entries_by_key())
 		CRASH("Preference type `[preference_type]` is invalid! [extra_info]")
 
 	if(preference_type in value_cache)
-		return value_cache[preference_type]
+		// DQEdit — read-Copy for list-typed prefs. The cache holds the canonical state;
+		// editors and constraints routinely call read_preference, mutate the returned
+		// list, then call update_preference_by_type with the same reference. Without a
+		// copy, the cache is mutated in place — every diff (`old_value != new_value`,
+		// the sanitize_preferences `sanitized != current` guard, constraint diff gates)
+		// compares two pointers to the same now-mutated list and silently no-ops.
+		// Per-read shallow Copy() is bounded by list size (gear_list / body_markings
+		// hold tens of entries) and runs only on the read path, not the hot apply path.
+		var/cached = value_cache[preference_type]
+		if(islist(cached))
+			var/list/L = cached
+			return L.Copy()
+		return cached
 
 	var/value = preference_entry.read(get_save_data_for_savefile_identifier(preference_entry.savefile_identifier), src)
 	if(isnull(value))
 		value = preference_entry.create_informed_default_value(src)
 		if(write_preference(preference_entry, value))
+			// Cache wasn't populated by write_preference(_by_type) in this path; return
+			// the freshly-defaulted value. Copy lists so the caller can mutate freely.
+			if(islist(value))
+				var/list/L = value
+				return L.Copy()
 			return value
 		else
 			CRASH("Couldn't write the default value for [preference_type] (received [value])")
 	value_cache[preference_type] = value
+	if(islist(value))
+		var/list/L = value
+		return L.Copy()
 	return value
 
 /// Read a /datum/preference type and return its value.
@@ -378,46 +398,43 @@ GLOBAL_LIST_INIT(preference_entries_by_key, init_preference_entries_by_key())
 	// DQEdit Start — auto-save with transactional batching. Begin batch so the constraint
 	// cascade below is one flush. begin/end nest safely.
 	begin_update_batch()
+	// try/catch keeps batch_depth balanced even if any apply hook or constraint runtimes.
+	// Without it a single runtime mid-cascade strands save_batch_depth > 0 forever — no
+	// further save flush happens for this prefs datum until restart.
+	try
+		// old_value is the previous cache slot. read_preference returns a Copy() for list
+		// values, so the caller's mutated list (if any) is independent of the cache — the
+		// cache still holds the pre-mutation reference here, which is exactly what we want
+		// the constraints to see as old_value. No extra copy needed on this side.
+		var/old_value = value_cache[preference.type]
 
-	// Snapshot the old value before overwriting the cache. For list-typed prefs the cache
-	// may already share a reference with the caller (read_preference returns a reference,
-	// and most editors mutate it in place before calling update). Without this copy,
-	// constraints diffing old_value against new_value would see both pointing at the same
-	// post-mutation list — i.e. always equal. Copy() is shallow; nested mutations still
-	// bleed, but the top-level list shape is captured.
-	var/old_value = value_cache[preference.type]
-	if(islist(old_value))
-		var/list/L = old_value
-		old_value = L.Copy()
-
-	recently_updated_keys |= preference.type
-	// Also copy on the way in: stash an independent snapshot in the cache so future
-	// mutations of `new_value` by the caller don't bleed into other readers.
-	if(islist(new_value))
-		var/list/N = new_value
-		value_cache[preference.type] = N.Copy()
-	else
+		recently_updated_keys |= preference.type
 		value_cache[preference.type] = new_value
-	save_batch_dirty = TRUE
+		save_batch_dirty = TRUE
 
-	// Fan out constraints triggered by this key.
-	// DQEdit — guard against constraint cycles. If A's `affects` overlaps B's `triggers` and
-	// vice versa, the cascade would recurse forever. We refuse to recurse past a fixed depth
-	// and stack_trace so the buggy constraint pair is loud, not silent.
-	if(constraint_cascade_depth < PREF_CONSTRAINT_MAX_DEPTH)
-		var/list/constraints = LAZYACCESS(GLOB.preference_constraints_by_trigger, preference.savefile_key)
-		if(constraints)
-			constraint_cascade_depth += 1
-			for(var/datum/preference_constraint/constraint as anything in constraints)
-				constraint.apply(src, preference.savefile_key, old_value, new_value)
-			constraint_cascade_depth -= 1
-	else
-		stack_trace("preference constraint cascade exceeded depth [PREF_CONSTRAINT_MAX_DEPTH] starting from [preference.savefile_key]; likely a constraint cycle")
+		// Fan out constraints triggered by this key.
+		// DQEdit — guard against constraint cycles. If A's `affects` overlaps B's `triggers` and
+		// vice versa, the cascade would recurse forever. We refuse to recurse past a fixed depth
+		// and stack_trace so the buggy constraint pair is loud, not silent.
+		if(constraint_cascade_depth < PREF_CONSTRAINT_MAX_DEPTH)
+			var/list/constraints = LAZYACCESS(GLOB.preference_constraints_by_trigger, preference.savefile_key)
+			if(constraints)
+				constraint_cascade_depth += 1
+				for(var/datum/preference_constraint/constraint as anything in constraints)
+					constraint.apply(src, preference.savefile_key, old_value, new_value)
+				constraint_cascade_depth -= 1
+		else
+			stack_trace("preference constraint cascade exceeded depth [PREF_CONSTRAINT_MAX_DEPTH] starting from [preference.savefile_key]; likely a constraint cycle")
 
-	if(preference.savefile_identifier == PREFERENCE_PLAYER)
-		preference.apply_to_client_updated(client, read_preference(preference.type))
-	else
-		update_preview_icon()
+		if(preference.savefile_identifier == PREFERENCE_PLAYER)
+			preference.apply_to_client_updated(client, read_preference(preference.type))
+		else
+			update_preview_icon()
+	catch(var/exception/e)
+		stack_trace("update_preference runtimed: [e.name] at [e.file]:[e.line] (key=[preference.savefile_key])")
+		// Reset the cascade depth so subsequent unrelated writes work; the batch counter
+		// is decremented by end_update_batch below regardless.
+		constraint_cascade_depth = 0
 
 	end_update_batch()
 	// DQEdit End

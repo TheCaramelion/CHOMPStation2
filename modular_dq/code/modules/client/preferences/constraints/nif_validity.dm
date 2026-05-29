@@ -18,5 +18,9 @@
 	var/obj/item/nif/nif_path = preferences.read_preference(/datum/preference/nif_path)
 	if(!ispath(nif_path))
 		return
-	if(isnull(preferences.read_preference(/datum/preference/numeric/nif_durability)))
+	// Treat 0 the same as null. nif_durability.is_valid rejects 0 (a NIF with 0 durability
+	// is broken, not a valid persisted value), so a 0 in the cache means "stale data we
+	// should re-seed from the NIF's initial value", same as null.
+	var/cur = preferences.read_preference(/datum/preference/numeric/nif_durability)
+	if(isnull(cur) || cur == 0)
 		preferences.update_preference_by_type(/datum/preference/numeric/nif_durability, initial(nif_path.durability))

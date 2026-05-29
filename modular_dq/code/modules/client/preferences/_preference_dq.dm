@@ -88,6 +88,28 @@
 /datum/preference/proc/get_pref_choices(datum/preferences/preferences)
 	return null
 
+// DQAdd — Auto-validation for any text pref that declares a choice set via
+// get_pref_choices(). The text base's is_valid checks only length, so a forged Topic
+// could write any short string into h_style / b_type / faction / etc. and pass. With
+// this override, the contextual gate (validate()) walks the declared choices for the
+// current prefs state and rejects anything not in the set.
+//
+// Free-text prefs (ooc_notes, vore messages, flavor body) get_pref_choices returns null,
+// which means "any value passes" — same as the base, no behaviour change.
+//
+// Assoc-shaped choice lists (value -> label) are handled by checking against the keys.
+/datum/preference/text/validate(datum/preferences/preferences, value)
+	if(!is_valid(value))
+		return FALSE
+	var/list/choices = get_pref_choices(preferences)
+	if(isnull(choices))
+		return TRUE
+	// Choices may be a flat list of allowed values or an assoc value->label. `in` on an
+	// assoc list checks keys, which is what we want.
+	if(!(value in choices))
+		return FALSE
+	return TRUE
+
 /// Optional: returns an assoc {value -> list("icon" = REF(dmi), "icon_state" = "...")}
 /// matching each entry in get_pref_choices(). When non-null, the auto-renderer picks
 /// PREF_WIDGET_THUMBGRID and the React side renders a tinted thumbnail per choice.

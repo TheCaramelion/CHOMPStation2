@@ -431,11 +431,9 @@
 		var/list/items = list()
 		for(var/gear in LC.gear)
 			var/datum/gear/G = LC.gear[gear]
-			// Species filter — same logic /mob/new_player.dress_preview_mob uses at spawn.
-			if(G.whitelisted && pref_species && G.whitelisted != pref_species && G.whitelisted != base_species)
-				continue
-			// Taur filter — known taur-only paths require a matching tail half.
-			if(!taur_item_allowed(G, player_tail))
+			// Single source of truth for catalog visibility — same rule the write path
+			// uses on toggle_gear / set_body_slot. See /datum/gear.is_pickable_by.
+			if(!G.is_pickable_by(preferences))
 				continue
 			// Enumerate gear_tweaks so React can render a customize panel per item.
 			// Each descriptor carries: stable index key, display label, widget kind
@@ -495,57 +493,59 @@
 	)
 
 /// Returns FALSE when `G` is a known taur-restricted item and the player's tail doesn't match.
-/// Returns TRUE for items with no taur restriction (the common case).
+/// Taur-half check moved to /datum/gear._is_taur_gear_allowed (entity-level rule).
+/// This wrapper kept temporarily for any out-of-tree callers; new code should call
+/// G._is_taur_gear_allowed(preferences) or, preferably, G.is_pickable_by(preferences).
 /datum/preference_editor/loadout/proc/taur_item_allowed(datum/gear/G, datum/sprite_accessory/tail/player_tail)
 	if(!G || !G.path)
 		return TRUE
-	// Wolf-taur exclusive armor lines (custom_clothes_vr.dm subtypes, base path here).
 	if(ispath(G.path, /obj/item/clothing/suit/armor/vest/wolftaur))
 		return istype(player_tail, /datum/sprite_accessory/tail/taur/wolf)
-	// /obj/item/clothing/suit/taur/* covers dress/skirt: fits wolf OR horse-taur.
 	if(ispath(G.path, /obj/item/clothing/suit/taur))
 		return istype(player_tail, /datum/sprite_accessory/tail/taur/wolf) || istype(player_tail, /datum/sprite_accessory/tail/taur/horse)
-	// Drake cloak: requires drake-taur half.
 	if(ispath(G.path, /obj/item/clothing/suit/drake_cloak))
 		return istype(player_tail, /datum/sprite_accessory/tail/taur/drake)
 	return TRUE
 
-/// Server-side enforcement of the same species/taur gates the catalog applies to React.
-/// A forged Topic could otherwise call toggle_gear/set_body_slot with any gear name and
-/// pollute the savefile with items the spawn path will reject anyway. Single point of
-/// truth so the catalog and write-path can't drift.
+/// Server-side enforcement that defers to the gear datum's own pickability rule. The
+/// rule lives on /datum/gear (is_pickable_by); this thin wrapper exists only because
+/// "permitted to write into this loadout slot" historically lived on the editor. New
+/// code should call G.is_pickable_by(preferences) directly.
 /datum/preference_editor/loadout/proc/_gear_permitted_for(datum/gear/G, datum/preferences/preferences)
-	if(!G)
-		return FALSE
-	var/pref_species = preferences.read_preference(/datum/preference/choiced/species)
-	var/datum/species/spec = pref_species ? GLOB.all_species[pref_species] : null
-	var/base_species = spec?.base_species
-	if(G.whitelisted && pref_species && G.whitelisted != pref_species && G.whitelisted != base_species)
-		return FALSE
-	var/tail_style = preferences.read_preference(/datum/preference/text/human/tail_style)
-	var/datum/sprite_accessory/tail/player_tail
-	if(tail_style && GLOB.tail_styles_list)
-		player_tail = GLOB.tail_styles_list[tail_style]
-	if(!taur_item_allowed(G, player_tail))
-		return FALSE
-	return TRUE
+	return G?.is_pickable_by(preferences)
 
 /// Returns the loadout key currently being edited ("_default" or a job title).
-/// Validates against the user's current job priorities — if a player toggles a job to
-/// `off` while editing it, the saved gear_slot becomes stale; fall back to `_default`
-/// instead of silently editing an orphan loadout.
+///
+/// PURE — does not write. `build_ui_data` invokes this every UI tick, and an action
+/// handler may call it many times per dispatch; a hidden write inside this proc would
+/// race against the action's own preview rebuild and pile disk flushes onto every poll.
+/// Stale-slot rewrite happens at action dispatch (see _validate_and_persist_slot below),
+/// not here.
 /datum/preference_editor/loadout/proc/_current_slot(datum/preferences/preferences)
 	var/key = preferences.read_preference(/datum/preference/text/human/gear_slot)
 	if(!istext(key) || !length(key))
 		return "_default"
 	if(key == "_default")
 		return key
-	// Confirm the job is still on the player's priority list.
+	// If the job dropped off the priority list since the slot was last saved, we still
+	// return "_default" here so reads land on a defined loadout; the savefile rewrite
+	// happens lazily on the next mutating action.
+	var/list/priorities = preferences.read_preference(/datum/preference/job_priorities) || list()
+	if(!(key in priorities))
+		return "_default"
+	return key
+
+/// Called from action handlers (set_loadout_key, toggle_gear, set_body_slot, ...) to
+/// migrate a stale saved key to "_default" exactly once, as part of the action's own
+/// write batch. Separating read (`_current_slot`) from write (here) keeps build_ui_data
+/// pure and lets stale-slot recovery share the action's save flush.
+/datum/preference_editor/loadout/proc/_validate_and_persist_slot(datum/preferences/preferences)
+	var/key = preferences.read_preference(/datum/preference/text/human/gear_slot)
+	if(!istext(key) || !length(key) || key == "_default")
+		return
 	var/list/priorities = preferences.read_preference(/datum/preference/job_priorities) || list()
 	if(!(key in priorities))
 		preferences.update_preference_by_type(/datum/preference/text/human/gear_slot, "_default")
-		return "_default"
-	return key
 
 /datum/preference_editor/loadout/proc/_active_list(datum/preferences/preferences, loadout_key)
 	var/list/gear_list = preferences.read_preference(/datum/preference/gear_list) || list()
@@ -579,6 +579,10 @@
 	return cost
 
 /datum/preference_editor/loadout/handle_action(datum/preferences/preferences, action, list/params, mob/user)
+	// Lazy stale-slot migration: any action implies the user is actively editing, which
+	// is a fine moment to persist a slot fixup if their saved gear_slot points at a job
+	// no longer on their priority list. Coalesces into the action's own save batch.
+	_validate_and_persist_slot(preferences)
 	switch(action)
 		if("set_loadout_key")
 			// DQEdit — was "switch_slot" + numeric index. Now switches which per-job loadout

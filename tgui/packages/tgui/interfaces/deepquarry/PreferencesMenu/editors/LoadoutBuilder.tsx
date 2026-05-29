@@ -21,7 +21,7 @@
 // removes land instantly; the server is still authoritative and our op queue drops
 // each entry once the server reflects it.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 import {
   Box,
@@ -281,25 +281,33 @@ export const LoadoutBuilder = ({ data, staticData }: EditorProps) => {
   const uw = d.underwear ?? ({ selections: {} } as UnderwearData);
   const uws = s.underwear ?? ({ categories: {} } as UnderwearStatic);
 
-  const allItems: CatalogItem[] = Object.values(s.categories ?? {}).flat();
+  // s.categories is static data (server identity stable across polls); memo so we
+  // don't rebuild the flattened catalog every render. ~1000 items × ~1Hz polls = a lot
+  // of unnecessary work otherwise.
+  const allItems: CatalogItem[] = useMemo(
+    () => Object.values(s.categories ?? {}).flat(),
+    [s.categories],
+  );
   // Role filter: scoped to the loadout currently being edited.
   //   "_default"   → union of every prioritized job (the default fronts all of them)
   //   <job_title>  → just that job
   // Items with no allowed_roles always pass (generic gear).
-  const roleScope: Set<string> | null = (() => {
+  const roleScope: Set<string> = useMemo(() => {
     if (d.loadout_key === '_default') {
       return new Set(d.prioritized_jobs ?? []);
     }
     return new Set([d.loadout_key]);
-  })();
-  const passesRole = (it: CatalogItem) => {
-    if (!it.allowed_roles || it.allowed_roles.length === 0) return true;
-    if (!roleScope || roleScope.size === 0) return true; // no priorities = show everything
-    return it.allowed_roles.some((r) => roleScope.has(r));
-  };
-  const visibleItems = allItems.filter(
-    (it) => it.body_slot === filterSlot && passesRole(it),
-  );
+  }, [d.loadout_key, d.prioritized_jobs]);
+  const visibleItems = useMemo(() => {
+    const passesRole = (it: CatalogItem) => {
+      if (!it.allowed_roles || it.allowed_roles.length === 0) return true;
+      if (roleScope.size === 0) return true; // no priorities = show everything
+      return it.allowed_roles.some((r) => roleScope.has(r));
+    };
+    return allItems.filter(
+      (it) => it.body_slot === filterSlot && passesRole(it),
+    );
+  }, [allItems, roleScope, filterSlot]);
 
   const costPct = d.max_gear_cost > 0 ? d.total_cost / d.max_gear_cost : 0;
 
@@ -356,9 +364,14 @@ export const LoadoutBuilder = ({ data, staticData }: EditorProps) => {
             selected={loadoutKey}
             displayText={loadoutLabel}
             options={loadoutOpts}
-            onSelected={(v) =>
-              sendTo(act, 'loadout', 'set_loadout_key', { key: String(v) })
-            }
+            onSelected={(v) => {
+              // Reset pending optimistic ops on loadout-key switch — they were tagged
+              // by (slot, item) only and would re-apply spuriously to the new loadout's
+              // server data. The server write itself triggers a fresh poll where the
+              // new key's state lands authoritatively.
+              setPending([]);
+              sendTo(act, 'loadout', 'set_loadout_key', { key: String(v) });
+            }}
           />
         </Stack.Item>
         <Stack.Item color="label" fontSize="0.78em" italic>

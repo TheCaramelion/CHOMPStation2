@@ -8,7 +8,10 @@
 // prefs and species state — not expressible as a per-pref apply.
 
 /datum/preference_apply_hook/body_backup
-	priority = APPLY_HOOK_PRIORITY_LATE
+	// LATE + 10 so body_backup runs strictly *after* nif (which is APPLY_HOOK_PRIORITY_LATE).
+	// body_backup reads target.nif inside its deferred block; if it ran first the NIF
+	// wouldn't be spawned yet and the m_backup would persist a null reference.
+	priority = APPLY_HOOK_PRIORITY_LATE + 10
 	skip_on_preview = TRUE
 
 /datum/preference_apply_hook/body_backup/apply(mob/living/carbon/human/target, datum/preferences/preferences)
@@ -24,7 +27,7 @@
 	var/want_mind_save = preferences.read_preference(/datum/preference/toggle/human/mind_scan)
 	var/resleeve_lock_pref = preferences.read_preference(/datum/preference/toggle/human/resleeve_lock)
 
-	spawn(50)
+	spawn(5 SECONDS)
 		if(QDELETED(target) || QDELETED(preferences))
 			return
 		// Janky fix to prevent resleeving VR avatars but beats refactoring transcore

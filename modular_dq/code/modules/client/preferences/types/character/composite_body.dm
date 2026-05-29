@@ -64,15 +64,12 @@
 /datum/preference/flavor_texts/apply_to_human(mob/living/carbon/human/target, value)
 	if(!islist(value))
 		return
-	target.flavor_texts["general"]	= value["general"]
-	target.flavor_texts["head"]		= value["head"]
-	target.flavor_texts["face"]		= value["face"]
-	target.flavor_texts["eyes"]		= value["eyes"]
-	target.flavor_texts["torso"]	= value["torso"]
-	target.flavor_texts["arms"]		= value["arms"]
-	target.flavor_texts["hands"]	= value["hands"]
-	target.flavor_texts["legs"]		= value["legs"]
-	target.flavor_texts["feet"]		= value["feet"]
+	// Re-strip on apply. The editor strips on write but a savefile loaded from a state
+	// predating that strip (or hand-edited JSON) can carry tags through to the mob —
+	// where it lands in examine, character_directory, etc. Cheap insurance.
+	for(var/zone in list("general", "head", "face", "eyes", "torso", "arms", "hands", "legs", "feet"))
+		var/t = value[zone]
+		target.flavor_texts[zone] = istext(t) ? strip_html_simple(t) : null
 /datum/preference/flavor_texts/apply_to_living(mob/living/target, value)
 	return
 /datum/preference/flavor_texts/apply_to_silicon(mob/living/silicon/target, value)

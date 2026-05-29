@@ -27,10 +27,9 @@
 	var/list/list_value = preferences.read_preference(list_type)
 	if(!islist(list_value))
 		return
-	// Mutate a Copy() so update_preference_by_type sees a distinct reference and treats
-	// it as a write (recently_updated_keys + save_batch_dirty), not a same-ref no-op that
-	// would silently drop the prune on the next save flush.
-	list_value = list_value.Copy()
+	// read_preference returns a Copy() for list values, so list_value is already an
+	// independent reference — safe to mutate without touching the cache. The inner Copy()
+	// below is still needed because we're iterating and removing from the same list.
 	var/changed = FALSE
 	for(var/path in list_value.Copy())
 		// Bucket-structural check: the trait must still be in this bucket's whitelist.

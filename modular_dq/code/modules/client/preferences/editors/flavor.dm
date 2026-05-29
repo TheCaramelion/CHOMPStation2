@@ -35,8 +35,11 @@
 			var/zone = params["zone"]
 			if(!(zone in dq_flavor_zones()))
 				return PREF_UPDATE_REJECTED
+			var/text = strip_html_simple(params["text"])
+			if(istext(text) && length_char(text) > MAX_MESSAGE_LEN)
+				text = copytext_char(text, 1, MAX_MESSAGE_LEN + 1)
 			var/list/flavor = preferences.read_preference(/datum/preference/flavor_texts) || list()
-			flavor[zone] = strip_html_simple(params["text"])
+			flavor[zone] = text
 			preferences.update_preference_by_type(/datum/preference/flavor_texts, flavor)
 			return PREF_UPDATE_ACCEPTED
 		if("set_robot_flavor")
@@ -45,8 +48,11 @@
 			// generic case; everything else must be a known module type.
 			if(module != "Default" && !(module in GLOB.robot_module_types))
 				return PREF_UPDATE_REJECTED
+			var/text = strip_html_simple(params["text"])
+			if(istext(text) && length_char(text) > MAX_MESSAGE_LEN)
+				text = copytext_char(text, 1, MAX_MESSAGE_LEN + 1)
 			var/list/robot_flavor = preferences.read_preference(/datum/preference/flavour_texts_robot) || list()
-			robot_flavor[module] = strip_html_simple(params["text"])
+			robot_flavor[module] = text
 			preferences.update_preference_by_type(/datum/preference/flavour_texts_robot, robot_flavor)
 			return PREF_UPDATE_ACCEPTED
 	return PREF_UPDATE_UNCHANGED

@@ -1,7 +1,7 @@
 // DQAdd — Auto-renders a single /datum/preference widget. The DM side picks the widget
 // type via /datum/preference.get_widget(); this component dispatches to the right control.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 import {
   Box,
@@ -28,17 +28,68 @@ const sendUpdate = (act: ReturnType<typeof useBackend>['act'], key: string, valu
   act('dq_update_preference', { key, value });
 };
 
+/// Local-buffered Input that only fires onCommit on blur or Enter, so the ~1Hz tgui
+/// poll can't yank the caret position mid-typing. Re-syncs the buffer on external
+/// value changes (server poll reflecting another tab's write).
+const BufferedTextInput = ({
+  value,
+  onCommit,
+}: {
+  value: string;
+  onCommit: (next: string) => void;
+}) => {
+  const [draft, setDraft] = useState(value);
+  useEffect(() => setDraft(value), [value]);
+  return (
+    <Input
+      fluid
+      value={draft}
+      onChange={(v) => setDraft(v)}
+      onBlur={() => {
+        if (draft !== value) onCommit(draft);
+      }}
+      onEnter={() => {
+        if (draft !== value) onCommit(draft);
+      }}
+    />
+  );
+};
+
+const BufferedTextArea = ({
+  value,
+  onCommit,
+}: {
+  value: string;
+  onCommit: (next: string) => void;
+}) => {
+  const [draft, setDraft] = useState(value);
+  useEffect(() => setDraft(value), [value]);
+  return (
+    <TextArea
+      fluid
+      height="6em"
+      value={draft}
+      onChange={(v) => setDraft(v)}
+      onBlur={() => {
+        if (draft !== value) onCommit(draft);
+      }}
+    />
+  );
+};
+
 export const PrefWidget = ({ item }: Props) => {
   const { act } = useBackend();
 
   switch (item.widget) {
     case 'text':
+      // BufferedInput: buffers locally and flushes on blur/Enter. Without buffering, the
+      // ~1Hz tgui poll lands between keystrokes and yanks the caret position; the user
+      // ends up retyping. Same pattern VoreMessagesEditor uses for its own draft.
       return (
         <Box width="280px">
-          <Input
-            fluid
+          <BufferedTextInput
             value={String(item.value ?? '')}
-            onChange={(v) => sendUpdate(act, item.key, v)}
+            onCommit={(v) => sendUpdate(act, item.key, v)}
           />
         </Box>
       );
@@ -46,11 +97,9 @@ export const PrefWidget = ({ item }: Props) => {
     case 'longtext':
       return (
         <Box width="100%" maxWidth="540px">
-          <TextArea
-            fluid
-            height="6em"
+          <BufferedTextArea
             value={String(item.value ?? '')}
-            onChange={(v) => sendUpdate(act, item.key, v)}
+            onCommit={(v) => sendUpdate(act, item.key, v)}
           />
         </Box>
       );

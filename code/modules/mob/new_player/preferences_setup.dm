@@ -274,18 +274,25 @@
 	if(updating_preview_icon)
 		return
 	updating_preview_icon = TRUE
-	var/mob/living/carbon/human/dummy/mannequin/mannequin = get_mannequin(client_ckey)
-	if(!mannequin.dna) // Special handling for preview icons before SSAtoms has initailized.
-		mannequin.dna = new /datum/dna(null)
-	mannequin.delete_inventory(TRUE)
-	dress_preview_mob(mannequin)
-	mannequin.update_transform()
-	// DQEdit — migrated animations_toggle
-	var/_animations_toggle = read_preference(/datum/preference/toggle/human/animations_toggle)
-	mannequin.toggle_tail(setting = _animations_toggle)
-	mannequin.toggle_wing(setting = _animations_toggle)
+	// try/catch resets the guard even if any of the dress/transform/toggle calls runtimes.
+	// Without this a runtime mid-rebuild strands updating_preview_icon = TRUE for the rest
+	// of the session — every subsequent editor change silently no-ops because the guard
+	// blocks the rebuild it should have triggered.
+	try
+		var/mob/living/carbon/human/dummy/mannequin/mannequin = get_mannequin(client_ckey)
+		if(!mannequin.dna) // Special handling for preview icons before SSAtoms has initailized.
+			mannequin.dna = new /datum/dna(null)
+		mannequin.delete_inventory(TRUE)
+		dress_preview_mob(mannequin)
+		mannequin.update_transform()
+		// DQEdit — migrated animations_toggle
+		var/_animations_toggle = read_preference(/datum/preference/toggle/human/animations_toggle)
+		mannequin.toggle_tail(setting = _animations_toggle)
+		mannequin.toggle_wing(setting = _animations_toggle)
 
-	update_character_previews(mannequin)
+		update_character_previews(mannequin)
+	catch(var/exception/e)
+		stack_trace("update_preview_icon runtimed: [e.name] at [e.file]:[e.line]")
 	updating_preview_icon = FALSE
 
 // DQEdit — get_highest_job() moved to

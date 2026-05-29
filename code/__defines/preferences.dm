@@ -46,19 +46,12 @@
 #define PREF_WIDGET_COLOR       "color"
 /// Single-pick from a dropdown.
 #define PREF_WIDGET_DROPDOWN    "dropdown"
-/// Single-pick from a radio button group.
-#define PREF_WIDGET_RADIO       "radio"
 /// Single-pick from a thumbnail grid (icons + names).
 #define PREF_WIDGET_THUMBGRID   "thumbgrid"
-/// Multi-pick checkbox list.
-#define PREF_WIDGET_MULTI       "multi"
 /// Render through a registered /datum/preference_editor by key.
 #define PREF_WIDGET_EDITOR      "editor"
 /// Server-managed; not rendered as an editable control.
 #define PREF_WIDGET_HIDDEN      "hidden"
-
-// DQAdd — Scope on each pref. Mirrors savefile_identifier today but reads cleaner.
-#define PREFERENCE_SESSION      "session"
 
 // DQAdd — Sentinel returned by /datum/preferences/proc/update_preference_v2() and
 // /datum/preference_editor.handle_action().

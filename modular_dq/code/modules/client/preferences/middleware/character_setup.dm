@@ -198,6 +198,12 @@ GLOBAL_LIST_INIT(dq_collapsed_groups, list(
 			var/new_color = tgui_color_picker(ui.user, "Pick a color", "Color", current || "#000000")
 			if(!new_color)
 				return TRUE  // user cancelled; nothing to write
+			// tgui_color_picker sleeps — the player can move, log off, swap characters, or
+			// have their prefs torn down while it's open. Re-verify before writing.
+			if(!ui.user?.client?.prefs || ui.user.client.prefs != preferences)
+				return TRUE
+			if(!pref.is_accessible(preferences))
+				return TRUE
 			preferences.update_preference(pref, new_color)
 			return TRUE
 

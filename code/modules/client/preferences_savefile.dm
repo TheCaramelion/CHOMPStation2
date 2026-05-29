@@ -58,6 +58,11 @@
 		if(fexists(bacpath))
 			fdel(bacpath) //only keep 1 version of backup
 		fcopy(savefile.path, bacpath) //byond helpfully lets you use a savefile for the first arg.
+		// DQEdit — surface the wipe so the player knows their old savefile was incompatible
+		// with the fork's clean-room pref schema. Backup is preserved at <path>.updatebac
+		// for manual recovery / admin help.
+		if(client)
+			to_chat(client, span_warning("Your savefile is from an incompatible upstream version and could not be loaded. A backup was saved to your data directory; please re-create your characters. If you believe this is an error, contact server staff."))
 		return FALSE
 
 	if(!skip_client)
@@ -234,6 +239,12 @@
 	// its currently-cached value. Per-pref sanitizers live in _pref_sanitizers.dm.
 	// Cross-pref invariants are enforced by /datum/preference_constraint subtypes after
 	// each update; this proc just makes sure the load-time values are clean.
+	//
+	// Sanitizers commonly mutate list values in place and return the same reference, so
+	// `sanitized != current` would be a same-ref comparison → always FALSE → the cleanup
+	// would silently drop. For list values we unconditionally write; the cost is one
+	// batched flush on load (dwarfed by the load itself), and the correctness gain is
+	// that stale data actually leaves the savefile.
 	begin_update_batch()
 	for(var/pref_type in GLOB.preference_entries)
 		var/datum/preference/pref = GLOB.preference_entries[pref_type]
@@ -241,7 +252,7 @@
 			continue
 		var/current = read_preference(pref_type)
 		var/sanitized = pref.sanitize(current, src)
-		if(sanitized != current)
+		if(islist(sanitized) || sanitized != current)
 			update_preference_by_type(pref_type, sanitized)
 	end_update_batch()
 	return TRUE

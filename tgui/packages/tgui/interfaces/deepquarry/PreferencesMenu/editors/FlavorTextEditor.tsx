@@ -1,7 +1,7 @@
 // DQAdd — Flavor text editor. Per-zone textareas for general/head/face/eyes/torso/arms/
 // hands/legs/feet plus robot module variants.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useBackend } from 'tgui/backend';
 import { Box, Stack, TextArea } from 'tgui-core/components';
 import type { EditorProps } from './index';
@@ -70,6 +70,13 @@ const ZoneRow = ({
 }) => {
   const { act } = useBackend();
   const [draft, setDraft] = useState(value);
+  // Resync the draft when the server value changes externally (another tab, another
+  // editor, a constraint cascade). Without this, useState(value) only captures the
+  // initial mount value; the next server poll silently drops onto the floor and the
+  // user's textarea diverges from what's actually persisted.
+  useEffect(() => {
+    setDraft(value);
+  }, [value]);
   return (
     <Stack.Item>
       <Box bold>{zone}</Box>
