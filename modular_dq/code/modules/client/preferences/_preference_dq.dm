@@ -128,15 +128,14 @@
 		out += "[choice]"
 	return out
 
-/// Strict validator. Returns TRUE/FALSE. Called before storing. The existing is_valid()
-/// proc remains for legacy callers; validate() defers to it by default.
-/datum/preference/proc/validate(value, datum/preferences/preferences)
-	return is_valid(value)
-
 /// Coerce a possibly-bad value into the closest valid value. Called on load and on
 /// constraint-driven invalidation. Default: pass through if valid, else default.
+///
+/// The contextual gate `validate(preferences, value)` is defined upstream in
+/// /datum/preference/proc/validate (see code/modules/client/preferences/_preference.dm
+/// DQAdd block) — this proc just chains through it.
 /datum/preference/proc/sanitize(value, datum/preferences/preferences)
-	if(validate(value, preferences))
+	if(validate(preferences, value))
 		return value
 	return create_informed_default_value(preferences)
 

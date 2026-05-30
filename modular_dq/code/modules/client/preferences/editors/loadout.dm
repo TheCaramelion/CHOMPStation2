@@ -85,10 +85,10 @@
 		var/datum/gear_tweak/reagents/r = gt
 		return (r.valid_reagents ? assoc_to_keys(r.valid_reagents) : list()) + list("Random", "None")
 	if(istype(gt, /datum/gear_tweak/implant_location))
-		// /datum/gear_tweak/implant_location stores its names map as a static list — use
-		// that directly. The proc uses bodypart_names_to_tokens which is an assoc list.
-		var/datum/gear_tweak/implant_location/il = gt
-		var/list/names = il.bodypart_names_to_tokens
+		// /datum/gear_tweak/implant_location stores its names map as a static list — read
+		// it off the type so we don't allocate a cast var just for one field access (BYOND
+		// emits a spurious unused_var on the cast when only static fields are read).
+		var/list/names = /datum/gear_tweak/implant_location::bodypart_names_to_tokens
 		return names ? assoc_to_keys(names) : list()
 	if(istype(gt, /datum/gear_tweak/pda_ringtone))
 		return GLOB.device_ringtones ? assoc_to_keys(GLOB.device_ringtones) : list()
@@ -412,14 +412,10 @@
 	// pick on an item that won't equip. Also filter taur-only items by the player's
 	// current tail style (Wolf-taur items hidden if the player's tail isn't a wolf-taur,
 	// etc.) — same logic the per-item /mob_can_equip checks enforce at spawn.
-	var/pref_species = preferences.read_preference(/datum/preference/choiced/species)
-	var/datum/species/spec = GLOB.all_species[pref_species]
-	var/base_species = spec?.base_species
-	var/tail_style = preferences.read_preference(/datum/preference/text/human/tail_style)
-	var/datum/sprite_accessory/tail/player_tail
-	if(tail_style && GLOB.tail_styles_list)
-		player_tail = GLOB.tail_styles_list[tail_style]
-
+	//
+	// Species/taur gates are now centralized on /datum/gear/proc/is_pickable_by, which
+	// reads the current prefs directly — no need to pre-resolve species/tail here.
+	//
 	// DQEdit — role filtering moved to React (LoadoutBuilder.tsx) so it can re-filter
 	// instantly when the player switches the editing target between "_default" and a
 	// specific job loadout. Static data ships every item that passes the species/taur
@@ -721,8 +717,9 @@
 				if(value != "Random" && value != "None" && !(value in r.valid_reagents))
 					return PREF_UPDATE_REJECTED
 			else if(istype(gt, /datum/gear_tweak/implant_location))
-				var/datum/gear_tweak/implant_location/il = gt
-				if(!(value in il.bodypart_names_to_tokens))
+				// `bodypart_names_to_tokens` is `var/static/list/` on the type, so type-level
+				// access is fine and avoids a cast var BYOND flags as unused.
+				if(!(value in /datum/gear_tweak/implant_location::bodypart_names_to_tokens))
 					return PREF_UPDATE_REJECTED
 			else if(istype(gt, /datum/gear_tweak/pda_ringtone))
 				if(!(value in GLOB.device_ringtones))

@@ -159,6 +159,27 @@ GLOBAL_DATUM_INIT(gear_tweak_unified_recolor, /datum/gear_tweak/recolor, new)
 	if(istype(I, /obj/item/clothing/accessory)) return INV_ACCESSORIES_DEF_ICON
 	return null
 
+/// Same lookup as _default_worn_icon, but keyed by type path (no instance available at
+/// palette-scan time). Used by dq_get_gear_palette to include the worn-sheet colors in
+/// the swatch grid — without this, the user picks colors from the ground sprite and
+/// SwapColor finds no matches in the worn sprite (different .dmi with different shading
+/// palette), leaving the mob render visually unchanged.
+/proc/_dq_default_worn_icon_for_path(item_path)
+	if(!ispath(item_path))
+		return null
+	if(ispath(item_path, /obj/item/clothing/under))     return INV_W_UNIFORM_DEF_ICON
+	if(ispath(item_path, /obj/item/clothing/suit))      return INV_SUIT_DEF_ICON
+	if(ispath(item_path, /obj/item/clothing/head))      return INV_HEAD_DEF_ICON
+	if(ispath(item_path, /obj/item/clothing/mask))      return INV_MASK_DEF_ICON
+	if(ispath(item_path, /obj/item/clothing/gloves))    return INV_GLOVES_DEF_ICON
+	if(ispath(item_path, /obj/item/clothing/shoes))     return INV_FEET_DEF_ICON
+	if(ispath(item_path, /obj/item/clothing/ears))      return INV_EARS_DEF_ICON
+	if(ispath(item_path, /obj/item/clothing/glasses))   return INV_EYES_DEF_ICON
+	if(ispath(item_path, /obj/item/storage/belt))       return INV_BELT_DEF_ICON
+	if(ispath(item_path, /obj/item/storage/backpack))   return INV_BACK_DEF_ICON
+	if(ispath(item_path, /obj/item/clothing/accessory)) return INV_ACCESSORIES_DEF_ICON
+	return null
+
 // ─── Palette scanner (used at edit time to expose the gear's source colors) ────────
 
 /// Returns up to `max_colors` distinct hex colors found in the icon, ordered by area
@@ -204,8 +225,15 @@ GLOBAL_DATUM_INIT(gear_tweak_unified_recolor, /datum/gear_tweak/recolor, new)
 		picked[best_color] = TRUE
 	return out
 
-/// Returns the cached palette for a gear datum, scanning its canonical icon on first
-/// access. Returns an empty list if the icon can't be sampled.
+/// Returns the cached palette for a gear datum. Scans both the ground sprite and the
+/// item's default worn sheet (e.g. uniform/mob.dmi for /obj/item/clothing/under) so the
+/// React swatch grid offers colors that exist in BOTH renders. Without scanning the worn
+/// sheet, the user picks a shade from the ground icon that doesn't pixel-match the worn
+/// art and SwapColor silently fails to recolor the on-mob sprite.
+///
+/// Worn-sheet colors are scanned by gear display name (the worn sheet typically uses
+/// `icon_state == name` minus spaces — see how update_inv_w_uniform/etc. derive their
+/// state), falling back to the gear's main `icon_state` if a derived name yields nothing.
 /proc/dq_get_gear_palette(datum/gear/G)
 	var/static/list/cache = list()
 	if(!G || !G.path)
@@ -216,5 +244,25 @@ GLOBAL_DATUM_INIT(gear_tweak_unified_recolor, /datum/gear_tweak/recolor, new)
 	// (transparent-only, missing icon_state, etc.) on every UI poll.
 	if(!(key in cache))
 		var/atom/A = G.path
-		cache[key] = dq_scan_icon_palette(initial(A.icon), initial(A.icon_state))
+		var/list/combined = list()
+		var/list/seen = list()
+		var/list/ground = dq_scan_icon_palette(initial(A.icon), initial(A.icon_state))
+		for(var/c in ground)
+			if(!seen[c])
+				combined += c
+				seen[c] = TRUE
+		var/worn_icon = _dq_default_worn_icon_for_path(G.path)
+		if(worn_icon)
+			// Worn .dmi files key states off the item's icon_state (same string as the
+			// ground sheet uses). If the worn sheet doesn't expose that state, fall back
+			// to scanning the icon's first state (icon_state = null grabs frame-1 of the
+			// first state).
+			var/list/worn = dq_scan_icon_palette(worn_icon, initial(A.icon_state))
+			if(!length(worn))
+				worn = dq_scan_icon_palette(worn_icon, null)
+			for(var/c in worn)
+				if(!seen[c])
+					combined += c
+					seen[c] = TRUE
+		cache[key] = combined
 	return cache[key]

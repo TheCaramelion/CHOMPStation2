@@ -34,12 +34,12 @@ const PreviewMap = () => {
     return () => observer.disconnect();
   }, []);
   return (
-    <Box ref={containerRef} style={{ width: '100%', height: '100%' }}>
+    <div ref={containerRef} style={{ width: '100%', height: '100%' }}>
       <ByondUi
         params={{ id: 'character_preview_map', type: 'map' }}
         height="100%"
       />
-    </Box>
+    </div>
   );
 };
 

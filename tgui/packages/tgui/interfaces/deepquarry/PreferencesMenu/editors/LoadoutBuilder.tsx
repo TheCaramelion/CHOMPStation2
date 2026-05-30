@@ -1360,12 +1360,10 @@ const CatalogScrollList = ({
     if (tRect.top < cRect.top || tRect.bottom > cRect.bottom) {
       targetEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
-    // biome-ignore lint/correctness/useExhaustiveDependencies: by_body_slot read inside
-    // the effect intentionally — we don't want every server poll to re-snap the scroll.
   }, [filterSlot, loadoutKey]);
 
   return (
-    <Box
+    <div
       ref={listRef}
       style={{
         maxHeight: '520px',
@@ -1381,7 +1379,7 @@ const CatalogScrollList = ({
         <Stack vertical>
           {visibleItems.map((item) => (
             <Stack.Item key={item.name}>
-              <Box
+              <div
                 ref={(el: HTMLDivElement | null) => {
                   if (el) rowRefs.current.set(item.name, el);
                   else rowRefs.current.delete(item.name);
@@ -1393,12 +1391,12 @@ const CatalogScrollList = ({
                   bodySlots={bodySlots}
                   onOp={onOp}
                 />
-              </Box>
+              </div>
             </Stack.Item>
           ))}
         </Stack>
       )}
-    </Box>
+    </div>
   );
 };
 
