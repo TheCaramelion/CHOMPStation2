@@ -85,10 +85,11 @@
 		var/datum/gear_tweak/reagents/r = gt
 		return (r.valid_reagents ? assoc_to_keys(r.valid_reagents) : list()) + list("Random", "None")
 	if(istype(gt, /datum/gear_tweak/implant_location))
-		// /datum/gear_tweak/implant_location stores its names map as a static list — read
-		// it off the type so we don't allocate a cast var just for one field access (BYOND
-		// emits a spurious unused_var on the cast when only static fields are read).
-		var/list/names = /datum/gear_tweak/implant_location::bodypart_names_to_tokens
+		// /datum/gear_tweak/implant_location stores its names map as a static list — use
+		// that directly. (BYOND emits a spurious unused_var on the cast because the field
+		// it reads is static; it's a noise warning, not a real bug.)
+		var/datum/gear_tweak/implant_location/il = gt
+		var/list/names = il.bodypart_names_to_tokens
 		return names ? assoc_to_keys(names) : list()
 	if(istype(gt, /datum/gear_tweak/pda_ringtone))
 		return GLOB.device_ringtones ? assoc_to_keys(GLOB.device_ringtones) : list()
@@ -717,9 +718,8 @@
 				if(value != "Random" && value != "None" && !(value in r.valid_reagents))
 					return PREF_UPDATE_REJECTED
 			else if(istype(gt, /datum/gear_tweak/implant_location))
-				// `bodypart_names_to_tokens` is `var/static/list/` on the type, so type-level
-				// access is fine and avoids a cast var BYOND flags as unused.
-				if(!(value in /datum/gear_tweak/implant_location::bodypart_names_to_tokens))
+				var/datum/gear_tweak/implant_location/il = gt
+				if(!(value in il.bodypart_names_to_tokens))
 					return PREF_UPDATE_REJECTED
 			else if(istype(gt, /datum/gear_tweak/pda_ringtone))
 				if(!(value in GLOB.device_ringtones))
