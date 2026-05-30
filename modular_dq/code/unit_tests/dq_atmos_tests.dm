@@ -432,3 +432,278 @@
 	if(T.active_hotspot)
 		qdel(T.active_hotspot)
 		T.active_hotspot = null
+
+
+/// After the /turf/simulated → /turf/open reparent, every gas-bearing simulated
+/// turf must istype as /turf/open so LINDA's adjacency calc, process_cell, and
+/// update_visuals all run on it. Without this, gases don't spread or render on
+/// the actual map (since the map terrain is /turf/simulated/floor, not /turf/open).
+/datum/unit_test/dq_simulated_floor_is_open_turf
+
+/datum/unit_test/dq_simulated_floor_is_open_turf/Run()
+	var/turf/simulated/floor/F = null
+	for(var/turf/simulated/floor/cand in world)
+		F = cand
+		break
+	TEST_ASSERT_NOTNULL(F, "no /turf/simulated/floor on the test map — can't validate reparent")
+	TEST_ASSERT(istype(F, /turf/open), \
+		"/turf/simulated/floor is NOT /turf/open — the reparent in code/game/turfs/simulated.dm didn't take effect")
+	TEST_ASSERT_NOTNULL(F.air, \
+		"/turf/simulated/floor.air is null — /turf/open/Initialize didn't create the mixture (blocks_air? unexpected initial_gas_mix?)")
+
+
+/// Phoron (= LINDA plasma, GAS_PHORON #defined to GAS_PLASMA) must render a
+/// visible gas overlay once concentration crosses /datum/gas/plasma.moles_visible.
+/// Failure points covered: meta_gas_info not populated, GAS_OVERLAYS macro
+/// short-circuits early, /turf/open/update_visuals not reached on simulated turfs.
+/datum/unit_test/dq_phoron_renders_above_visible_threshold
+
+/datum/unit_test/dq_phoron_renders_above_visible_threshold/Run()
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no /turf/simulated/floor with air for phoron-render test")
+
+	// Pre-test: gas-overlay metadata must be present for /datum/gas/plasma.
+	// If meta_gas_info is missing /datum/gas/plasma the overlay logic
+	// will never emit anything, no matter what we put on the turf.
+	var/list/meta = GLOB.meta_gas_info
+	TEST_ASSERT_NOTNULL(meta, "GLOB.meta_gas_info is null — meta_gas_list() never ran")
+	var/list/plasma_meta = meta[/datum/gas/plasma]
+	TEST_ASSERT_NOTNULL(plasma_meta, "GLOB.meta_gas_info has no entry for /datum/gas/plasma")
+	TEST_ASSERT_NOTNULL(plasma_meta[META_GAS_MOLES_VISIBLE], \
+		"plasma META_GAS_MOLES_VISIBLE is null — visibility threshold not set")
+	TEST_ASSERT_NOTNULL(plasma_meta[META_GAS_OVERLAY], \
+		"plasma META_GAS_OVERLAY is null — overlay graphics never generated (SSmapping not ready when meta_gas_list ran?)")
+
+	// Wipe any preexisting overlays / hotspot so we start clean.
+	if(T.active_hotspot)
+		qdel(T.active_hotspot)
+		T.active_hotspot = null
+	if(T.atmos_overlay_types)
+		for(var/old_ov in T.atmos_overlay_types)
+			T.vis_contents -= old_ov
+		T.atmos_overlay_types = null
+
+	// Pump in well above MOLES_GAS_VISIBLE (= 0.25).
+	var/datum/gas_mixture/air = T.return_air()
+	air.adjust_gas(/datum/gas/plasma, 50)
+
+	T.update_visuals()
+
+	TEST_ASSERT_NOTNULL(T.atmos_overlay_types, \
+		"update_visuals() left atmos_overlay_types null despite 50 mol of plasma — overlay path not reached")
+	TEST_ASSERT(LAZYLEN(T.atmos_overlay_types) > 0, \
+		"atmos_overlay_types is empty after 50 mol of plasma — GAS_OVERLAYS macro emitted nothing")
+
+	// Wipe so other tests don't see stale plasma.
+	air.set_moles(/datum/gas/plasma, 0)
+	T.update_visuals()
+
+
+/// Phoron below the visibility threshold (MOLES_GAS_VISIBLE = 0.25 mol)
+/// must NOT render. This guards the cheap fast-path inside GAS_OVERLAYS that
+/// skips gases whose mole count is <= the per-gas visibility cutoff.
+/datum/unit_test/dq_phoron_below_threshold_invisible
+
+/datum/unit_test/dq_phoron_below_threshold_invisible/Run()
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no /turf/simulated/floor with air for phoron-invisibility test")
+
+	if(T.active_hotspot)
+		qdel(T.active_hotspot)
+		T.active_hotspot = null
+	if(T.atmos_overlay_types)
+		for(var/old_ov in T.atmos_overlay_types)
+			T.vis_contents -= old_ov
+		T.atmos_overlay_types = null
+
+	// Wipe ALL overlay-emitting gases so reaction products left by earlier tests
+	// (water vapor / CO2 / tritium from hotspot_expose) don't fail this test.
+	var/datum/gas_mixture/air = T.return_air()
+	for(var/datum/gas/g as anything in air.gases)
+		if(GLOB.nonoverlaying_gases[g])
+			continue
+		air.gases[g][MOLES] = 0
+	// 0.1 mol < MOLES_GAS_VISIBLE (0.25)
+	air.set_moles(/datum/gas/plasma, 0.1)
+
+	T.update_visuals()
+
+	TEST_ASSERT(!LAZYLEN(T.atmos_overlay_types), \
+		"atmos_overlay_types populated despite 0.1 mol plasma being below MOLES_GAS_VISIBLE (0.25) — visibility threshold not enforced")
+
+	air.set_moles(/datum/gas/plasma, 0)
+	T.update_visuals()
+
+
+/// Adjacency calc must include /turf/simulated/floor as a peer (after the
+/// reparent). If init_immediate_calculate_adjacent_turfs's isopenturf-style
+/// gate excludes floors, atmos_adjacent_turfs stays empty and process_cell
+/// has nothing to share with → gases never spread.
+/datum/unit_test/dq_floor_adjacency_lists_floor_neighbors
+
+/datum/unit_test/dq_floor_adjacency_lists_floor_neighbors/Run()
+	// Look for two adjacent /turf/simulated/floor tiles.
+	var/turf/simulated/floor/A = null
+	var/turf/simulated/floor/B = null
+	for(var/turf/simulated/floor/cand in world)
+		if(!cand.air || cand.blocks_air)
+			continue
+		for(var/direction in GLOB.cardinal)
+			var/turf/neighbor = get_step(cand, direction)
+			if(istype(neighbor, /turf/simulated/floor))
+				var/turf/simulated/floor/floor_neighbor = neighbor
+				if(floor_neighbor.air && !floor_neighbor.blocks_air)
+					A = cand
+					B = floor_neighbor
+					break
+		if(A)
+			break
+	TEST_ASSERT_NOTNULL(A, "no pair of adjacent /turf/simulated/floor tiles on the test map")
+	TEST_ASSERT_NOTNULL(B, "found A but no adjacent floor B — for loop bug")
+
+	// Inline the adjacency-build logic so we can see EXACTLY which gate rejects.
+	// This is structurally identical to init_immediate_calculate_adjacent_turfs
+	// but with TEST_ASSERTs at each step.
+	A.atmos_adjacent_turfs = null
+	B.atmos_adjacent_turfs = null
+	A.current_cycle = -1
+	B.current_cycle = 0
+	var/dir_to_b = get_dir(A, B)
+	var/turf/check_step = get_step(A, dir_to_b)
+	TEST_ASSERT(check_step == B, "get_step(A, dir [dir_to_b]) returned [check_step] not B([B.x],[B.y])")
+	var/a_canpass = CANATMOSPASS(A, A, FALSE)
+	var/b_canpass_a = CANATMOSPASS(B, A, FALSE)
+	var/blocks_check = !(A.blocks_air || B.blocks_air)
+	var/cycle_pass = !(B.current_cycle <= A.current_cycle)
+	var/is_open = istype(B, /turf/open)
+	TEST_ASSERT(is_open, "B not /turf/open after reparent: [B.type]")
+	TEST_ASSERT(cycle_pass, "cycle gate failed: B.current_cycle=[B.current_cycle] A.current_cycle=[A.current_cycle]")
+	TEST_ASSERT(a_canpass, "A.canpass=FALSE — A.can_atmos_pass=[A.can_atmos_pass] A.blocks_air=[A.blocks_air]")
+	TEST_ASSERT(b_canpass_a, "B.canpass(A)=FALSE — B.can_atmos_pass=[B.can_atmos_pass] B.blocks_air=[B.blocks_air]")
+	TEST_ASSERT(blocks_check, "blocks_air check failed: A=[A.blocks_air] B=[B.blocks_air]")
+
+	A.init_immediate_calculate_adjacent_turfs()
+
+	TEST_ASSERT_NOTNULL(A.atmos_adjacent_turfs, \
+		"A.atmos_adjacent_turfs is null after init_immediate_calculate_adjacent_turfs() — calc never ran")
+	TEST_ASSERT(A.atmos_adjacent_turfs[B], \
+		"adj FALSE post-init. A.adj_len=[LAZYLEN(A.atmos_adjacent_turfs)] DIAG=\"[A._dq_init_diag]\"")
+
+
+/// End-to-end gas-spread check: put phoron on tile A, force a process_cell()
+/// pass, and assert tile B (adjacent) now has some phoron. This is the
+/// behaviour the user actually sees in the game; if it's broken,
+/// breaches/leaks/atmos events all stop working.
+/datum/unit_test/dq_phoron_spreads_to_adjacent_floor
+
+/datum/unit_test/dq_phoron_spreads_to_adjacent_floor/Run()
+	var/turf/simulated/floor/A = null
+	var/turf/simulated/floor/B = null
+	for(var/turf/simulated/floor/cand in world)
+		if(!cand.air || cand.blocks_air)
+			continue
+		for(var/direction in GLOB.cardinal)
+			var/turf/neighbor = get_step(cand, direction)
+			if(istype(neighbor, /turf/simulated/floor))
+				var/turf/simulated/floor/floor_neighbor = neighbor
+				if(floor_neighbor.air && !floor_neighbor.blocks_air)
+					A = cand
+					B = floor_neighbor
+					break
+		if(A)
+			break
+	TEST_ASSERT_NOTNULL(A, "no pair of adjacent /turf/simulated/floor tiles on the test map")
+	TEST_ASSERT_NOTNULL(B, "no adjacent floor B")
+
+	// Pre-warm the adjacency graph in both directions. Set decrementing
+	// current_cycle so init_immediate_calculate_adjacent_turfs's "have I
+	// already done this neighbor" gate doesn't skip on a tie.
+	A.atmos_adjacent_turfs = null
+	B.atmos_adjacent_turfs = null
+	A.current_cycle = -1
+	B.current_cycle = -2
+	A.init_immediate_calculate_adjacent_turfs()
+	B.init_immediate_calculate_adjacent_turfs()
+
+	// Strip B's plasma first so the post check is honest.
+	B.air.set_moles(/datum/gas/plasma, 0)
+	var/initial_b_plasma = LINDA_GAS_AMT(B.air, GAS_PLASMA)
+	TEST_ASSERT_EQUAL(initial_b_plasma, 0, \
+		"test setup failed: B already has [initial_b_plasma] mol plasma")
+
+	// Pump phoron into A.
+	A.air.adjust_gas(/datum/gas/plasma, 100)
+	SSair.add_to_active(A)
+
+	// Force a single process_cell on A.
+	A.process_cell(SSair.times_fired + 1)
+
+	var/b_after = LINDA_GAS_AMT(B.air, GAS_PLASMA)
+	TEST_ASSERT(b_after > 0, \
+		"after process_cell on A (with 100 mol plasma), adjacent floor B still has 0 plasma — process_cell didn't share. atmos_adjacent_turfs len on A = [LAZYLEN(A.atmos_adjacent_turfs)]")
+
+	// Clean up so we don't pollute later tests.
+	A.air.set_moles(/datum/gas/plasma, 0)
+	B.air.set_moles(/datum/gas/plasma, 0)
+	A.update_visuals()
+	B.update_visuals()
+
+
+/// SSair.setup_allturfs() must call Initalize_Atmos on every gas-bearing turf
+/// at roundstart. After the /turf/simulated → /turf/open reparent we provide
+/// /turf/open/Initalize_Atmos that builds adjacency. If init_air is FALSE on
+/// floors, or our Initalize_Atmos override doesn't run, every floor in the
+/// world has atmos_adjacent_turfs = null and gases never spread anywhere.
+/datum/unit_test/dq_floor_has_init_air_and_adjacency
+
+/datum/unit_test/dq_floor_has_init_air_and_adjacency/Run()
+	// Find a floor that has at least one floor neighbor — otherwise an
+	// isolated single-tile floor (which legitimately has zero adjacency)
+	// would make this test flake based on iteration order.
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(!cand.air || cand.blocks_air)
+			continue
+		for(var/direction in GLOB.cardinal)
+			var/turf/neighbor = get_step(cand, direction)
+			if(istype(neighbor, /turf/simulated/floor))
+				var/turf/simulated/floor/floor_neighbor = neighbor
+				if(floor_neighbor.air && !floor_neighbor.blocks_air)
+					T = cand
+					break
+		if(T)
+			break
+	TEST_ASSERT_NOTNULL(T, "no /turf/simulated/floor with a floor neighbor on the test map")
+	TEST_ASSERT(T.init_air, \
+		"/turf/simulated/floor.init_air is FALSE — SSair.setup_allturfs() will skip this turf and never call Initalize_Atmos on it")
+	// After SSair init, adjacency should be populated for at least one neighbor
+	// (otherwise spread is dead).
+	TEST_ASSERT(LAZYLEN(T.atmos_adjacent_turfs) > 0, \
+		"atmos_adjacent_turfs is empty after SSair init on a /turf/simulated/floor (at [T.x],[T.y],[T.z]) — Initalize_Atmos never wired this turf into the graph")
+
+	if(T.active_hotspot)
+		qdel(T.active_hotspot)
+		T.active_hotspot = null
+
+	// Stock with fuel + oxidizer.
+	var/datum/gas_mixture/air = T.return_air()
+	air.adjust_gas(/datum/gas/plasma, 30)
+	air.adjust_gas(/datum/gas/oxygen, 80)
+	air.set_temperature(T20C)
+
+	T.feed_lingering_fire(2.0)
+
+	TEST_ASSERT_NOTNULL(T.active_hotspot, "feed_lingering_fire didn't spawn an active_hotspot")
+	TEST_ASSERT_NOTNULL(T.lingering_fire(), "lingering_fire() returns null despite active_hotspot")
+
+	if(T.active_hotspot)
+		qdel(T.active_hotspot)
+		T.active_hotspot = null

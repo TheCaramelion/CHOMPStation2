@@ -98,7 +98,11 @@ SUBSYSTEM_DEF(air)
 
 	setup_allturfs()
 	setup_atmos_machinery()
-	setup_pipenets()
+	// DQEdit — setup_pipenets() removed. /tg/'s blocking pipenet build (via
+	// /datum/pipeline/build_pipeline_blocking) doesn't exist on CHOMP's
+	// /datum/pipe_network. CHOMP pipes call build_network() themselves in
+	// /obj/machinery/atmospherics/pipe Initialize, which fully constructs
+	// their pipenets without SSair orchestrating it.
 	setup_turf_visuals()
 	process_adjacent_rebuild()
 	atmos_handbooks_init()
@@ -121,11 +125,9 @@ SUBSYSTEM_DEF(air)
 		if(state != SS_RUNNING)
 			return
 
-	// Every time we fire, we want to make sure pipenets are rebuilt. The game state could have changed between each fire() proc call
-	// and anything missing a pipenet can lead to unintended behaviour at worse and various runtimes at best.
-	if(length(rebuild_queue) || length(expansion_queue))
-		timer = TICK_USAGE_REAL
-		process_rebuilds()
+	// /tg/-style rebuild_queue/expansion_queue dispatch removed — CHOMP pipes
+	// rebuild their networks through /obj/machinery/atmospherics/pipe Initialize
+	// and the ChangeTurf path, no SSair orchestration needed.
 		//This does mean that the apperent rebuild costs fluctuate very quickly, this is just the cost of having them always process, no matter what
 		cost_rebuilds = TICK_USAGE_REAL - timer
 		if(state != SS_RUNNING)
@@ -284,22 +286,9 @@ SUBSYSTEM_DEF(air)
 		if(MC_TICK_CHECK)
 			return
 
-/datum/controller/subsystem/air/proc/add_to_rebuild_queue(obj/machinery/atmospherics/atmos_machine)
-	if(istype(atmos_machine, /obj/machinery/atmospherics) && !atmos_machine.rebuilding)
-		rebuild_queue += atmos_machine
-		atmos_machine.rebuilding = TRUE
-
-/datum/controller/subsystem/air/proc/add_to_expansion(datum/pipeline/line, starting_point)
-	var/list/new_packet = new(SSAIR_REBUILD_QUEUE)
-	new_packet[SSAIR_REBUILD_PIPELINE] = line
-	new_packet[SSAIR_REBUILD_QUEUE] = list(starting_point)
-	expansion_queue += list(new_packet)
-
-/datum/controller/subsystem/air/proc/remove_from_expansion(datum/pipeline/line)
-	for(var/list/packet in expansion_queue)
-		if(packet[SSAIR_REBUILD_PIPELINE] == line)
-			expansion_queue -= packet
-			return
+// add_to_rebuild_queue / add_to_expansion / remove_from_expansion removed —
+// /tg/-style pipenet rebuild queues are unused under CHOMP's /datum/pipe_network
+// pipeline model.
 
 /datum/controller/subsystem/air/proc/process_atoms(resumed = FALSE)
 	if(!resumed)
@@ -402,71 +391,10 @@ SUBSYSTEM_DEF(air)
 		if (MC_TICK_CHECK)
 			return
 
-/datum/controller/subsystem/air/proc/process_rebuilds()
-	//Yes this does mean rebuilding pipenets can freeze up the subsystem forever, but if we're in that situation something else is very wrong
-	var/list/currentrun = rebuild_queue
-	while(currentrun.len || length(expansion_queue))
-		while(currentrun.len && !length(expansion_queue)) //If we found anything, process that first
-			var/obj/machinery/atmospherics/remake = currentrun[currentrun.len]
-			currentrun.len--
-			if (!remake)
-				continue
-			remake.rebuild_pipes()
-			if (MC_TICK_CHECK)
-				return
-
-		var/list/queue = expansion_queue
-		while(queue.len)
-			var/list/pack = queue[queue.len]
-			//We operate directly with the pipeline like this because we can trust any rebuilds to remake it properly
-			var/datum/pipeline/linepipe = pack[SSAIR_REBUILD_PIPELINE]
-			var/list/border = pack[SSAIR_REBUILD_QUEUE]
-			expand_pipeline(linepipe, border)
-			if(state != SS_RUNNING) //expand_pipeline can fail a tick check, we shouldn't let things get too fucky here
-				return
-
-			linepipe.building = FALSE
-			queue.len--
-			if (MC_TICK_CHECK)
-				return
-
-///Rebuilds a pipeline by expanding outwards, while yielding when sane
-/datum/controller/subsystem/air/proc/expand_pipeline(datum/pipeline/net, list/border)
-	while(border.len)
-		var/obj/machinery/atmospherics/borderline = border[border.len]
-		border.len--
-
-		var/list/result = borderline.pipeline_expansion(net)
-		if(!length(result))
-			continue
-		for(var/obj/machinery/atmospherics/considered_device in result)
-			if(!istype(considered_device, /obj/machinery/atmospherics/pipe))
-				considered_device.set_pipenet(net, borderline)
-				net.add_machinery_member(considered_device)
-				continue
-			var/obj/machinery/atmospherics/pipe/item = considered_device
-			if(net.members.Find(item))
-				continue
-			if(item.parent)
-				var/static/pipenetwarnings = 10
-				if(pipenetwarnings > 0)
-					log_mapping("build_pipeline(): [item.type] added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) around [AREACOORD(item)].")
-					pipenetwarnings--
-					if(pipenetwarnings == 0)
-						log_mapping("build_pipeline(): further messages about pipenets will be suppressed")
-
-			net.members += item
-			border += item
-
-			net.air.volume += item.volume
-			item.replace_pipenet(item.parent, net)
-
-			if(item.air_temporary)
-				net.air.merge(item.air_temporary)
-				item.air_temporary = null
-
-		if (MC_TICK_CHECK)
-			return
+// process_rebuilds + expand_pipeline removed — /tg/-style pipenet expansion
+// (rebuild_pipes / set_pipenet / replace_pipenet / pipeline_expansion / etc.)
+// is replaced by CHOMP's /datum/pipe_network/build_network, which runs in the
+// pipe's own Initialize chain.
 
 ///Removes a turf from processing, and causes its excited group to clean up so things properly adapt to the change
 /datum/controller/subsystem/air/proc/remove_from_active(turf/open/T)
@@ -710,15 +638,8 @@ SUBSYSTEM_DEF(air)
 		AM.atmos_init()
 		CHECK_TICK
 
-//this can't be done with setup_atmos_machinery() because
-// all atmos machinery has to initialize before the first
-// pipenet can be built.
-/datum/controller/subsystem/air/proc/setup_pipenets()
-	for (var/obj/machinery/atmospherics/AM in atmos_machinery)
-		var/list/targets = AM.get_rebuild_targets()
-		for(var/datum/pipeline/build_off as anything in targets)
-			build_off.build_pipeline_blocking(AM)
-		CHECK_TICK
+// setup_pipenets removed — CHOMP pipes call build_network() in their own
+// Initialize, no central pipenet setup phase needed.
 
 GLOBAL_LIST_EMPTY(colored_turfs)
 GLOBAL_LIST_EMPTY(colored_images)
@@ -735,35 +656,13 @@ GLOBAL_LIST_EMPTY(colored_images)
 			shiny.color = sharp_color
 			GLOB.colored_images += shiny
 
-/datum/controller/subsystem/air/proc/setup_template_machinery(list/atmos_machines)
-	var/obj/machinery/atmospherics/AM
-	for(var/A in 1 to atmos_machines.len)
-		AM = atmos_machines[A]
-		AM.atmos_init()
-		CHECK_TICK
-
-	for(var/A in 1 to atmos_machines.len)
-		AM = atmos_machines[A]
-		var/list/targets = AM.get_rebuild_targets()
-		for(var/datum/pipeline/build_off as anything in targets)
-			build_off.build_pipeline_blocking(AM)
-		CHECK_TICK
+// setup_template_machinery removed — no callers, /tg/-style pipenet init not used.
 
 
-/datum/controller/subsystem/air/proc/get_init_dirs(type, dir, init_dir)
-
-	if(!pipe_init_dirs_cache[type])
-		pipe_init_dirs_cache[type] = list()
-
-	if(!pipe_init_dirs_cache[type]["[init_dir]"])
-		pipe_init_dirs_cache[type]["[init_dir]"] = list()
-
-	if(!pipe_init_dirs_cache[type]["[init_dir]"]["[dir]"])
-		var/obj/machinery/atmospherics/temp = new type(null, FALSE, dir, init_dir)
-		pipe_init_dirs_cache[type]["[init_dir]"]["[dir]"] = temp.get_init_directions()
-		qdel(temp)
-
-	return pipe_init_dirs_cache[type]["[init_dir]"]["[dir]"]
+// /tg/'s SSair.get_init_dirs(type, dir, init_dir) removed — CHOMP pipe
+// construction caches via SSmachines.get_init_dirs (game/machinery/pipe/
+// construction.dm:226) and atmospherics.dm's /obj/machinery/atmospherics/get_init_dirs.
+// LINDA's variant was unused.
 
 /datum/controller/subsystem/air/proc/generate_atmos()
 	atmos_gen = list()

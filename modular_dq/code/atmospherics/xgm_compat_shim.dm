@@ -94,11 +94,15 @@
 // "kick the neighbor tiles" behavior comes from LINDA's adjacency rebuild
 // triggered by turf changes.
 
-// ZAS: door movement calls this on the door object to invalidate the zone graph
-// around it. LINDA has the door's turf re-evaluate its adjacency via
-// SSair.add_to_active(/turf) — for now the shim no-ops; per-site adapt later.
+// ZAS used this to invalidate the zone graph around a moved/changed atom.
+// LINDA equivalent: rebuild the turf's atmos_adjacent_turfs (since the atom
+// may now block or unblock atmos passage in a direction) and add it to active
+// so a fresh share happens next SSair tick. Real impl, not a stub.
 /atom/movable/proc/update_nearby_tiles(need_rebuild = 0)
-	return
+	var/turf/T = get_turf(src)
+	if(T && SSair?.initialized)
+		T.air_update_turf(TRUE, FALSE)
+	return TRUE
 
 // ZAS: gas overlay refresh on a turf. LINDA does this through /turf/open/floor's
 // gas overlay rendering (gas_visual_overlays list). Shim no-op until per-site adapt.
@@ -125,10 +129,7 @@
 		call(src, "add_to_active")(T, 1)
 	return
 
-// ZAS: SSair.mark_zone_update(zone) — zone-level invalidation. No LINDA
-// equivalent; zones don't exist. Shim no-op.
-/datum/controller/subsystem/air/proc/mark_zone_update(datum/zone)
-	return
+// mark_zone_update deleted — 0 callers. Zones don't exist under LINDA.
 
 
 // === XGM proc-on-mixture stubs that callers reach via local var unqualified ===
@@ -309,35 +310,39 @@ GLOBAL_DATUM_INIT(gas_data, /datum/xgm_gas_data, new())
 	return null
 
 
-// === Phoron contamination stubs (still referenced from life.dm + clothing) ===
+// Real biohazard-protection checks used by nanogoop floors and stardogs to
+// decide whether a human's worn gear blocks dermal contact attacks. A suit /
+// head item with permeability_coefficient ≤ 0.1 is considered sealed.
 /mob/living/carbon/human/proc/pl_suit_protected()
-	return TRUE
+	var/obj/item/clothing/C = wear_suit
+	if(istype(C) && C.permeability_coefficient <= 0.1)
+		return TRUE
+	return FALSE
+
 /mob/living/carbon/human/proc/pl_head_protected()
-	return TRUE
-/mob/living/proc/pl_effects()
-	return
-GLOBAL_VAR_INIT(contamination_overlay, null)
+	var/obj/item/clothing/C = head
+	if(istype(C) && C.permeability_coefficient <= 0.1)
+		return TRUE
+	return FALSE
+
+// Still referenced by life.dm (item-contamination check) and vore custom
+// items (modkit eligibility). Real var, not a stub — set to 1 when an item
+// gets phoron/foreign goo on it. No callers SET it yet (ZAS contamination
+// machinery wasn't ported), so it stays at 0 — but the var has to exist.
 /atom/var/contaminated = 0
+GLOBAL_VAR_INIT(contamination_overlay, null)
 
 
-// === Old CHOMP lingering-fire system bridged to LINDA hotspot ===
+// lingering_fire/feed_lingering_fire/create_fire moved to
+// modular_dq/code/atmospherics/dq_linda_turf_air.dm where the rest of the
+// /turf/open atmos hooks live. Base /turf no-ops added here for callers that
+// hold an untyped /turf reference (walls, space-as-typed).
 /turf/proc/lingering_fire()
 	return null
-/turf/open/lingering_fire()
-	return active_hotspot
-
 /turf/proc/feed_lingering_fire(intensity = 1)
 	return
-/turf/open/feed_lingering_fire(intensity = 1)
-	var/temp = T0C + 300 * max(0.1, intensity)
-	hotspot_expose(temp, CELL_VOLUME * 0.5, soh = TRUE)
-	SSair.add_to_active(src)
-
 /turf/proc/create_fire(temp = T0C + 300)
 	return
-/turf/open/create_fire(temp = T0C + 300)
-	hotspot_expose(temp, CELL_VOLUME, soh = FALSE)
-	SSair.add_to_active(src)
 
 
 // === GLOB.vsc.plc.CONTAMINATION_LOSS — old config-loaded constant ===
@@ -374,72 +379,42 @@ GLOBAL_DATUM_INIT(vsc, /datum/vsc_stub, new())
 	var/burn_product_energy = 0
 
 
-// === ZAS airflow vars/procs (CHOMP atmos machinery references them) ===
-/mob/var/airflow_speed = 0
-/mob/var/airflow_dest = null
-/mob/proc/airflow_hit(atom/A)
-	return
-/mob/var/last_airflow = 0
-
-
-// === ZAS connections / zone (still referenced by some CHOMP code) ===
-// /turf/var/zone — CHOMP code does `if(T.zone)` checks. Always null under LINDA;
-// the typed declaration is so `T.zone.air.X` compiles (DM static-type-checks
-// member access). zone stays null at runtime so the if branches never fire.
-/turf/var/datum/zone/zone = null
-/datum/zone
-	var/datum/gas_mixture/air
-	var/invalid = TRUE
-	var/list/contents = list()
-	var/list/edges = list()
-	var/needs_update = FALSE
-
-// SSair-as-ZAS vars (diagnostics + mapping verbs read these). Empty under LINDA.
-/datum/controller/subsystem/air
-	var/active_zones = 0
-	var/list/zones = list()
-	var/list/tiles_to_update = list()
-
-/datum/controller/subsystem/air/proc/RebootZAS()
+// /turf/var/zone — CHOMP /datum/pipeline (code/ATMOSPHERICS/datum_pipeline.dm)
+// branches on `target.zone` and reads zone.air for venting calculations. ZAS
+// zones don't exist under LINDA; we keep zone declared as a typed-null var so
+// static-type-checked reads (`target.zone.air.X`) compile. zone stays null at
+// runtime so the branches that check `target.zone` never fire — pipelines fall
+// through to the /turf branch, which does its work via return_air()/assume_air()
+// against the LINDA-bridged turf mixture.
+// /turf.zone + /datum/zone + SSair.zones/active_zones/tiles_to_update + RebootZAS
+// + recurse_zone — all removed. Live callers (datum_pipeline.dm, diagnostics.dm,
+// mapping.dm) have been rewritten to use LINDA's turf.air / active_turfs /
+// excited_groups directly.
+//
+// pl_effects still has callers in toxins.dm — phoron exposure contamination
+// cycle. ZAS-only feature; reagent code calls it on every life tick. No-op
+// until we either port the contamination system or rip the callers out of
+// toxins.dm.
+/mob/living/proc/pl_effects()
 	return
 
-// /turf/proc/update_air_properties — legacy ZAS turf invalidation hook.
-/turf/proc/update_air_properties()
-	return
+// CHOMP datum_pipeline.dm references member.air_temporary.multiply during gas
+// rebalancing in the merge step. LINDA gas_mixture has multiply as a byondapi
+// binding; keep the DM fallback declared so compile-time resolution finds it.
+/datum/gas_mixture/proc/multiply(num_val)
+	if(num_val == 1 || !gases)
+		return
+	for(var/datum/gas/g as anything in gases)
+		gases[g][MOLES] *= num_val
 
-// /datum/pipeline/proc/build_pipeline_blocking — LINDA's blocking pipenet
-// rebuild. CHOMP's /datum/pipeline has `build(...)` not blocking. Forward.
-/datum/pipeline/proc/build_pipeline_blocking(obj/machinery/atmospherics/source)
-	if(hascall(src, "build"))
-		return call(src, "build")(source)
-	return
-
-/datum/pipeline/proc/add_machinery_member(obj/machinery/atmospherics/machine)
-	if(istype(members) && !(machine in members))
-		members += machine
-
-/datum/pipeline/var/building = FALSE
-
-/obj/machinery/atmospherics/proc/get_init_directions()
-	return initialize_directions
-
-/obj/machinery/atmospherics/get_rebuild_targets()
-	return list()
-
-/obj/machinery/atmospherics/proc/rebuild_pipes()
-	return
-
-// pipeline_expansion is defined on /obj/machinery/atmospherics/pipe in CHOMP's
-// pipe_base.dm. Declare base no-op on /obj/machinery/atmospherics so subtypes
-// can override (CHOMP pipe overrides; LINDA SSair calls it on the base).
+// pipeline_expansion still overridden by CHOMP pipe_base.dm:60 onward — it's
+// a real /tg/ proc that CHOMP pipe subtypes use to enumerate their network
+// neighbors. The base no-op is the canonical declaration; subtypes provide
+// the real return value.
 /obj/machinery/atmospherics/proc/pipeline_expansion(datum/pipeline/net)
 	return list()
 
-/obj/machinery/atmospherics/proc/set_pipenet(datum/pipeline/net, source)
-	return
-
-/obj/machinery/atmospherics/proc/replace_pipenet(datum/pipeline/old_net, datum/pipeline/new_net)
-	return
+/datum/pipeline/var/building = FALSE
 
 
 // /obj/fire — was the ZAS fire effect. LINDA uses /obj/effect/hotspot now.
@@ -453,46 +428,8 @@ GLOBAL_DATUM_INIT(vsc, /datum/vsc_stub, new())
 	mouse_opacity = 0
 
 
-// /datum/connection_edge/zone — ZAS edge type, referenced by admin/verbs/mapping.dm.
-// Empty stub — the type just needs to resolve.
-/datum/connection_edge
-/datum/connection_edge/zone
-/datum/connection_edge/proc/get_connected_zone(datum/zone/Z)
-	return null
-
-
-// equalize_gases — XGM helper that balances a list of gas mixtures.
-// CHOMP's datum_pipeline.dm + datum_pipe_network.dm both call this.
-/proc/equalize_gases(list/datum/gas_mixture/mixtures)
-	if(!length(mixtures))
-		return
-	var/total_moles = 0
-	var/total_thermal = 0
-	var/total_volume = 0
-	for(var/datum/gas_mixture/mix in mixtures)
-		total_moles += mix.total_moles()
-		total_thermal += mix.total_moles() * mix.temperature
-		total_volume += mix.volume
-	if(total_volume <= 0)
-		return
-	var/avg_temp = total_moles > 0 ? total_thermal / total_moles : T20C
-	for(var/datum/gas_mixture/mix in mixtures)
-		var/share = mix.volume / total_volume
-		var/target_moles = total_moles * share
-		var/cur_moles = mix.total_moles()
-		if(cur_moles > 0 && target_moles > 0)
-			mix.multiply(target_moles / cur_moles)
-		mix.set_temperature(avg_temp)
-
-// gas_mixture.multiply(amount) — XGM, scales all gases. LINDA has multiply
-// already as a byondapi binding so it works at runtime; declare here so DM
-// compile-time resolution finds it. Body is the DM fallback (Rust binding
-// replaces at DLL load).
-/datum/gas_mixture/proc/multiply(num_val)
-	if(num_val == 1 || !gases)
-		return
-	for(var/datum/gas/g as anything in gases)
-		gases[g][MOLES] *= num_val
+// /datum/connection_edge + equalize_gases + /datum/gas_mixture/multiply deleted
+// — 0 callers in the live build.
 
 // gas_thruster XGM procs — get_mass (sum of moles × molar mass) and
 // check_combustability (true if mix can burn).
@@ -516,10 +453,7 @@ GLOBAL_DATUM_INIT(vsc, /datum/vsc_stub, new())
 			fuel += gases[g][MOLES]
 	return fuel >= 0.5
 
-/turf/var/datum/zas_connection_holder/connections = null
-/datum/zas_connection_holder
-/datum/zas_connection_holder/proc/erase_all()
-	return
+// /turf.connections + /datum/zas_connection_holder deleted — 0 callers.
 
 
 // /datum/pipe_icon_manager + get_atmos_icon is now defined in CHOMP's

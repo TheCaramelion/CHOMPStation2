@@ -84,5 +84,28 @@
 	for(var/datum/gas_mixture/air in gases)
 		volume += air.volume
 
+// DQEdit — was equalize_gases(gases). The original /proc/equalize_gases pooled
+// every member mixture's moles + thermal energy, then scaled each mixture's
+// moles to its volume share and reset its temperature to the pool average.
+// Reimplemented inline using LINDA primitives (multiply + set_temperature)
+// to keep the same semantics without depending on the deleted free proc.
 /datum/pipe_network/proc/reconcile_air()
-	equalize_gases(gases)
+	if(!length(gases))
+		return
+	var/total_moles = 0
+	var/total_thermal = 0
+	var/total_volume = 0
+	for(var/datum/gas_mixture/mix in gases)
+		var/m = mix.total_moles()
+		total_moles += m
+		total_thermal += m * mix.temperature
+		total_volume += mix.volume
+	if(total_volume <= 0)
+		return
+	var/avg_temp = total_moles > 0 ? total_thermal / total_moles : T20C
+	for(var/datum/gas_mixture/mix in gases)
+		var/cur_moles = mix.total_moles()
+		var/target_moles = total_moles * (mix.volume / total_volume)
+		if(cur_moles > 0 && target_moles > 0)
+			mix.multiply(target_moles / cur_moles)
+		mix.set_temperature(avg_temp)

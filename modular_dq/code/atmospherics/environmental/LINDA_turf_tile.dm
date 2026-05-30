@@ -266,6 +266,17 @@
 	SSair.remove_from_active(src)
 
 /turf/open/process_cell(fire_count)
+	// DQEdit — air-null guard. In stock /tg/, /turf/open is always paired with
+	// air (walls are /turf/closed, a separate type). After DQ's /turf/simulated
+	// → /turf/open reparent, /turf/simulated/wall and /turf/simulated/mineral
+	// (blocks_air=1, air=null) ALSO inherit /turf/open/process_cell. With the
+	// add_to_active routing fixed (INITIALIZED_1 set on /atom/Initialize), these
+	// should never land in active_turfs — but defend anyway and stack-trace so
+	// any future regression surfaces loudly.
+	if(blocks_air || !air)
+		stack_trace("LINDA process_cell hit a /turf/open with no air ([type] at [x],[y],[z]) — INITIALIZED_1 routing broken? add_to_active should never put us here.")
+		SSair.remove_from_active(src)
+		return
 	if(archived_cycle < fire_count) //archive self if not already done
 		LINDA_CYCLE_ARCHIVE(src)
 

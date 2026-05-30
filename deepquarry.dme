@@ -5595,7 +5595,7 @@
 #include "modular_dq\code\modules\quarry\quarry_features.dm"
 #include "modular_dq\code\modules\quarry\quarry_configs.dm"
 #include "modular_dq\code\modules\quarry\quarry_turfs.dm"
-#include "modular_dq\code\modules\quarry\quarry_atmos_skip.dm"
+// DQRemoved: #include "modular_dq\code\modules\quarry\quarry_atmos_skip.dm" — ZAS zone-graph skip optimization; LINDA doesn't have zones, blocks_air=1 walls already skip atmos.
 #include "modular_dq\code\modules\quarry\quarry_guide.dm"
 #include "modular_dq\code\modules\quarry\quarry_profile.dm"
 #include "modular_dq\code\modules\quarry\quarry_layer.dm"
@@ -5782,9 +5782,12 @@
 #include "modular_dq\code\atmospherics\gasmixtures\immutable_mixtures.dm"
 #include "modular_dq\code\atmospherics\gasmixtures\reaction_factors.dm"
 #include "modular_dq\code\atmospherics\gasmixtures\reactions.dm"
-// tg_infra_stubs.dm provides minimum-viable stubs for /tg/-only infrastructure
-// that SSair/LINDA_* reference (SSblackbox, /datum/pipeline, ss_flags, etc.).
-// Must come BEFORE the LINDA atmos files that use these stubs.
+// atom_flags_1 declares /atom/flags_1 so /atom/Initialize can set INITIALIZED_1
+// for SSair.add_to_active routing.
+#include "modular_dq\code\atmospherics\atom_flags_1.dm"
+// tg_infra_stubs.dm provides /tg/ infrastructure pieces that SSair/LINDA_*
+// reference. Steadily shrinking as the migration replaces stubs with real
+// implementations. Must come BEFORE the LINDA atmos files.
 #include "modular_dq\code\atmospherics\tg_infra_stubs.dm"
 #include "modular_dq\code\atmospherics\environmental\LINDA_fire.dm"
 #include "modular_dq\code\atmospherics\environmental\LINDA_system.dm"

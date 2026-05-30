@@ -46,7 +46,7 @@ GLOBAL_LIST_INIT(contrast_colors, list("#ff0000", "#00ff00", "#0000ff", "#ffff00
 /datum/hud
 	var/atmos_debug_overlays
 
-/obj/effect/abstract/atmos_aware
+// /obj/effect/abstract/atmos_aware deleted — had zero callers.
 
 /obj/effect/overlay/atmos_excited
 	icon = null
@@ -76,11 +76,14 @@ GLOBAL_LIST_INIT(contrast_colors, list("#ff0000", "#00ff00", "#0000ff", "#ffff00
 	var/list/traits = list()
 
 
-// === /tg/ atom flag bitfield ===
-/atom/var/flags_1 = 0
-
-
-// === /tg/'s per-turf atmos init (LINDA's SSair drives these) ===
+// flags_1 declaration moved to modular_dq/code/atmospherics/atom_flags_1.dm so
+// /atom/Initialize sets INITIALIZED_1 properly (was a dead zero stub).
+//
+// requires_activation and the base /turf/proc/Initalize_Atmos are kept here:
+// requires_activation is set by add_to_active's fall-through; the base
+// Initalize_Atmos is a legitimate no-op for /turf base (only /turf/open
+// participates in atmos). /turf/open/Initalize_Atmos in dq_linda_turf_air.dm
+// is the real implementation that builds adjacency.
 /turf/var/requires_activation = FALSE
 /turf/var/init_air = TRUE
 /turf/proc/Initalize_Atmos(times_fired)
@@ -123,7 +126,9 @@ GLOBAL_LIST_INIT(contrast_colors, list("#ff0000", "#00ff00", "#0000ff", "#ffff00
 	smoothing_junction = new_junction
 
 
-// === SSair UI stubs ===
+// SSair admin debug TGUI procs — kept as no-op base impls because SSair.dm has
+// its own self-references (ui_state passed to ui_interact, etc.). Wire to real
+// /tg/ debug TGUI when DQ adds the corresponding admin tooling.
 /datum/controller/subsystem/air/proc/ui_state(mob/user)
 	return null
 
