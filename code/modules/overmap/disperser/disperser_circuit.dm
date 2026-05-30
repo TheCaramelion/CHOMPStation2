@@ -12,7 +12,7 @@
 	build_path = /obj/machinery/disperser/front
 	board_type = new /datum/frame/frame_types/machine
 	req_components = list (
-							/obj/item/stock_parts/manipulator/pico = 5
+							/obj/item/stock_parts/manipulator = 5
 	)
 	hidden = TRUE // todo - Make properly constructable in round
 
@@ -30,6 +30,6 @@
 	build_path = /obj/machinery/disperser/back
 	board_type = new /datum/frame/frame_types/machine
 	req_components = list (
-							/obj/item/stock_parts/capacitor/super = 5
+							/obj/item/stock_parts/capacitor = 5
 	)
 	hidden = TRUE // todo - Make properly constructable in round

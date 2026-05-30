@@ -374,153 +374,13 @@
 	icon_state = "matter_bin"
 	matter = list(MAT_STEEL = 80)
 
-//Rank 2
-
-/obj/item/stock_parts/capacitor/adv
-	name = "advanced capacitor"
-	desc = "An advanced capacitor used in the construction of a variety of devices."
-	icon_state = "capacitor_adv"
-	rating = 2
-	matter = list(MAT_STEEL = 50,MAT_GLASS = 50)
-
-/obj/item/stock_parts/scanning_module/adv
-	name = "advanced scanning module"
-	desc = "A compact, high resolution scanning module used in the construction of certain devices."
-	icon_state = "scan_module_adv"
-	rating = 2
-	matter = list(MAT_STEEL = 50,MAT_GLASS = 20)
-
-/obj/item/stock_parts/manipulator/nano
-	name = "nano-manipulator"
-	desc = "A tiny little manipulator used in the construction of certain devices."
-	icon_state = "nano_mani"
-	rating = 2
-	matter = list(MAT_STEEL = 30)
-
-/obj/item/stock_parts/micro_laser/high
-	name = "high-power micro-laser"
-	desc = "A tiny laser used in certain devices."
-	icon_state = "high_micro_laser"
-	rating = 2
-	matter = list(MAT_STEEL = 10,MAT_GLASS = 20)
-
-/obj/item/stock_parts/matter_bin/adv
-	name = "advanced matter bin"
-	desc = "A container for hold compressed matter awaiting re-construction."
-	icon_state = "advanced_matter_bin"
-	rating = 2
-	matter = list(MAT_STEEL = 80)
-
-//Rating 3
-
-/obj/item/stock_parts/capacitor/super
-	name = "super capacitor"
-	desc = "A super-high capacity capacitor used in the construction of a variety of devices."
-	icon_state = "capacitor_super"
-	rating = 3
-	matter = list(MAT_STEEL = 50,MAT_GLASS = 50)
-
-/obj/item/stock_parts/scanning_module/phasic
-	name = "phasic scanning module"
-	desc = "A compact, high resolution phasic scanning module used in the construction of certain devices."
-	icon_state = "scan_module_phasic"
-	rating = 3
-	matter = list(MAT_STEEL = 50,MAT_GLASS = 20)
-
-/obj/item/stock_parts/manipulator/pico
-	name = "pico-manipulator"
-	desc = "A tiny little manipulator used in the construction of certain devices."
-	icon_state = "pico_mani"
-	rating = 3
-	matter = list(MAT_STEEL = 30)
-
-/obj/item/stock_parts/micro_laser/ultra
-	name = "ultra-high-power micro-laser"
-	icon_state = "ultra_high_micro_laser"
-	desc = "A tiny laser used in certain devices."
-	rating = 3
-	matter = list(MAT_STEEL = 10,MAT_GLASS = 20)
-
-/obj/item/stock_parts/matter_bin/super
-	name = "super matter bin"
-	desc = "A container for hold compressed matter awaiting re-construction."
-	icon_state = "super_matter_bin"
-	rating = 3
-	matter = list(MAT_STEEL = 80)
-
-// Rating 4 - Anomaly
-
-/obj/item/stock_parts/capacitor/hyper
-	name = "hyper capacitor"
-	desc = "A hyper-capacity capacitor used in the construction of a variety of devices."
-	icon_state = "capacitor_hyper"
-	rating = 4
-	matter = list(MAT_STEEL = 80, MAT_GLASS = 40)
-
-/obj/item/stock_parts/scanning_module/hyper
-	name = "quantum scanning module"
-	desc = "A compact, near-perfect resolution quantum scanning module used in the construction of certain devices."
-	icon_state = "scan_module_hyper"
-	rating = 4
-	matter = list(MAT_STEEL = 100,MAT_GLASS = 40)
-
-/obj/item/stock_parts/manipulator/hyper
-	name = "planck-manipulator"
-	desc = "A miniscule manipulator used in the construction of certain devices."
-	icon_state = "hyper_mani"
-	rating = 4
-	matter = list(MAT_STEEL = 30)
-
-/obj/item/stock_parts/micro_laser/hyper
-	name = "hyper-power micro-laser"
-	icon_state = "hyper_micro_laser"
-	desc = "A tiny laser used in certain devices."
-	rating = 4
-	matter = list(MAT_STEEL = 30, MAT_GLASS = 40)
-
-/obj/item/stock_parts/matter_bin/hyper
-	name = "hyper matter bin"
-	desc = "A container for holding compressed matter awaiting re-construction."
-	icon_state = "hyper_matter_bin"
-	rating = 4
-	matter = list(MAT_STEEL = 100)
-
-// Rating 5 - Precursor
-
-/obj/item/stock_parts/capacitor/omni
-	name = "omni-capacitor"
-	desc = "A capacitor of immense capacity used in the construction of a variety of devices."
-	icon_state = "capacitor_omni"
-	rating = 5
-	matter = list(MAT_STEEL = 80, MAT_GLASS = 40)
-
-/obj/item/stock_parts/scanning_module/omni
-	name = "omni-scanning module"
-	desc = "A compact, perfect resolution temporospatial scanning module used in the construction of certain devices."
-	icon_state = "scan_module_omni"
-	rating = 5
-	matter = list(MAT_STEEL = 100,MAT_GLASS = 40)
-
-/obj/item/stock_parts/manipulator/omni
-	name = "omni-manipulator"
-	desc = "A strange, infinitesimal manipulator used in the construction of certain devices."
-	icon_state = "omni_mani"
-	rating = 5
-	matter = list(MAT_STEEL = 30)
-
-/obj/item/stock_parts/micro_laser/omni
-	name = "omni-power micro-laser"
-	icon_state = "omni_micro_laser"
-	desc = "A strange laser used in certain devices."
-	rating = 5
-	matter = list(MAT_STEEL = 30, MAT_GLASS = 40)
-
-/obj/item/stock_parts/matter_bin/omni
-	name = "omni-matter bin"
-	desc = "A strange container for holding compressed matter awaiting re-construction."
-	icon_state = "omni_matter_bin"
-	rating = 5
-	matter = list(MAT_STEEL = 100)
+// DQEdit — Tier subtypes (adv / super / hyper / omni / nano / pico /
+// high / ultra / phasic) are gone. Stock parts are now material-driven:
+// each part instance carries a `material_id` that points into
+// GLOB.name_to_material, and get_rating() derives the rating from a
+// per-part-type formula over the material's properties. See
+// modular_dq/code/modules/materials/material_stock_parts.dm for the
+// formulas and the imbue/crafting flow.
 
 
 // Subspace stock parts
@@ -626,42 +486,42 @@
 	name = "advanced parts bundle"
 	desc = "5 of each T2 part, no more and no less."
 	items = list(
-		/obj/item/stock_parts/matter_bin/adv,
-		/obj/item/stock_parts/manipulator/nano,
-		/obj/item/stock_parts/capacitor/adv,
-		/obj/item/stock_parts/scanning_module/adv,
-		/obj/item/stock_parts/micro_laser/high
+		/obj/item/stock_parts/matter_bin,
+		/obj/item/stock_parts/manipulator,
+		/obj/item/stock_parts/capacitor,
+		/obj/item/stock_parts/scanning_module,
+		/obj/item/stock_parts/micro_laser
 	)
 
 /obj/effect/spawner/parts/t3
 	name = "super parts bundle"
 	desc = "5 of each T3 part, no more and no less."
 	items = list(
-		/obj/item/stock_parts/matter_bin/super,
-		/obj/item/stock_parts/manipulator/pico,
-		/obj/item/stock_parts/capacitor/super,
-		/obj/item/stock_parts/scanning_module/phasic,
-		/obj/item/stock_parts/micro_laser/ultra
+		/obj/item/stock_parts/matter_bin,
+		/obj/item/stock_parts/manipulator,
+		/obj/item/stock_parts/capacitor,
+		/obj/item/stock_parts/scanning_module,
+		/obj/item/stock_parts/micro_laser
 	)
 
 /obj/effect/spawner/parts/t4
 	name = "hyper parts bundle"
 	desc = "5 of each T4 part, no more and no less."
 	items = list(
-		/obj/item/stock_parts/matter_bin/hyper,
-		/obj/item/stock_parts/manipulator/hyper,
-		/obj/item/stock_parts/capacitor/hyper,
-		/obj/item/stock_parts/scanning_module/hyper,
-		/obj/item/stock_parts/micro_laser/hyper
+		/obj/item/stock_parts/matter_bin,
+		/obj/item/stock_parts/manipulator,
+		/obj/item/stock_parts/capacitor,
+		/obj/item/stock_parts/scanning_module,
+		/obj/item/stock_parts/micro_laser
 	)
 
 /obj/effect/spawner/parts/t5
 	name = "omni parts bundle"
 	desc = "5 of each T5 part, no more and no less."
 	items = list(
-		/obj/item/stock_parts/matter_bin/omni,
-		/obj/item/stock_parts/manipulator/omni,
-		/obj/item/stock_parts/capacitor/omni,
-		/obj/item/stock_parts/scanning_module/omni,
-		/obj/item/stock_parts/micro_laser/omni
+		/obj/item/stock_parts/matter_bin,
+		/obj/item/stock_parts/manipulator,
+		/obj/item/stock_parts/capacitor,
+		/obj/item/stock_parts/scanning_module,
+		/obj/item/stock_parts/micro_laser
 	)

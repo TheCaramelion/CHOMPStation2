@@ -86,7 +86,8 @@ jobs:
         run: ~/dreamchecker 2>&1 | bash tools/ci/annotate_dm.sh
       - name: Run OpenDream
         if: steps.linter-setup.conclusion == 'success' && !cancelled()
-        run: ./DMCompiler_linux-x64/DMCompiler vorestation.dme --suppress-unimplemented --define=CIBUILDING | bash tools/ci/annotate_od.sh
+        # DQEdit — renamed from vorestation.dme
+        run: ./DMCompiler_linux-x64/DMCompiler deepquarry.dme --suppress-unimplemented --define=CIBUILDING | bash tools/ci/annotate_od.sh
       - name: Run Map Checks
         if: steps.linter-setup.conclusion == 'success' && !cancelled()
         run: |

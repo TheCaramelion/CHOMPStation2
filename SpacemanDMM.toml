@@ -1,4 +1,5 @@
-environment = "vorestation.dme"
+# DQEdit — renamed from vorestation.dme
+environment = "deepquarry.dme"
 
 [langserver]
 dreamchecker = true

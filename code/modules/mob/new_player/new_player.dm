@@ -330,7 +330,7 @@
 		GLOB.data_core.manifest_inject(character)
 		SSticker.minds += character.mind//Cyborgs and AIs handle this in the transform proc.	//TODO!!!!! ~Carn
 	if(ishuman(character))
-		if(character.client.prefs.auto_backup_implant)
+		if(character.client.prefs.read_preference(/datum/preference/toggle/human/auto_backup_implant)) // DQEdit — migrated pref
 			var/obj/item/implant/backup/imp = new(src)
 
 			if(imp.handle_implant(character,character.zone_sel.selecting))
@@ -424,24 +424,28 @@
 	new_character.name = real_name
 	client.init_verbs()
 	new_character.dna.ready_dna(new_character)
-	new_character.dna.b_type = client.prefs.b_type
+	new_character.dna.b_type = client.prefs.read_preference(/datum/preference/text/human/b_type) // DQEdit — migrated pref
 	new_character.sync_dna_traits(TRUE) // Traitgenes Sync traits to genetics if needed
 	new_character.sync_organ_dna()
 	new_character.sync_addictions() // Handle round-start addictions
 	new_character.initialize_vessel()
 
-	for(var/lang in client.prefs.alternate_languages)
+	// DQEdit Start — migrated language prefs to /datum/preference
+	var/list/_alt_languages = client.prefs.read_preference(/datum/preference/alternate_languages)
+	var/list/_lang_custom = client.prefs.read_preference(/datum/preference/language_custom_keys)
+	for(var/lang in _alt_languages)
 		var/datum/language/chosen_language = GLOB.all_languages[lang]
 		if(chosen_language)
 			if(is_lang_whitelisted(src,chosen_language) || (new_character.species && (chosen_language.name in new_character.species.secondary_langs)))
 				new_character.add_language(lang)
-	for(var/key in client.prefs.language_custom_keys)
-		if(client.prefs.language_custom_keys[key])
-			var/datum/language/keylang = GLOB.all_languages[client.prefs.language_custom_keys[key]]
+	for(var/key in _lang_custom)
+		if(_lang_custom[key])
+			var/datum/language/keylang = GLOB.all_languages[_lang_custom[key]]
 			if(keylang)
 				new_character.language_keys[key] = keylang
-	if(client.prefs.preferred_language) // Do we have a preferred language?
-		var/datum/language/def_lang = GLOB.all_languages[client.prefs.preferred_language]
+	// DQEdit End
+	if(client.prefs.read_preference(/datum/preference/text/human/preferred_language)) // Do we have a preferred language?
+		var/datum/language/def_lang = GLOB.all_languages[client.prefs.read_preference(/datum/preference/text/human/preferred_language)]
 		if(def_lang)
 			new_character.default_language = def_lang
 	// And uncomment this, too.

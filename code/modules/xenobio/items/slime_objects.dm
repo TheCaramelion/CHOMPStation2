@@ -25,7 +25,7 @@
 		if(!O.MayRespawn())
 			continue
 		if(O.client)
-			if(O.client.prefs.be_special & BE_ALIEN)
+			if(O.client.prefs.read_preference(/datum/preference/numeric/human/be_special) & BE_ALIEN) // DQEdit — migrated
 				question(O.client)
 
 /obj/item/slime_cube/proc/question(client/C)
@@ -40,7 +40,7 @@
 		if(response == "Yes")
 			transfer_personality(C.mob)
 		else if(response == "Never for this round")
-			C.prefs.be_special ^= BE_ALIEN
+			C.prefs.update_preference_by_type(/datum/preference/numeric/human/be_special, C.prefs.read_preference(/datum/preference/numeric/human/be_special) ^ BE_ALIEN) // DQEdit — migrated
 
 /obj/item/slime_cube/proc/reset_search() //We give the players sixty seconds to decide, then reset the timer.
 	icon_state = "slime cube"

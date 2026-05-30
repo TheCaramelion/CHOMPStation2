@@ -36,7 +36,7 @@ If you remember nothing else, remember those two.
 | `html/changelogs/` | YAML changelog stubs that get merged into the master changelog. | One YAML per PR (see §8). |
 | `tools/` | Build/lint/map tooling (mapmerge2, StrongDMM, build.bat, etc.). | Don't touch unless you know why. |
 | `bin/` | Windows entry points (`build.cmd`, `server.cmd`, `tgui-*.cmd`, `test.cmd`). | Don't edit; invoke. |
-| `vorestation.dme` | **The compile manifest.** Every `.dm` file in the build must be `#include`d here. | You'll append your new files here (see §4). |
+| `deepquarry.dme` | **The compile manifest.** Every `.dm` file in the build must be `#include`d here. | You'll append your new files here (see §4). |
 | `SpacemanDMM.toml` | DM linter / language server config. | Respect its rules (see §6). |
 | `.github/CONTRIBUTING.md` | Authoritative upstream policy. | Read it; this file extends it for forks. |
 
@@ -92,9 +92,9 @@ Never put a "kitchen sink" file with mixed concerns at the top of `modular_<FORK
 
 ---
 
-## 4. Wiring new files into the build (`vorestation.dme`)
+## 4. Wiring new files into the build (`deepquarry.dme`)
 
-DM has no auto-discovery. Every `.dm` file the compiler should see must be listed in `vorestation.dme`. CHOMP's modular includes start around line 5269 and run to the end of the BEGIN_INCLUDE block. The pattern is one line per file, Windows path separators:
+DM has no auto-discovery. Every `.dm` file the compiler should see must be listed in `deepquarry.dme`. CHOMP's modular includes start around line 5269 and run to the end of the BEGIN_INCLUDE block. The pattern is one line per file, Windows path separators:
 
 ```
 #include "modular_chomp\code\datums\components\dry.dm"
@@ -187,6 +187,16 @@ If you cherry-pick a change from an open VOREStation or CHOMP PR, keep the origi
 - **CI dislikes comments mid-multi-line-list.** Don't insert an edit marker between the elements of a `list(...)` that spans lines; mark above or below instead.
 - **Don't add markers to whitespace-only changes.** Just don't make whitespace-only changes to upstream files — they invite merge conflicts for nothing.
 
+### 5g. `// DQRemoved:` for disabled includes
+
+A common pattern in `deepquarry.dme` is disabling an upstream `#include` line rather than deleting it, so the next merge engineer can see what's gone and why. Use the prefix `// DQRemoved:` for these:
+
+```
+// DQRemoved: #include "modular_chomp\maps\submaps\foo.dm"
+```
+
+Grep `DQRemoved` to find every disabled include in one shot. This is the only place we use a marker other than `DQEdit` / `DQAdd`; everywhere else stick to the two recommended forms.
+
 ---
 
 ## 6. DM coding standards (enforced)
@@ -233,6 +243,67 @@ Quick decision table:
 
 The upstream codebase isn't 100% consistent on this — many vars predate the lazylist macros — so prefer the right pattern for new fork code without auditing every upstream var you touch.
 
+### 6b. Type safety: `istype()`, casts, and the `:` operator
+
+`istype()` itself is **not** an anti-pattern — it's the right tool for narrowing a type before reading a subtype-only var or proc. The anti-patterns live around it:
+
+- ❌ **Never use the `:` operator** (`obj:my_subtype_var`) to reach a subtype member through an untyped or upcast var. It bypasses compile-time type checking and rots silently when paths change. Always `istype()` → cast → access:
+
+  ```dm
+  var/obj/item/thing/T = some_obj
+  if(!istype(T))
+      return
+  T.subtype_var = ...
+  ```
+
+- ❌ **Redundant `istype()` inside a typed for-loop.** `for(var/obj/item/foo/F in list)` already runs an implicit `istype()` per element, *silently* filtering non-matches and nulls. When you know the list should only hold that type, use `as anything` to surface stray nulls as runtimes — those nulls are usually unfreed references foreshadowing hard deletes:
+
+  ```dm
+  for(var/obj/item/foo/F as anything in known_clean_list)
+      F.do_thing()
+  ```
+
+  When the list legitimately holds a mix of types, drop `as anything` and let the implicit filter run.
+
+- ❌ **Type paths as strings** (`"/obj/item/foo"`). The compiler can't validate them; renames break silently. Use the literal path.
+
+### 6c. Lifecycle and hard-delete prevention
+
+DM's GC is reference-counted with a soft-delete queue. When `qdel()` is called on an object that still has references, soft-delete fails: the object either leaks (lives forever) or, worse, the GC subsystem promotes it to a *hard delete* — a synchronous full-world reference scan that stalls the server. Hard deletes are the #1 source of mid-round lag spikes.
+
+- **Prefer `Initialize()` over `New()` for atoms.** SSatoms batches `Initialize()` calls and runs them after world load. `New()` runs synchronously during map load and slows startup. Most subclasses should override `Initialize(mapload, ...)` and `return ..()`.
+- **`Destroy()` must null every reference the datum holds** before returning: unregister signals (`UnregisterSignal`), cancel timers, drop callback datums and weakrefs, remove yourself from any global tracking list, clear `loc` on contained atoms you owned. If you registered a component, unregister it. Then `return ..()`.
+- **Return the right `QDEL_HINT_*`** (defined in `code/__defines/qdel.dm`). Default is `QDEL_HINT_QUEUE`. Use `QDEL_HINT_IWILLGC` only when you've proven nothing holds a ref (skips the GC verification — wrong answer leaks the datum). Use `QDEL_HINT_HARDDEL` only when something *legitimately* holds a ref you can't clear (gives up on soft-delete and hard-deletes immediately, so you eat the stall on purpose instead of being surprised by it later).
+- **Always `qdel()`, never `del()`.** Raw `del` skips the GC subsystem, runs synchronously, and produces the worst kind of hard delete.
+
+### 6d. Signals and callback references
+
+The codebase has a /tg/-style signal system (`RegisterSignal` / `SEND_SIGNAL` / `COMSIG_*` in `code/__defines/dcs/signals/`). When you use it:
+
+- **Every signal-handler proc starts with the `SIGNAL_HANDLER` macro on its first line** (`code/__defines/dcs/helpers.dm` — expands to `SHOULD_NOT_SLEEP(TRUE)`). It documents intent and makes DreamChecker flag any `sleep`/`do_after`/blocking I/O inside, which would corrupt the signal pipeline. If a handler needs to do slow work, fire it via `INVOKE_ASYNC` to a non-handler proc.
+
+  ```dm
+  /datum/foo/proc/on_moved(datum/source, ...)
+      SIGNAL_HANDLER
+      ...
+  ```
+
+- **Use `PROC_REF()` / `TYPE_PROC_REF()` / `GLOBAL_PROC_REF()`** (defined in `code/__byond_version_compat.dm`) when passing a proc to `RegisterSignal`, `addtimer`, `INVOKE_ASYNC`, `CALLBACK`, etc. Bare string proc names (`"on_moved"`) break silently on rename; the macros fail compile. Much of the older code still uses bare strings — prefer the macros in new code.
+
+### 6e. Performance footguns
+
+- **Cache appearances, not raw icons.** Building overlays with raw `/icon` objects converts to an appearance every call and re-notifies every viewing client. Convert once to an `/image` or `/mutable_appearance`, store the result, and append the cached value.
+- **Associated lists carry ~24 B/entry overhead vs ~8 B/entry for flat lists.** When the "keys" are a fixed enum, prefer a flat list indexed by `#define`d integer constants over an assoc list keyed by strings. Sparse/dynamic keys are still fine for assoc lists.
+- **`process()` must scale per-tick effects by the subsystem's `wait`** so behavior survives a tick-rate change. Use the SS's `wait` (or a `seconds_per_tick` arg if the SS plumbs one) — never hardcode "one process call == one second".
+
+### 6f. Magic numbers, time, and player input
+
+- **Use the time defines** in `code/__defines/time.dm`: `1.5 SECONDS`, `5 MINUTES`, `1 HOURS`. Never write raw deciseconds like `do_after(user, 15)` — readers can't tell at a glance whether `15` is ticks, deciseconds, or seconds.
+- **No unexplained literals.** Numeric or string constants used as flags, IDs, or thresholds get a `#define` with a clear name. Already covered for job/faction/access strings (see §6); same rule applies to numbers.
+- **Escape and re-validate player text input.** Use `sanitize()` / `stripped_input()` (or the TGUI equivalent) for free-text. After an `input()` / `tgui_input_*` returns, re-check that the user, target, and game state are still valid — the player can move, die, drop the item, or close the UI while the prompt is open.
+- **Validate `Topic()` calls.** href params arrive from the client and may be forged. Verify the caller is allowed to act on `src`; narrow `locate(ref)` with `in src.contents` / `in view(src)` so a malicious href can't poke arbitrary refs.
+- **Parameterized SQL only.** Never string-splice player input into a query. Use the query bindings; use `format_table_name()` for table names.
+
 ---
 
 ## 7. TGUI (front-end) rules
@@ -270,7 +341,7 @@ Valid prefixes include: `rscadd`, `rscdel`, `bugfix`, `qol`, `balance`, `soundad
 
 Windows is the supported development OS (BYOND is Windows-first). On WSL you can usually build via Wine or by invoking the `.cmd` files from a Windows shell.
 
-- **Full build**: `bin/build.cmd` (compiles DM, then TGUI). Output: `vorestation.dmb` + `vorestation.rsc`.
+- **Full build**: `bin/build.cmd` (compiles DM, then TGUI). Output: `deepquarry.dmb` + `deepquarry.rsc`.
 - **Run server**: `bin/server.cmd` (builds then hosts on port 1337).
 - **Run unit tests**: `bin/test.cmd`. Unit tests live in `code/unit_tests/`. Add fork tests under `modular_<FORK>/code/unit_tests/` (and include them in the DME).
 - **Clean**: `bin/clean.cmd`.
@@ -302,6 +373,11 @@ If you find yourself wanting to edit the same upstream file three times for one 
 - ❌ Add author shoutouts, real-person names, or in-jokes to item names, descriptions, or lore strings. NPC names are fine.
 - ❌ Land merge commits in a PR. CHOMP squash-merges; many merge commits make a PR un-mergeable. Rebase or squash before opening.
 - ❌ Insert comments inside multi-line `list(...)` literals — the CI parser chokes.
+- ❌ Use the `:` operator to reach a subtype member. Cast through a typed var first (see §6b).
+- ❌ Call `del()`. Always `qdel()` so the GC subsystem can handle it (see §6c).
+- ❌ Pass a proc reference as a bare string (`"my_proc"`). Use `PROC_REF()` / `TYPE_PROC_REF()` / `GLOBAL_PROC_REF()` so renames fail at compile time (see §6d).
+- ❌ Write a `SIGNAL_HANDLER` proc that sleeps (`sleep`, `do_after`, blocking I/O). Hand the work off with `INVOKE_ASYNC` instead.
+- ❌ Hardcode deciseconds in time arguments. Use the `SECONDS` / `MINUTES` / `HOURS` macros (see §6f).
 - ❌ Use `--no-verify`, `--force` to main, or amend a published commit without explicit reason.
 
 ---
@@ -310,8 +386,12 @@ If you find yourself wanting to edit the same upstream file three times for one 
 
 - [ ] New code lives under `modular_<FORK>/` wherever possible.
 - [ ] Every upstream-file edit is wrapped in `// <FORK>Edit` / `// <FORK>Add` markers with a reason.
-- [ ] Every new `.dm` file is `#include`d in `vorestation.dme`.
+- [ ] Every new `.dm` file is `#include`d in `deepquarry.dme`.
 - [ ] Absolute type/proc paths only; no relative paths.
+- [ ] No `:` operator on subtype access — cast first.
+- [ ] `Destroy()` nulls held references, unregisters signals, returns the right `QDEL_HINT_*`.
+- [ ] Signal-handler procs start with `SIGNAL_HANDLER`; callbacks/signals use `PROC_REF` / `TYPE_PROC_REF` / `GLOBAL_PROC_REF`.
+- [ ] Time arguments use `SECONDS` / `MINUTES` / `HOURS`, not raw deciseconds.
 - [ ] DreamChecker (`SpacemanDMM`) passes locally.
 - [ ] If TGUI changed: `npm run tgui:lint` is clean and `npm run tgui:fix` left no diff.
 - [ ] One YAML changelog stub in `html/changelogs/` for the PR.
@@ -336,4 +416,4 @@ If you find yourself wanting to edit the same upstream file three times for one 
 
 ## TL;DR
 
-> Put new code in `modular_<FORK>/`. Mirror the upstream folder layout. When you must touch a base file, wrap the change in `// <FORK>Edit Start` … `// <FORK>Edit End` (or `// <FORK>Add` for new content) with a brief reason. Register every new `.dm` in `vorestation.dme`. Use absolute type paths, drop a changelog YAML, and squash before merge.
+> Put new code in `modular_<FORK>/`. Mirror the upstream folder layout. When you must touch a base file, wrap the change in `// <FORK>Edit Start` … `// <FORK>Edit End` (or `// <FORK>Add` for new content) with a brief reason. Register every new `.dm` in `deepquarry.dme`. Use absolute type paths, drop a changelog YAML, and squash before merge.

@@ -3,6 +3,7 @@
 	name = "carpet" //This is the easiest fix but god do i hate it -shark
 	display_name = "red"
 	use_name = "red cloth"
+	material_class = MATCLASS_ORGANIC
 	icon_colour = "#DA020A"
 	flags = MATERIAL_PADDING
 	ignition_point = T0C+232

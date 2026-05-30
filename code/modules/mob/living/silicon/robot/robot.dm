@@ -457,11 +457,14 @@
 
 	//Flavour text.
 	if(client)
-		var/module_flavour = client.prefs.flavour_texts_robot[modtype]
+		// DQEdit Start — migrated flavour_texts_robot
+		var/list/_robot_flavor = client.prefs.read_preference(/datum/preference/flavour_texts_robot)
+		var/module_flavour = LAZYACCESS(_robot_flavor, modtype)
 		if(module_flavour && (module_flavour != " " || module_flavour != ".")) //CHOMPEDIT: Skip module flavor if " " or "."
 			flavor_text = module_flavour
 		else
-			flavor_text = client.prefs.flavour_texts_robot["Default"]
+			flavor_text = LAZYACCESS(_robot_flavor, "Default")
+		// DQEdit End
 		//and meta info
 		ooc_notes = client.prefs.read_preference(/datum/preference/text/living/ooc_notes)
 		ooc_notes_likes = client.prefs.read_preference(/datum/preference/text/living/ooc_notes_likes)
@@ -470,7 +473,7 @@
 		ooc_notes_maybes = read_preference(/datum/preference/text/living/ooc_notes_maybes)
 		ooc_notes_style = read_preference(/datum/preference/toggle/living/ooc_notes_style)
 		private_notes = client.prefs.read_preference(/datum/preference/text/living/private_notes)
-		custom_link = client.prefs.custom_link
+		custom_link = client.prefs.read_preference(/datum/preference/text/human/custom_link) // DQEdit — migrated pref
 
 /mob/living/silicon/robot/verb/namepick()
 	set name = "Pick Name"
@@ -927,7 +930,7 @@
 					if(grabbable)
 						attempt_to_scoop(H)
 					else
-						if(client && !client.prefs.borg_petting)
+						if(client && !client.prefs.read_preference(/datum/preference/toggle/human/borg_petting)) // DQEdit — migrated pref
 							visible_message(span_notice("[H] reaches out for [src], but quickly refrains from petting."))
 							return
 						else

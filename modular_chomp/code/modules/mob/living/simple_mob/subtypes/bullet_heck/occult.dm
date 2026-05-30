@@ -22,16 +22,16 @@
 
 	projectiletype = /obj/item/projectile/energy/blood_bullet
 
-	loot_list = list(/obj/item/stock_parts/scanning_module/omni = 80,
-		/obj/item/stock_parts/micro_laser/omni = 80,
-		/obj/item/stock_parts/capacitor/omni = 80,
-		/obj/item/stock_parts/manipulator/omni = 80,
-		/obj/item/stock_parts/matter_bin/omni = 80,
-		/obj/item/stock_parts/scanning_module/hyper = 80,
-		/obj/item/stock_parts/micro_laser/hyper = 80,
-		/obj/item/stock_parts/capacitor/hyper = 80,
-		/obj/item/stock_parts/manipulator/hyper = 80,
-		/obj/item/stock_parts/matter_bin/hyper = 80,
+	loot_list = list(/obj/item/stock_parts/scanning_module = 80,
+		/obj/item/stock_parts/micro_laser = 80,
+		/obj/item/stock_parts/capacitor = 80,
+		/obj/item/stock_parts/manipulator = 80,
+		/obj/item/stock_parts/matter_bin = 80,
+		/obj/item/stock_parts/scanning_module = 80,
+		/obj/item/stock_parts/micro_laser = 80,
+		/obj/item/stock_parts/capacitor = 80,
+		/obj/item/stock_parts/manipulator = 80,
+		/obj/item/stock_parts/matter_bin = 80,
 		/obj/item/prop/deconstructable/gigacell = 100
 		)
 

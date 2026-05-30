@@ -92,6 +92,8 @@
 		/datum/quarry_feature/bat_roost,
 		// Exploration
 		/datum/quarry_feature/unmapped_passages,
+		// Science: exotic-material veins
+		/datum/quarry_feature/exotic_vein,
 	)
 	feature_count_min = 5
 	feature_count_max = 8
@@ -152,6 +154,8 @@
 		/datum/quarry_feature/spider_nest,
 		// Exploration
 		/datum/quarry_feature/unmapped_passages,
+		// Science: exotic-material veins
+		/datum/quarry_feature/exotic_vein,
 	)
 	feature_count_min = 6
 	feature_count_max = 9
@@ -211,6 +215,8 @@
 		/datum/quarry_feature/rat_nest,
 		// Exploration
 		/datum/quarry_feature/unmapped_passages,
+		// Science: exotic-material veins
+		/datum/quarry_feature/exotic_vein,
 	)
 	feature_count_min = 6
 	feature_count_max = 9
@@ -265,6 +271,8 @@
 		/datum/quarry_feature/stalker_pack,
 		// Exploration
 		/datum/quarry_feature/unmapped_passages,
+		// Science: exotic-material veins
+		/datum/quarry_feature/exotic_vein,
 	)
 	feature_count_min = 7
 	feature_count_max = 10
@@ -313,6 +321,8 @@
 		/datum/quarry_feature/stalker_pack,
 		// Exploration
 		/datum/quarry_feature/unmapped_passages,
+		// Science: exotic-material veins
+		/datum/quarry_feature/exotic_vein,
 	)
 	feature_count_min = 7
 	feature_count_max = 10

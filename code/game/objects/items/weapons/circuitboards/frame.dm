@@ -258,9 +258,9 @@
 	build_path = /obj/machinery // DQEdit — atmospheric_field_generator deleted with ZAS
 	board_type = new /datum/frame/frame_types/arfgs
 	req_components = list(
-							/obj/item/stock_parts/micro_laser/high = 2,	//field emitters
+							/obj/item/stock_parts/micro_laser = 2,	//field emitters
 							/obj/item/stock_parts/scanning_module = 1,	//atmosphere sensor
-							/obj/item/stock_parts/capacitor/adv = 1,		//for the JUICE
+							/obj/item/stock_parts/capacitor = 1,		//for the JUICE
 							/obj/item/stack/cable_coil = 10)
 
 

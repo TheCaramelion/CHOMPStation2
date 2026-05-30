@@ -93,51 +93,48 @@
 	if(ishuman(occupant) && occupant.stat != DEAD)
 		persist_nif_data(occupant, prefs)
 
-	if(!prefs.persistence_settings)
+	if(!prefs.read_preference(/datum/preference/numeric/human/persistence_settings))
 		return // Persistence disabled by preference settings
 
 	// Okay we can start saving the data
-	if(new_spawn_point_type && prefs.persistence_settings & PERSIST_SPAWN)
+	if(new_spawn_point_type && prefs.read_preference(/datum/preference/numeric/human/persistence_settings) & PERSIST_SPAWN)
 		prefs.update_preference_by_type(/datum/preference/choiced/living/spawnpoint, initial(new_spawn_point_type.display_name))
 	if(ishuman(occupant) && occupant.stat != DEAD)
 		var/mob/living/carbon/human/H = occupant
 		testing("Persist (PID): Saving stuff from [H] to [prefs] (\ref[prefs]).")
-		if(prefs.persistence_settings & PERSIST_ORGANS)
+		if(prefs.read_preference(/datum/preference/numeric/human/persistence_settings) & PERSIST_ORGANS)
 			apply_organs_to_prefs(H, prefs)
-		if(prefs.persistence_settings & PERSIST_MARKINGS)
+		if(prefs.read_preference(/datum/preference/numeric/human/persistence_settings) & PERSIST_MARKINGS)
 			apply_markings_to_prefs(H, prefs)
-		if(prefs.persistence_settings & PERSIST_WEIGHT)
+		if(prefs.read_preference(/datum/preference/numeric/human/persistence_settings) & PERSIST_WEIGHT)
 			resolve_excess_nutrition(H)
-			prefs.weight_vr = H.weight
-		if(prefs.persistence_settings & PERSIST_SIZE)
-			prefs.size_multiplier = H.size_multiplier
+			prefs.update_preference_by_type(/datum/preference/numeric/human/weight_vr, H.weight)
+		if(prefs.read_preference(/datum/preference/numeric/human/persistence_settings) & PERSIST_SIZE)
+			prefs.update_preference_by_type(/datum/preference/numeric/human/size_multiplier, H.size_multiplier)
 
 	prefs.save_character()
 	prefs.save_preferences()
 
-// Saves mob's current coloration state to prefs
-// This basically needs to be the reverse of /datum/category_item/player_setup_item/general/body/copy_to_mob() ~Leshana
+// Saves mob's current coloration state to prefs.
 /proc/apply_coloration_to_prefs(mob/living/carbon/human/character, datum/preferences/prefs)
 	if(!istype(character)) return
-	prefs.h_style	= character.h_style
+	// DQEdit — h_style/f_style/s_tone/b_type migrated to /datum/preference.
+	prefs.update_preference_by_type(/datum/preference/text/human/h_style, character.h_style)
 
 	prefs.update_preference_by_type(/datum/preference/color/human/eyes_color, rgb(character.r_eyes, character.g_eyes, character.b_eyes))
 	prefs.update_preference_by_type(/datum/preference/color/human/hair_color, rgb(character.r_hair, character.g_hair, character.b_hair))
 	prefs.update_preference_by_type(/datum/preference/color/human/facial_color, rgb(character.r_facial, character.g_facial, character.b_facial))
 	prefs.update_preference_by_type(/datum/preference/color/human/skin_color, rgb(character.r_skin, character.g_skin, character.b_skin))
 
-	prefs.f_style	= character.f_style
-	prefs.s_tone	= character.s_tone
-	prefs.h_style	= character.h_style
-	prefs.f_style	= character.f_style
-	prefs.b_type	= character.dna ? character.dna.b_type : DEFAULT_BLOOD_TYPE
+	prefs.update_preference_by_type(/datum/preference/text/human/f_style, character.f_style)
+	prefs.update_preference_by_type(/datum/preference/numeric/human/s_tone, character.s_tone)
+	prefs.update_preference_by_type(/datum/preference/text/human/b_type, character.dna ? character.dna.b_type : DEFAULT_BLOOD_TYPE)
 
-// Saves mob's current custom species, ears, tail, wings and digitigrade legs state to prefs
-// This basically needs to be the reverse of /datum/category_item/player_setup_item/vore/ears/copy_to_mob() ~Leshana
+// Saves mob's current custom species, ears, tail, wings and digitigrade legs state to prefs.
 /proc/apply_ears_to_prefs(mob/living/carbon/human/character, datum/preferences/prefs)
-	if(character.ear_style) prefs.ear_style = character.ear_style.name
-	if(character.tail_style) prefs.tail_style = character.tail_style.name
-	if(character.wing_style) prefs.wing_style = character.wing_style.name
+	if(character.ear_style) prefs.update_preference_by_type(/datum/preference/text/human/ear_style, character.ear_style.name)
+	if(character.tail_style) prefs.update_preference_by_type(/datum/preference/text/human/tail_style, character.tail_style.name)
+	if(character.wing_style) prefs.update_preference_by_type(/datum/preference/text/human/wing_style, character.wing_style.name)
 
 	prefs.update_preference_by_type(/datum/preference/color/human/ears_color1, rgb(character.r_ears, character.g_ears, character.b_ears))
 	prefs.update_preference_by_type(/datum/preference/color/human/ears_color2, rgb(character.r_ears2, character.g_ears2, character.b_ears2))
@@ -145,8 +142,8 @@
 	prefs.update_preference_by_type(/datum/preference/numeric/human/ears_alpha, character.a_ears)
 
 	// secondary ears
-	prefs.ear_secondary_style = character.ear_secondary_style?.name
-	prefs.ear_secondary_colors = character.ear_secondary_colors
+	prefs.update_preference_by_type(/datum/preference/text/human/ear_secondary_style, character.ear_secondary_style?.name)
+	prefs.update_preference_by_type(/datum/preference/ear_secondary_colors, character.ear_secondary_colors) // DQEdit — migrated pref
 
 	prefs.update_preference_by_type(/datum/preference/color/human/tail_color1, rgb(character.r_tail, character.g_tail, character.b_tail))
 	prefs.update_preference_by_type(/datum/preference/color/human/tail_color2, rgb(character.r_tail2, character.g_tail2, character.b_tail2))
@@ -159,11 +156,10 @@
 	prefs.update_preference_by_type(/datum/preference/color/human/wing_color3, rgb(character.r_wing3, character.g_wing3, character.b_wing3))
 	prefs.update_preference_by_type(/datum/preference/numeric/human/wing_alpha, character.a_wing)
 
-	prefs.custom_species	= character.custom_species
-	prefs.digitigrade		= character.digitigrade
+	prefs.update_preference_by_type(/datum/preference/text/human/custom_species, character.custom_species) // DQEdit — migrated pref
+	prefs.update_preference_by_type(/datum/preference/toggle/human/digitigrade, character.digitigrade) // DQEdit — migrated pref
 
 // Saves mob's current organ state to prefs.
-// This basically needs to be the reverse of /datum/category_item/player_setup_item/general/body/copy_to_mob() ~Leshana
 /proc/apply_organs_to_prefs(mob/living/carbon/human/character, datum/preferences/prefs)
 	if(!istype(character) || !character.species) return
 	var/list/organ_data = prefs.read_preference(/datum/preference/organ_data) || list()
@@ -201,10 +197,9 @@
 	prefs.write_preference(GLOB.preference_entries[/datum/preference/rlimb_data], rlimb_data)
 
 // Saves mob's current body markings state to prefs.
-// This basically needs to be the reverse of /datum/category_item/player_setup_item/general/body/copy_to_mob() ~Leshana
 /proc/apply_markings_to_prefs(mob/living/carbon/human/character, datum/preferences/prefs)
 	if(!istype(character)) return
-	prefs.body_markings = character.get_prioritised_markings() // Overwrite with new list!
+	prefs.update_preference_by_type(/datum/preference/body_markings, character.get_prioritised_markings()) // DQEdit — migrated pref, overwrite with new list
 
 /**
 * Resolve any surplus/deficit in nutrition's effet on weight all at once.
@@ -249,7 +244,8 @@
 		WARNING("Persist (NIF): [H] has no mind slot, skipping")
 		return
 
-	var/datum/json_savefile/savefile = new /datum/json_savefile(nif_savefile_path(H.ckey))
+	// DQEdit Start — NIF data now lives in the main per-character savefile alongside everything else.
+	var/datum/json_savefile/savefile = new /datum/json_savefile("data/player_saves/[copytext(H.ckey,1,2)]/[H.ckey]/preferences.json")
 	var/list/save_data = savefile.get_entry("character[slot]", list())
 
 	//If they have one, and if it's not installing without an owner, because
@@ -260,7 +256,7 @@
 	var/nif_durability
 	var/nif_savedata
 	if(nif && !(nif.stat == NIF_INSTALLING && !nif.owner))
-		nif_path = nif.type
+		nif_path = "[nif.type]"
 		nif_durability = nif.durability
 		nif_savedata = nif.save_data.Copy()
 	else
@@ -275,8 +271,9 @@
 	savefile.set_entry("character[slot]", save_data)
 	savefile.save()
 
-	// If they still have the same character loaded, update prefs
+	// If they still have the same character loaded, invalidate the NIF cache so the next read pulls from disk.
 	if(H?.client?.prefs?.default_slot == slot)
-		var/datum/category_group/player_setup_category/vore_cat = H.client.prefs.player_setup.categories_by_name["General"]
-		var/datum/category_item/player_setup_item/general/nif/nif_prefs = vore_cat.items_by_name["NIF Data"]
-		nif_prefs.load_character()
+		H.client.prefs.value_cache -= /datum/preference/nif_path
+		H.client.prefs.value_cache -= /datum/preference/numeric/nif_durability
+		H.client.prefs.value_cache -= /datum/preference/nif_savedata
+	// DQEdit End

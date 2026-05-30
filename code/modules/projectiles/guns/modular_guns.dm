@@ -16,14 +16,14 @@
 	var/list/guncomponents = list() //Generate our list of components.
 	var/accepted_components = list(
 		/obj/item/stock_parts/capacitor/,
-		/obj/item/stock_parts/capacitor/adv,
-		/obj/item/stock_parts/capacitor/super,
+		/obj/item/stock_parts/capacitor,
+		/obj/item/stock_parts/capacitor,
 		/obj/item/stock_parts/micro_laser/,
-		/obj/item/stock_parts/micro_laser/high,
-		/obj/item/stock_parts/micro_laser/ultra,
+		/obj/item/stock_parts/micro_laser,
+		/obj/item/stock_parts/micro_laser,
 		/obj/item/stock_parts/manipulator/,
-		/obj/item/stock_parts/manipulator/nano,
-		/obj/item/stock_parts/manipulator/pico,
+		/obj/item/stock_parts/manipulator,
+		/obj/item/stock_parts/manipulator,
 		)
 	//Excessively long because it won't accept subtypes for some reason!
 

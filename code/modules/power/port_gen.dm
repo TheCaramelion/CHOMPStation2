@@ -154,6 +154,7 @@
 
 	power_gen = round(initial(power_gen) * (max(2, temp_rating) / 2))
 
+	dq_apply_material_synergies(src) // DQAdd
 /obj/machinery/power/port_gen/pacman/examine(mob/user)
 	. = ..()
 	. += "It appears to be producing [power_gen*power_output] W."

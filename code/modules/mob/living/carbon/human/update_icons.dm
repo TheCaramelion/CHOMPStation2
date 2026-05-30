@@ -1483,7 +1483,10 @@ GLOBAL_LIST_EMPTY(damage_icon_parts) //see UpdateDamageIcon()
 		UpdateAppearance()
 		icon = Dummy.icon
 		if(flavourtext)
-			flavor_texts = client.prefs.flavor_texts.Copy()
+			// DQEdit Start — migrated flavor_texts
+			var/list/_flavor_texts = client.prefs.read_preference(/datum/preference/flavor_texts)
+			flavor_texts = islist(_flavor_texts) ? _flavor_texts.Copy() : list()
+			// DQEdit End
 		if(oocnotes)
 			ooc_notes = client.prefs.read_preference(/datum/preference/text/living/ooc_notes)
 			ooc_notes_likes = client.prefs.read_preference(/datum/preference/text/living/ooc_notes_likes)

@@ -2071,22 +2071,22 @@
 /area/shuttle/whiteshipOM)
 "Za" = (
 /obj/structure/table/reinforced,
-/obj/item/stock_parts/scanning_module/adv{
+/obj/item/stock_parts/scanning_module{
 	pixel_x = 5;
 	pixel_y = 6
 	},
-/obj/item/stock_parts/scanning_module/adv{
+/obj/item/stock_parts/scanning_module{
 	pixel_x = 5;
 	pixel_y = 6
 	},
-/obj/item/stock_parts/micro_laser/high,
-/obj/item/stock_parts/micro_laser/high,
-/obj/item/stock_parts/matter_bin/adv,
-/obj/item/stock_parts/matter_bin/adv,
-/obj/item/stock_parts/manipulator/hyper,
-/obj/item/stock_parts/manipulator/hyper,
-/obj/item/stock_parts/capacitor/adv,
-/obj/item/stock_parts/capacitor/adv,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/capacitor,
 /turf/simulated/shuttle/floor/purple,
 /area/shuttle/whiteshipOM)
 "Zc" = (

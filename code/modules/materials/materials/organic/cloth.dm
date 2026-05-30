@@ -1,5 +1,6 @@
 /datum/material/cloth
 	name = MAT_CLOTH
+	material_class = MATCLASS_ORGANIC
 	door_icon_base = "wood"
 	ignition_point = T0C+232
 	melting_point = T0C+300
@@ -132,6 +133,7 @@
 	name = MAT_CARPET
 	display_name = "comfy"
 	use_name = "red upholstery"
+	material_class = MATCLASS_ORGANIC
 	icon_colour = "#DA020A"
 	flags = MATERIAL_PADDING|MATERIAL_BRITTLE
 	ignition_point = T0C+232
@@ -148,6 +150,7 @@
 /datum/material/cotton
 	name = MAT_COTTON
 	display_name =MAT_COTTON
+	material_class = MATCLASS_ORGANIC
 	icon_colour = "#FFFFFF"
 	flags = MATERIAL_PADDING|MATERIAL_BRITTLE
 	ignition_point = T0C+232
@@ -162,6 +165,7 @@
 /datum/material/fibers
 	name = MAT_FIBERS
 	display_name = "plant"
+	material_class = MATCLASS_ORGANIC
 	sheet_singular_name = "fiber"
 	sheet_singular_name = MAT_FIBERS
 	icon_colour = "#006b0e"

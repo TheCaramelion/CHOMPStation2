@@ -170,17 +170,17 @@
 		prob(2);/obj/item/stock_parts/console_screen,
 		prob(1);/obj/item/stock_parts/spring,
 		prob(3);/obj/item/stock_parts/capacitor,
-		prob(2);/obj/item/stock_parts/capacitor/adv,
-		prob(1);/obj/item/stock_parts/capacitor/super,
+		prob(2);/obj/item/stock_parts/capacitor,
+		prob(1);/obj/item/stock_parts/capacitor,
 		prob(3);/obj/item/stock_parts/manipulator,
-		prob(2);/obj/item/stock_parts/manipulator/nano,
-		prob(1);/obj/item/stock_parts/manipulator/pico,
+		prob(2);/obj/item/stock_parts/manipulator,
+		prob(1);/obj/item/stock_parts/manipulator,
 		prob(3);/obj/item/stock_parts/matter_bin,
-		prob(2);/obj/item/stock_parts/matter_bin/adv,
-		prob(1);/obj/item/stock_parts/matter_bin/super,
+		prob(2);/obj/item/stock_parts/matter_bin,
+		prob(1);/obj/item/stock_parts/matter_bin,
 		prob(3);/obj/item/stock_parts/scanning_module,
-		prob(2);/obj/item/stock_parts/scanning_module/adv,
-		prob(1);/obj/item/stock_parts/scanning_module/phasic)
+		prob(2);/obj/item/stock_parts/scanning_module,
+		prob(1);/obj/item/stock_parts/scanning_module)
 
 /obj/random/tech_supply/component/nofail
 	name = "guaranteed random tech component"

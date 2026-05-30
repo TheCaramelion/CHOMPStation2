@@ -16,6 +16,10 @@
 		return create_default_value()
 	return STRIP_HTML_SIMPLE(input, maximum_value_length)
 
+// DQAdd — dropdown choices from the same global the Bay UI used.
+/datum/preference/text/human/home_system/get_pref_choices(datum/preferences/preferences)
+	return GLOB.home_system_choices + list("Unset")
+
 /datum/preference/text/human/home_system/apply_to_human(mob/living/carbon/human/target, value)
 	target.home_system = value
 
@@ -33,6 +37,10 @@
 	if(!input || !istext(input))
 		return create_default_value()
 	return STRIP_HTML_SIMPLE(input, maximum_value_length)
+
+// DQAdd — birthplace draws from the same home-systems list.
+/datum/preference/text/human/birthplace/get_pref_choices(datum/preferences/preferences)
+	return GLOB.home_system_choices + list("Unset")
 
 /datum/preference/text/human/birthplace/apply_to_human(mob/living/carbon/human/target, value)
 	target.birthplace = value
@@ -52,6 +60,10 @@
 		return create_default_value()
 	return STRIP_HTML_SIMPLE(input, maximum_value_length)
 
+// DQAdd — dropdown choices from the same global the Bay UI used.
+/datum/preference/text/human/citizenship/get_pref_choices(datum/preferences/preferences)
+	return GLOB.citizenship_choices + list("None")
+
 /datum/preference/text/human/citizenship/apply_to_human(mob/living/carbon/human/target, value)
 	target.citizenship = value
 
@@ -70,6 +82,10 @@
 		return create_default_value()
 	return STRIP_HTML_SIMPLE(input, maximum_value_length)
 
+// DQAdd — dropdown choices from the same global the Bay UI used.
+/datum/preference/text/human/faction/get_pref_choices(datum/preferences/preferences)
+	return GLOB.faction_choices + list("None")
+
 /datum/preference/text/human/faction/apply_to_human(mob/living/carbon/human/target, value)
 	target.personal_faction = value
 
@@ -87,6 +103,10 @@
 	if(!input || !istext(input))
 		return create_default_value()
 	return STRIP_HTML_SIMPLE(input, maximum_value_length)
+
+// DQAdd — dropdown choices from the same global the Bay UI used.
+/datum/preference/text/human/religion/get_pref_choices(datum/preferences/preferences)
+	return GLOB.religion_choices + list("None")
 
 /datum/preference/text/human/religion/apply_to_human(mob/living/carbon/human/target, value)
 	target.religion = value
@@ -108,106 +128,6 @@
 /datum/preference/choiced/human/economic_status/apply_to_human(mob/living/carbon/human/target, value)
 	return // Economic status is read directly from prefs when needed, not stored on the mob.
 
-// Bay UI Bridge
-
-/datum/category_item/player_setup_item/general/background
-	name = "Background"
-	sort_order = 5
-
-/datum/category_item/player_setup_item/general/background/load_character(list/save_data)
-	return
-
-/datum/category_item/player_setup_item/general/background/save_character(list/save_data)
-	return
-
-/datum/category_item/player_setup_item/general/background/sanitize_character()
-	return
-
-/datum/category_item/player_setup_item/general/background/copy_to_mob(mob/living/carbon/human/character)
-	return
-
-/datum/category_item/player_setup_item/general/background/tgui_data(mob/user)
-	var/list/data = ..()
-
-	data["economic_status"] = pref.read_preference(/datum/preference/choiced/human/economic_status)
-	data["home_system"] = pref.read_preference(/datum/preference/text/human/home_system)
-	data["birthplace"] = pref.read_preference(/datum/preference/text/human/birthplace)
-	data["citizenship"] = pref.read_preference(/datum/preference/text/human/citizenship)
-	data["faction"] = pref.read_preference(/datum/preference/text/human/faction)
-	data["religion"] = pref.read_preference(/datum/preference/text/human/religion)
-	data["ooc_note_style"] = pref.read_preference(/datum/preference/toggle/living/ooc_notes_style)
-
-	return data
-
-/datum/category_item/player_setup_item/general/background/tgui_act(action, list/params, datum/tgui/ui, datum/tgui_state/state)
-	. = ..()
-	if(.)
-		return
-
-	var/mob/user = ui.user
-	switch(action)
-		if("econ_status")
-			var/new_class = tgui_input_list(user, "Choose your economic status. This will affect the amount of money you will start with.", "Character Preference", ECONOMIC_CLASS, pref.read_preference(/datum/preference/choiced/human/economic_status))
-			if(new_class)
-				pref.write_preference_by_type(/datum/preference/choiced/human/economic_status, new_class)
-				return TOPIC_REFRESH
-
-		if("home_system")
-			var/choice = tgui_input_list(user, "Please choose your home planet and/or system. This should be your current primary residence. Select \"Other\" to specify manually.", "Character Preference", GLOB.home_system_choices + list("Unset","Other"), pref.read_preference(/datum/preference/text/human/home_system))
-			if(!choice || !CanUseTopic(user))
-				return TOPIC_NOACTION
-			if(choice == "Other")
-				var/raw_choice = strip_html_simple(tgui_input_text(user, "Please enter a home system.", "Character Preference", null, MAX_NAME_LEN), MAX_NAME_LEN)
-				if(raw_choice)
-					pref.write_preference_by_type(/datum/preference/text/human/home_system, raw_choice)
-			else
-				pref.write_preference_by_type(/datum/preference/text/human/home_system, choice)
-			return TOPIC_REFRESH
-
-		if("birthplace")
-			var/choice = tgui_input_list(user, "Please choose the planet and/or system or other appropriate location that you were born/created. Select \"Other\" to specify manually.", "Character Preference", GLOB.home_system_choices + list("Unset","Other"), pref.read_preference(/datum/preference/text/human/birthplace))
-			if(!choice || !CanUseTopic(user))
-				return TOPIC_NOACTION
-			if(choice == "Other")
-				var/raw_choice = strip_html_simple(tgui_input_text(user, "Please enter a birthplace.", "Character Preference", null, MAX_NAME_LEN), MAX_NAME_LEN)
-				if(raw_choice)
-					pref.write_preference_by_type(/datum/preference/text/human/birthplace, raw_choice)
-			else
-				pref.write_preference_by_type(/datum/preference/text/human/birthplace, choice)
-			return TOPIC_REFRESH
-
-		if("citizenship")
-			var/choice = tgui_input_list(user, "Please select the faction or political entity with which you currently hold citizenship. Select \"Other\" to specify manually.", "Character Preference", GLOB.citizenship_choices + list("None","Other"), pref.read_preference(/datum/preference/text/human/citizenship))
-			if(!choice || !CanUseTopic(user))
-				return TOPIC_NOACTION
-			if(choice == "Other")
-				var/raw_choice = strip_html_simple(tgui_input_text(user, "Please enter your current citizenship.", "Character Preference", null, MAX_NAME_LEN), MAX_NAME_LEN)
-				if(raw_choice)
-					pref.write_preference_by_type(/datum/preference/text/human/citizenship, raw_choice)
-			else
-				pref.write_preference_by_type(/datum/preference/text/human/citizenship, choice)
-			return TOPIC_REFRESH
-
-		if("faction")
-			var/choice = tgui_input_list(user, "Please choose the faction you primarily work for, if you are not under the direct employ of NanoTrasen. Select \"Other\" to specify manually.", "Character Preference", GLOB.faction_choices + list("None","Other"), pref.read_preference(/datum/preference/text/human/faction))
-			if(!choice || !CanUseTopic(user))
-				return TOPIC_NOACTION
-			if(choice == "Other")
-				var/raw_choice = strip_html_simple(tgui_input_text(user, "Please enter a faction.", "Character Preference", null, MAX_NAME_LEN), MAX_NAME_LEN)
-				if(raw_choice)
-					pref.write_preference_by_type(/datum/preference/text/human/faction, raw_choice)
-			else
-				pref.write_preference_by_type(/datum/preference/text/human/faction, choice)
-			return TOPIC_REFRESH
-
-		if("religion")
-			var/choice = tgui_input_list(user, "Please choose a religion. Select \"Other\" to specify manually.", "Character Preference", GLOB.religion_choices + list("None","Other"), pref.read_preference(/datum/preference/text/human/religion))
-			if(!choice || !CanUseTopic(user))
-				return TOPIC_NOACTION
-			if(choice == "Other")
-				var/raw_choice = strip_html_simple(tgui_input_text(user, "Please enter a religon.", "Character Preference", null, MAX_NAME_LEN), MAX_NAME_LEN)
-				if(raw_choice)
-					pref.write_preference_by_type(/datum/preference/text/human/religion, sanitize(raw_choice))
-			else
-				pref.write_preference_by_type(/datum/preference/text/human/religion, choice)
-			return TOPIC_REFRESH
+// DQEdit — /datum/category_item/player_setup_item/general/background was the Bay-prefs UI
+// wrapper for the home_system/birthplace/citizenship/faction/religion/economic_status prefs
+// above. The new auto-renderer renders each as a choice/text widget directly.

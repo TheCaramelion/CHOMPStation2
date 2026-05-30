@@ -12,7 +12,7 @@
 /datum/nifsoft/commlink/install()
 	if((. = ..()))
 		nif.comm = new(nif,src)
-		if(nif.human?.client?.prefs?.communicator_visibility)
+		if(nif.human?.client?.prefs?.read_preference(/datum/preference/toggle/human/communicator_visibility)) // DQEdit — migrated
 			nif.comm.initialize_exonet(nif.human) //no harm in running this twice.
 
 /datum/nifsoft/commlink/uninstall()

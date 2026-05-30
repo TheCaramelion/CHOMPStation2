@@ -5,7 +5,7 @@
 "aV" = (
 /obj/structure/table/glass,
 /obj/item/gun/energy/floragun,
-/obj/item/stock_parts/micro_laser/hyper,
+/obj/item/stock_parts/micro_laser,
 /turf/simulated/floor/tiled/white,
 /area/survivalpod/superpose/XenoBotanySetup)
 "bo" = (

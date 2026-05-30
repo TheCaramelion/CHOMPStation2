@@ -5,7 +5,7 @@
 "b" = (
 /obj/effect/spider/stickyweb,
 /mob/living/simple_mob/animal/giant_spider/phorogenic{
-	loot_list = list(/obj/item/stock_parts/scanning_module/omni = 50)
+	loot_list = list(/obj/item/stock_parts/scanning_module = 50)
 	},
 /turf/simulated/floor/outdoors/dirt/turfpack/sif{
 	outdoors = 0
@@ -49,7 +49,7 @@
 /area/submap/CaveS)
 "o" = (
 /mob/living/simple_mob/animal/giant_spider/phorogenic{
-	loot_list = list(/obj/item/stock_parts/manipulator/omni = 50)
+	loot_list = list(/obj/item/stock_parts/manipulator = 50)
 	},
 /turf/simulated/floor/outdoors/dirt/turfpack/sif{
 	outdoors = 0
@@ -89,7 +89,7 @@
 /area/submap/CaveS)
 "C" = (
 /mob/living/simple_mob/animal/giant_spider/phorogenic{
-	loot_list = list(/obj/item/stock_parts/capacitor/omni = 50)
+	loot_list = list(/obj/item/stock_parts/capacitor = 50)
 	},
 /turf/simulated/floor/outdoors/dirt/turfpack/sif{
 	outdoors = 0
@@ -103,7 +103,7 @@
 /area/submap/CaveS)
 "F" = (
 /mob/living/simple_mob/animal/giant_spider/phorogenic{
-	loot_list = list(/obj/item/stock_parts/scanning_module/omni = 50)
+	loot_list = list(/obj/item/stock_parts/scanning_module = 50)
 	},
 /turf/simulated/floor/outdoors/dirt/turfpack/sif{
 	outdoors = 0
@@ -115,7 +115,7 @@
 "I" = (
 /obj/effect/spider/stickyweb,
 /mob/living/simple_mob/animal/giant_spider/phorogenic{
-	loot_list = list(/obj/item/stock_parts/manipulator/omni = 50)
+	loot_list = list(/obj/item/stock_parts/manipulator = 50)
 	},
 /turf/simulated/floor/outdoors/dirt/turfpack/sif{
 	outdoors = 0
@@ -124,7 +124,7 @@
 "K" = (
 /obj/effect/spider/stickyweb,
 /mob/living/simple_mob/animal/giant_spider/phorogenic{
-	loot_list = list(/obj/item/stock_parts/scanning_module/omni = 50)
+	loot_list = list(/obj/item/stock_parts/scanning_module = 50)
 	},
 /turf/simulated/floor/outdoors/dirt{
 	outdoors = 0
@@ -144,7 +144,7 @@
 "Q" = (
 /obj/effect/spider/stickyweb,
 /mob/living/simple_mob/animal/giant_spider/phorogenic{
-	loot_list = list(/obj/item/stock_parts/capacitor/omni = 50)
+	loot_list = list(/obj/item/stock_parts/capacitor = 50)
 	},
 /turf/simulated/floor/outdoors/dirt/turfpack/sif{
 	outdoors = 0

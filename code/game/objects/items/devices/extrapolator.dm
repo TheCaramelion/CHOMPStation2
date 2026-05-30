@@ -259,4 +259,4 @@
 	return TRUE
 
 /obj/item/extrapolator/tier5
-	default_scanning_module = /obj/item/stock_parts/scanning_module/omni
+	default_scanning_module = /obj/item/stock_parts/scanning_module

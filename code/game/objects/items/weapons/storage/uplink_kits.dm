@@ -322,7 +322,7 @@
 	name = "secure briefcase"
 	starts_with = list(
 		/obj/item/cell/super,
-		/obj/item/stock_parts/capacitor/adv,
+		/obj/item/stock_parts/capacitor,
 		/obj/item/tank/phoron/pressurized = 2
 	)
 

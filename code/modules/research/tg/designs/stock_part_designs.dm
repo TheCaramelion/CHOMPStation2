@@ -19,7 +19,7 @@
 	id = "adv_matter_bin"
 	build_type = PROTOLATHE
 	materials = list(MAT_STEEL = 80)
-	build_path = /obj/item/stock_parts/matter_bin/adv
+	build_path = /obj/item/stock_parts/matter_bin
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_2
 	)
@@ -33,7 +33,7 @@
 	// req_tech = list(TECH_MATERIAL = 5)
 	build_type = PROTOLATHE
 	materials = list(MAT_STEEL = 80)
-	build_path = /obj/item/stock_parts/matter_bin/super
+	build_path = /obj/item/stock_parts/matter_bin
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_3
 	)
@@ -47,7 +47,7 @@
 	// req_tech = list(TECH_MATERIAL = 6, TECH_ARCANE = 2)
 	build_type = PROTOLATHE
 	materials = list(MAT_STEEL = 200, MAT_VERDANTIUM = 60, MAT_DURASTEEL = 75)
-	build_path = /obj/item/stock_parts/matter_bin/hyper
+	build_path = /obj/item/stock_parts/matter_bin
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_4
 	)
@@ -61,7 +61,7 @@
 	// req_tech = list(TECH_MATERIAL = 7, TECH_PRECURSOR = 2)
 	build_type = PROTOLATHE
 	materials = list(MAT_STEEL = 2000, MAT_PLASTEEL = 100, MAT_MORPHIUM = 100, MAT_DURASTEEL = 100)
-	build_path = /obj/item/stock_parts/matter_bin/omni
+	build_path = /obj/item/stock_parts/matter_bin
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_5
 	)
@@ -89,7 +89,7 @@
 	id = "nano_mani"
 	build_type = PROTOLATHE
 	materials = list(MAT_STEEL = 30)
-	build_path = /obj/item/stock_parts/manipulator/nano
+	build_path = /obj/item/stock_parts/manipulator
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_2
 	)
@@ -103,7 +103,7 @@
 	// req_tech = list(TECH_MATERIAL = 5, TECH_DATA = 2)
 	build_type = PROTOLATHE
 	materials = list(MAT_STEEL = 30)
-	build_path = /obj/item/stock_parts/manipulator/pico
+	build_path = /obj/item/stock_parts/manipulator
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_3
 	)
@@ -117,7 +117,7 @@
 	// req_tech = list(TECH_MATERIAL = 6, TECH_DATA = 3, TECH_ARCANE = 2)
 	build_type = PROTOLATHE
 	materials = list(MAT_STEEL = 200, MAT_VERDANTIUM = 50, MAT_DURASTEEL = 50)
-	build_path = /obj/item/stock_parts/manipulator/hyper
+	build_path = /obj/item/stock_parts/manipulator
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_4
 	)
@@ -131,7 +131,7 @@
 	// req_tech = list(TECH_MATERIAL = 7, TECH_DATA = 4, TECH_PRECURSOR = 2)
 	build_type = PROTOLATHE
 	materials = list(MAT_STEEL = 2000, MAT_PLASTEEL = 500, MAT_MORPHIUM = 100, MAT_DURASTEEL = 100)
-	build_path = /obj/item/stock_parts/manipulator/omni
+	build_path = /obj/item/stock_parts/manipulator
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_5
 	)
@@ -159,7 +159,7 @@
 	id = "adv_capacitor"
 	build_type = PROTOLATHE
 	materials = list(MAT_STEEL = 50, MAT_GLASS = 50)
-	build_path = /obj/item/stock_parts/capacitor/adv
+	build_path = /obj/item/stock_parts/capacitor
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_2
 	)
@@ -173,7 +173,7 @@
 	build_type = PROTOLATHE
 	// req_tech = list(TECH_POWER = 5, TECH_MATERIAL = 4)
 	materials = list(MAT_STEEL = 50, MAT_GLASS = 50, MAT_GOLD = 20)
-	build_path = /obj/item/stock_parts/capacitor/super
+	build_path = /obj/item/stock_parts/capacitor
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_3
 	)
@@ -187,7 +187,7 @@
 	build_type = PROTOLATHE
 	// req_tech = list(TECH_POWER = 6, TECH_MATERIAL = 5, TECH_BLUESPACE = 1, TECH_ARCANE = 1)
 	materials = list(MAT_STEEL = 200, MAT_GLASS = 100, MAT_VERDANTIUM = 30, MAT_DURASTEEL = 25)
-	build_path = /obj/item/stock_parts/capacitor/hyper
+	build_path = /obj/item/stock_parts/capacitor
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_4
 	)
@@ -201,7 +201,7 @@
 	build_type = PROTOLATHE
 	// req_tech = list(TECH_POWER = 7, TECH_MATERIAL = 6, TECH_BLUESPACE = 3, TECH_PRECURSOR = 1)
 	materials = list(MAT_STEEL = 2000, MAT_DIAMOND = 1000, MAT_GLASS = 1000, MAT_MORPHIUM = 100, MAT_DURASTEEL = 100)
-	build_path = /obj/item/stock_parts/capacitor/omni
+	build_path = /obj/item/stock_parts/capacitor
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_5
 	)
@@ -229,7 +229,7 @@
 	id = "adv_sensor"
 	build_type = PROTOLATHE
 	materials = list(MAT_STEEL = 50, MAT_GLASS = 20)
-	build_path = /obj/item/stock_parts/scanning_module/adv
+	build_path = /obj/item/stock_parts/scanning_module
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_2
 	)
@@ -243,7 +243,7 @@
 	build_type = PROTOLATHE
 	// req_tech = list(TECH_MAGNET = 5, TECH_MATERIAL = 3)
 	materials = list(MAT_STEEL = 50, MAT_GLASS = 20, MAT_SILVER = 10)
-	build_path = /obj/item/stock_parts/scanning_module/phasic
+	build_path = /obj/item/stock_parts/scanning_module
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_3
 	)
@@ -257,7 +257,7 @@
 	build_type = PROTOLATHE
 	// req_tech = list(TECH_MAGNET = 6, TECH_MATERIAL = 4, TECH_ARCANE = 1)
 	materials = list(MAT_STEEL = 50, MAT_GLASS = 20, MAT_SILVER = 50, MAT_VERDANTIUM = 40, MAT_DURASTEEL = 50)
-	build_path = /obj/item/stock_parts/scanning_module/hyper
+	build_path = /obj/item/stock_parts/scanning_module
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_4
 	)
@@ -271,7 +271,7 @@
 	build_type = PROTOLATHE
 	// req_tech = list(TECH_MAGNET = 7, TECH_MATERIAL = 5, TECH_PRECURSOR = 1)
 	materials = list(MAT_STEEL = 1000, MAT_PLASTEEL = 500, MAT_GLASS = 750, MAT_SILVER = 500, MAT_MORPHIUM = 60, MAT_DURASTEEL = 100)
-	build_path = /obj/item/stock_parts/scanning_module/omni
+	build_path = /obj/item/stock_parts/scanning_module
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_5
 	)
@@ -300,7 +300,7 @@
 	id = "high_micro_laser"
 	build_type = PROTOLATHE
 	materials = list(MAT_STEEL = 10, MAT_GLASS = 20)
-	build_path = /obj/item/stock_parts/micro_laser/high
+	build_path = /obj/item/stock_parts/micro_laser
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_2
 	)
@@ -314,7 +314,7 @@
 	// req_tech = list(TECH_MAGNET = 5, TECH_MATERIAL = 5)
 	build_type = PROTOLATHE
 	materials = list(MAT_STEEL = 10, MAT_GLASS = 20, MAT_URANIUM = 10)
-	build_path = /obj/item/stock_parts/micro_laser/ultra
+	build_path = /obj/item/stock_parts/micro_laser
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_3
 	)
@@ -328,7 +328,7 @@
 	// req_tech = list(TECH_MAGNET = 6, TECH_MATERIAL = 6, TECH_ARCANE = 2)
 	build_type = PROTOLATHE
 	materials = list(MAT_STEEL = 200, MAT_GLASS = 20, MAT_URANIUM = 30, MAT_VERDANTIUM = 50, MAT_DURASTEEL = 100)
-	build_path = /obj/item/stock_parts/micro_laser/hyper
+	build_path = /obj/item/stock_parts/micro_laser
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_4
 	)
@@ -342,7 +342,7 @@
 	// req_tech = list(TECH_MAGNET = 7, TECH_MATERIAL = 7, TECH_PRECURSOR = 2)
 	build_type = PROTOLATHE
 	materials = list(MAT_STEEL = 2000, MAT_GLASS = 500, MAT_URANIUM = 2000, MAT_MORPHIUM = 50, MAT_DURASTEEL = 100)
-	build_path = /obj/item/stock_parts/micro_laser/omni
+	build_path = /obj/item/stock_parts/micro_laser
 	category = list(
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_5
 	)

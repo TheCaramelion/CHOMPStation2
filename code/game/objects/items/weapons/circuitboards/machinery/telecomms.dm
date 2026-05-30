@@ -65,7 +65,7 @@
 							/obj/item/stack/cable_coil = 1,
 							/obj/item/stock_parts/subspace/sub_filter = 1,
 							/obj/item/stock_parts/subspace/crystal = 1,
-							/obj/item/stock_parts/micro_laser/high = 2)
+							/obj/item/stock_parts/micro_laser = 2)
 
 //This isn't a real telecomms board but I don't want to make a whole file to hold only one circuitboard.
 /obj/item/circuitboard/telecomms/exonet_node

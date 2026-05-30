@@ -18,7 +18,8 @@ import { prependDefines } from './lib/tgs';
 
 export const TGS_MODE = process.env.CBT_BUILD_MODE === 'TGS';
 
-export const DME_NAME = 'vorestation';
+// DQEdit — renamed from 'vorestation'
+export const DME_NAME = 'deepquarry';
 
 Juke.chdir('../..', import.meta.url);
 

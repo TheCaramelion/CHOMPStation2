@@ -27,6 +27,7 @@
 
 	. = ..()
 
+	dq_apply_material_synergies(src) // DQAdd
 /obj/machinery/firework_launcher/update_icon()
 	icon_state = "launcher[loaded_star ? "1" : "0"][anchored ? "1" : "0"][panel_open ? "_open" : ""]"
 

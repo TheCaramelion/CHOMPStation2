@@ -30,7 +30,7 @@
 	return islist(value)
 
 /datum/preference/rlimb_data/apply_to_human(mob/living/carbon/human/target, value)
-	return // Robolimb application is handled by copy_to_mob in 03_body.dm
+	return // DQEdit — handled by /datum/preference_apply_hook/organs (apply_hooks/organs.dm)
 
 /datum/preference/rlimb_data/apply_to_living(mob/living/target, value)
 	return

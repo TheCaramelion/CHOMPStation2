@@ -1,5 +1,6 @@
 /datum/material/resin
 	name = MAT_RESIN
+	material_class = MATCLASS_ORGANIC
 	icon_colour = "#ffffff" // CHOMPedit: No longer needed
 	icon_base = "resin"
 	integrity = 50 // CHOMPedit: Same as wood.

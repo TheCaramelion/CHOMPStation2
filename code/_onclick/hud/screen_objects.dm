@@ -791,8 +791,16 @@
 	mouse_over_pointer = MOUSE_HAND_POINTER
 
 /atom/movable/screen/setup_preview/bg/Click(params)
-	pref?.bgstate = next_in_list(pref.bgstate, pref.bgstate_options)
-	pref?.update_preview_icon()
+	// DQEdit Start — migrated bgstate
+	if(pref)
+		// DQEdit — bgstate_options moved onto the pref subtype as bgstate_choices.
+		// Cast through the typed local rather than reaching the subtype member with `:`;
+		// the `:` operator skips compile-time validation (CLAUDE.md §6b).
+		var/datum/preference/text/human/bgstate/bg_pref = GLOB.preference_entries[/datum/preference/text/human/bgstate]
+		var/list/options = bg_pref?.bgstate_choices
+		pref.update_preference_by_type(/datum/preference/text/human/bgstate, next_in_list(pref.read_preference(/datum/preference/text/human/bgstate), options))
+		pref.update_preview_icon()
+	// DQEdit End
 /**
  * This object holds all the on-screen elements of the mapping unit.
  * It has a decorative frame and onscreen buttons. The map itself is drawn

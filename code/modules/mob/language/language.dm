@@ -247,14 +247,20 @@
 	return 0
 
 /mob/proc/get_language_prefix()
-	if(client && client.prefs.language_prefixes && client.prefs.language_prefixes.len)
-		return client.prefs.language_prefixes[1]
+	// DQEdit Start — migrated language_prefixes
+	var/list/_lang_prefixes = client?.prefs?.read_preference(/datum/preference/language_prefixes)
+	if(_lang_prefixes && _lang_prefixes.len)
+		return _lang_prefixes[1]
+	// DQEdit End
 
 	return CONFIG_GET(str_list/language_prefixes)[1]
 
 /mob/proc/is_language_prefix(prefix)
-	if(client && client.prefs.language_prefixes && client.prefs.language_prefixes.len)
-		return prefix in client.prefs.language_prefixes
+	// DQEdit Start — migrated language_prefixes
+	var/list/_lang_prefixes = client?.prefs?.read_preference(/datum/preference/language_prefixes)
+	if(_lang_prefixes && _lang_prefixes.len)
+		return prefix in _lang_prefixes
+	// DQEdit End
 
 	return prefix in CONFIG_GET(str_list/language_prefixes)
 

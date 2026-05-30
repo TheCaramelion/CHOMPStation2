@@ -1832,7 +1832,7 @@
 /obj/item/grenade/spawnergrenade/casino/fighter/allure,
 /obj/item/grenade/spawnergrenade/casino/fighter/pinnace,
 /obj/item/bluespace_harpoon,
-/obj/item/stock_parts/scanning_module/hyper,
+/obj/item/stock_parts/scanning_module,
 /obj/item/cataloguer/compact/pathfinder,
 /obj/item/capture_crystal/basic,
 /obj/item/capture_crystal/basic,

@@ -1,9 +1,3 @@
-/datum/preferences
-	//Our OOC Metadata additions
-	var/metadata_maybes = ""
-	var/metadata_favs = ""
-	var/matadata_ooc_style = FALSE
-
-	var/job_other_low = 0
-	var/job_other_med = 0
-	var/job_other_high = 0
+// DQEdit — metadata_maybes/metadata_favs/matadata_ooc_style were dead declarations
+// (never referenced anywhere); equivalent functionality is on /datum/preference/text/living/ooc_notes_{maybes,favs} and /datum/preference/toggle/living/ooc_notes_style. Deleted.
+// DQEdit — job_other_low/med/high migrated to /datum/preference/numeric/human/job_other_* subtypes; declarations deleted.
