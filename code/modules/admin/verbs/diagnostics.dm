@@ -22,7 +22,7 @@ ADMIN_VERB(air_report, R_DEBUG, "Show Air Report", "Displays the current atmos s
 
 	var/output = {"<B>AIR SYSTEMS REPORT</B><HR>
 <B>General Processing Data</B><BR>
-	Cycle: [SSair.current_cycle]<br>
+	Cycle: [SSair.times_fired]<br>
 	Groups: [length(SSair.zones)]<BR>
 ---- <I>Active:</I> [active_groups]<BR>
 ---- <I>Inactive:</I> [inactive_groups]<BR><br>

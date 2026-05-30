@@ -220,7 +220,7 @@ update_flag
 
 		if((air_contents.temperature > 0) && (pressure_delta > 0))
 			var/transfer_moles = calculate_transfer_moles(air_contents, environment, pressure_delta)
-			transfer_moles = min(transfer_moles, (release_flow_rate/air_contents.volume)*air_contents.total_moles) //flow rate limit
+			transfer_moles = min(transfer_moles, (release_flow_rate/air_contents.volume)*air_contents.total_moles()) //flow rate limit
 
 			var/returnval = pump_gas_passive(src, air_contents, environment, transfer_moles)
 			if(returnval >= 0)
@@ -434,7 +434,7 @@ update_flag
 //Dirty way to fill room with gas. However it is a bit easier to do than creating some floor/engine/n2o -rastaf0
 /obj/machinery/portable_atmospherics/canister/nitrous_oxide/roomfiller/Initialize(mapload)
 	. = ..()
-	air_contents.gas[GAS_N2O] = 9*4000
+	air_contents.set_moles(/datum/gas/nitrous_oxide, 9*4000)  // DQEdit — was XGM .gas[id] = X
 	var/turf/simulated/location = src.loc
 	if (istype(src.loc))
 		location.assume_air(air_contents)

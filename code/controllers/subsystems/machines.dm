@@ -86,26 +86,11 @@ SUBSYSTEM_DEF(machines)
 			NewPN.add_cable(PC)
 			propagate_network(PC,PC.powernet)
 
+// DQEdit — ZAS atmos machinery (/obj/machinery/atmospherics/*, /datum/pipe_network)
+// was deleted with the LINDA migration. LINDA owns pipenet setup via
+// /tg/'s SSair init path (in modular_dq/code/atmospherics/SSair.dm). Stub.
 /datum/controller/subsystem/machines/proc/setup_atmos_machinery(list/atmos_machines)
-	var/list/actual_atmos_machines = list()
-
-	for(var/obj/machinery/atmospherics/machine in atmos_machines)
-		machine.atmos_init()
-		actual_atmos_machines += machine
-		CHECK_TICK
-
-	for(var/obj/machinery/atmospherics/machine as anything in actual_atmos_machines)
-		machine.build_network()
-		CHECK_TICK
-
-	for(var/obj/machinery/atmospherics/unary/U as anything in actual_atmos_machines)
-		if(istype(U, /obj/machinery/atmospherics/unary/vent_pump))
-			var/obj/machinery/atmospherics/unary/vent_pump/T = U
-			T.broadcast_status()
-		else if(istype(U, /obj/machinery/atmospherics/unary/vent_scrubber))
-			var/obj/machinery/atmospherics/unary/vent_scrubber/T = U
-			T.broadcast_status()
-		CHECK_TICK
+	return
 
 /datum/controller/subsystem/machines/stat_entry(msg)
 	msg = "C:{"
@@ -122,22 +107,10 @@ SUBSYSTEM_DEF(machines)
 	msg += "MC/MS:[round((cost ? length(SSmachines.processing_machines)/cost_machinery : 0),0.1)]"
 	return ..()
 
+// DQEdit — /datum/pipe_network was ZAS; LINDA's SSair processes its own
+// /datum/pipeline list. Stub.
 /datum/controller/subsystem/machines/proc/process_pipenets(resumed = 0)
-	if (!resumed)
-		src.current_run = networks.Copy()
-	//cache for sanic speed (lists are references anyways)
-	var/wait = src.wait
-	var/list/current_run = src.current_run
-	while(length(current_run))
-		var/datum/pipe_network/PN = current_run[length(current_run)]
-		current_run.len--
-		if(!PN || QDELETED(PN))
-			networks.Remove(PN)
-			DISABLE_BITFIELD(PN?.datum_flags, DF_ISPROCESSING)
-		else
-			PN.process(wait)
-		if(MC_TICK_CHECK)
-			return
+	return
 
 /datum/controller/subsystem/machines/proc/process_machinery(resumed = 0)
 	if (!resumed)
@@ -190,10 +163,7 @@ SUBSYSTEM_DEF(machines)
 			return
 
 /datum/controller/subsystem/machines/Recover()
-	for(var/datum/D as anything in SSmachines.networks)
-		if(!istype(D, /datum/pipe_network))
-			log_world("## ERROR Found wrong type during SSmachinery recovery: list=SSmachines.networks, item=[D], type=[D?.type]")
-			SSmachines.networks -= D
+	// DQEdit — /datum/pipe_network deleted; LINDA owns pipenets via /datum/pipeline.
 	for(var/datum/D as anything in SSmachines.processing_machines)
 		if(!istype(D, /obj/machinery))
 			log_world("## ERROR Found wrong type during SSmachinery recovery: list=SSmachines.machines, item=[D], type=[D?.type]")

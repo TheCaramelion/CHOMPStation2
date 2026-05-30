@@ -223,5 +223,5 @@
 				// whenever we change this, we update our mob
 				var/mob/pref_mob = preference_mob()
 				if(pref_mob)
-					dq_set_chat_color_cache(pref_mob, new_runechat_color, pref_mob.name, new_runechat_color) // DQEdit
+					dq_set_chat_color_cache(pref_mob, new_runechat_color, pref_mob.name, new_runechat_color) // DQEdit — push runechat colour into the DQ chat-colour cache so chat_message picks it up immediately
 				return TOPIC_REFRESH

@@ -142,7 +142,7 @@
 		air.merge(air_sample)
 
 
-		target.zone.air.remove(turf_original.total_moles)
+		target.zone.air.remove(turf_original.total_moles())
 		target.zone.air.merge(turf_copy)
 
 	else
@@ -224,7 +224,7 @@
 
 //surface must be the surface area in m^2
 /datum/pipeline/proc/radiate_heat_to_space(surface, thermal_conductivity)
-	var/gas_density = air.total_moles/air.volume
+	var/gas_density = air.total_moles()/air.volume
 	thermal_conductivity *= min(gas_density / ( RADIATOR_OPTIMUM_PRESSURE/(R_IDEAL_GAS_EQUATION*GAS_CRITICAL_TEMPERATURE) ), 1) //mult by density ratio
 
 	// We only get heat from the star on the exposed surface area.

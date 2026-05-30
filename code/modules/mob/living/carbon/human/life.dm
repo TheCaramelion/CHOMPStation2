@@ -544,7 +544,9 @@
 		adjustOxyLoss(-5)
 		return
 
-	if(!breath || (breath.total_moles == 0))
+	// DQEdit — XGM .total_moles var → LINDA proc. Cache to avoid 12 proc calls.
+	var/breath_moles = breath ? breath.total_moles() : 0
+	if(!breath || (breath_moles == 0))
 		failed_last_breath = 1
 		if(health > get_crit_point())
 			adjustOxyLoss(HUMAN_MAX_OXYLOSS)
@@ -576,7 +578,7 @@
 	var/SA_sleep_min = 5
 	var/inhaled_gas_used = 0
 
-	var/breath_pressure = (breath.total_moles*R_IDEAL_GAS_EQUATION*breath.temperature)/BREATH_VOLUME
+	var/breath_pressure = (breath_moles*R_IDEAL_GAS_EQUATION*breath.temperature)/BREATH_VOLUME
 
 	var/inhaling
 	var/poison_toxin
@@ -594,28 +596,28 @@
 		breath_type = species.breath_type
 	else
 		breath_type = GAS_O2
-	inhaling = breath.gas[breath_type]
+	inhaling = LINDA_GAS_AMT(breath, breath_type)
 
 	if(species.poison_type)
 		poison_type = species.poison_type
 	else
 		poison_type = GAS_PHORON
-	poison_toxin = breath.gas[poison_type]
+	poison_toxin = LINDA_GAS_AMT(breath, poison_type)
 
 	if(species.breath_type != GAS_CH4)
-		poison_methane = breath.gas[GAS_CH4]
+		poison_methane = LINDA_GAS_AMT(breath, GAS_CH4)
 
 	if(species.exhale_type)
 		exhale_type = species.exhale_type
-		exhaling = breath.gas[exhale_type]
+		exhaling = LINDA_GAS_AMT(breath, exhale_type)
 	else
 		exhaling = 0
 
-	var/inhale_pp = (inhaling/breath.total_moles)*breath_pressure
-	var/toxins_pp = (poison_toxin/breath.total_moles)*breath_pressure
-	var/methane_pp = (poison_methane/breath.total_moles)*breath_pressure
+	var/inhale_pp = (inhaling/breath_moles)*breath_pressure
+	var/toxins_pp = (poison_toxin/breath_moles)*breath_pressure
+	var/methane_pp = (poison_methane/breath_moles)*breath_pressure
 	// To be clear, this isn't how much they're exhaling -- it's the amount of the species exhale_gas that they just
-	var/exhaled_pp = (exhaling/breath.total_moles)*breath_pressure
+	var/exhaled_pp = (exhaling/breath_moles)*breath_pressure
 
 	// Not enough to breathe
 	if(inhale_pp < safe_pressure_min)
@@ -685,7 +687,7 @@
 
 	// Too much phoron in the air.
 	if(toxins_pp > safe_toxins_min)
-		var/SA_pp = (breath.gas[GAS_PHORON] / breath.total_moles) * breath_pressure
+		var/SA_pp = (LINDA_GAS_AMT(breath, GAS_PHORON) / breath_moles) * breath_pressure
 		if(SA_pp > 0.05)
 			if(prob(3))
 				to_chat(src,span_warning("Something burns as you breathe."))
@@ -700,7 +702,7 @@
 
 	// Too much methane in the air
 	if(methane_pp > safe_toxins_min)
-		var/SA_pp = (breath.gas[GAS_CH4] / breath.total_moles) * breath_pressure
+		var/SA_pp = (LINDA_GAS_AMT(breath, GAS_CH4) / breath_moles) * breath_pressure
 		if(SA_pp > 0.05)
 			if(prob(5))
 				to_chat(src,span_warning("You smell rotten eggs."))
@@ -709,15 +711,14 @@
 		adjustOxyLoss(CLAMP(ratio,0.1,10)) // Causes slow suffocation
 		if(prob(20))
 			emote("gasp")
-		breath.adjust_gas(GAS_CH4, -poison_methane/6, update = 0) //update after
-		breath.adjust_gas(GAS_CH4, -breath.gas[GAS_CH4]/6, update = 0) //update after
+		breath.adjust_gas(GAS_CH4, -poison_methane/6, update = 0) //update after // DQEdit — removed duplicate line; poison_methane already equals LINDA_GAS_AMT(breath, GAS_CH4) from line 608
 		throw_alert("methane_in_air", /atom/movable/screen/alert/methane_in_air)
 	else
 		clear_alert("methane_in_air")
 
 	// If there's some other shit in the air lets deal with it here.
-	if(breath.gas[GAS_N2O])
-		var/SA_pp = (breath.gas[GAS_N2O] / breath.total_moles) * breath_pressure
+	if(LINDA_GAS_AMT(breath, GAS_N2O))
+		var/SA_pp = (LINDA_GAS_AMT(breath, GAS_N2O) / breath_moles) * breath_pressure
 
 		// Enough to make us paralysed for a bit
 		if(SA_pp > SA_para_min)
@@ -734,7 +735,7 @@
 		else if(SA_pp > 0.15)
 			if(prob(20))
 				emote(pick("giggle", "laugh"))
-		breath.adjust_gas(GAS_N2O, -breath.gas[GAS_N2O]/6, update = 0) //update after
+		breath.adjust_gas(GAS_N2O, -LINDA_GAS_AMT(breath, GAS_N2O)/6, update = 0) //update after
 
 	if(get_hallucination_component()?.get_hud_state() == HUD_HALLUCINATION_OXY)
 		throw_alert("oxy", /atom/movable/screen/alert/not_enough_atmos)
@@ -809,7 +810,7 @@
 			else
 				temp_adj /= (BODYTEMP_HEAT_DIVISOR * 5)	//don't raise temperature as much as if we were directly exposed
 
-			var/relative_density = breath.total_moles / (MOLES_CELLSTANDARD * BREATH_PERCENTAGE)
+			var/relative_density = breath_moles / (MOLES_CELLSTANDARD * BREATH_PERCENTAGE)
 			temp_adj *= relative_density
 
 			if(temp_adj > BODYTEMP_HEATING_MAX)
@@ -862,11 +863,9 @@
 	var/pressure = environment.return_pressure()
 	var/adjusted_pressure = calculate_affecting_pressure(pressure)
 
-	//Check for contaminants before anything else because we don't want to skip it.
-	for(var/g in environment.gas)
-		if(GLOB.gas_data.flags[g] & XGM_GAS_CONTAMINANT && environment.gas[g] > GLOB.gas_data.overlay_limit[g] + 1)
-			pl_effects()
-			break
+	// DQEdit — phoron contamination is offline under LINDA (no contamination
+	// flags/limits on GLOB.gas_data, the env.gas dict shape changed, and
+	// pl_effects is a no-op). Loop disabled until LINDA contamination is wired.
 
 	if(istype(loc, /turf/space)) //No FBPs overheating on space turfs inside mechs or people.
 		//Don't bother if the temperature drop is less than 0.1 anyways. Hopefully BYOND is smart enough to turn this constant expression into a constant
@@ -908,7 +907,7 @@
 				temp_adj = (1-thermal_protection) * ((loc_temp - bodytemperature) / BODYTEMP_HEAT_DIVISOR)
 
 		//Use heat transfer as proportional to the gas density. However, we only care about the relative density vs standard 101 kPa/20 C air. Therefore we can use mole ratios
-		var/relative_density = environment.total_moles / MOLES_CELLSTANDARD
+		var/relative_density = environment.total_moles() / MOLES_CELLSTANDARD // DQEdit — XGM var → LINDA proc
 		bodytemperature += between(BODYTEMP_COOLING_MAX, temp_adj*relative_density, BODYTEMP_HEATING_MAX)
 
 	if(isbelly(loc) && allowtemp)
