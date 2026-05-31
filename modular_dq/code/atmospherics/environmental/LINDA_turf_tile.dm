@@ -185,6 +185,12 @@
 	temperature_archived = temperature
 
 /turf/open/archive()
+	// DQEdit — walls/rocks (blocks_air=1, air=null) dispatch through here
+	// after the /turf/simulated → /turf/open reparent. Fall through to the
+	// base implementation that just records temperature_archived.
+	if(!air)
+		temperature_archived = temperature
+		return
 	LINDA_CYCLE_ARCHIVE(src)
 
 /////////////////////////GAS OVERLAYS//////////////////////////////

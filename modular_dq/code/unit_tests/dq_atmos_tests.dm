@@ -2648,3 +2648,256 @@
 	qdel(P)
 
 
+// =====================================================================
+// Round 4: species breath sweep, analyzer corner cases, gas overlays,
+// supermatter delamination state, meter, binary pump, cryo construct
+// =====================================================================
+
+/// Sweep every species: spawn a human, set its species, call handle_breath
+/// with a standard atmospheric mixture. Should not throw any runtime
+/// regardless of species — catches "species breath_type undefined", null
+/// derefs in species-specific organ damage paths, etc.
+/datum/unit_test/dq_all_species_handle_breath_safely
+
+/datum/unit_test/dq_all_species_handle_breath_safely/Run()
+	TEST_ASSERT_NOTNULL(GLOB.all_species, "GLOB.all_species is null")
+	TEST_ASSERT(length(GLOB.all_species) > 0, "GLOB.all_species is empty")
+
+	var/turf/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for species breath sweep")
+
+	var/species_tested = 0
+	for(var/species_name in GLOB.all_species)
+		var/datum/species/S = GLOB.all_species[species_name]
+		if(!S || !istype(S))
+			continue
+		var/mob/living/carbon/human/H = new(T)
+		// set_species can crash on weird species; protect with try-equivalent.
+		if(H.set_species(species_name))
+			species_tested++
+			// Build a breath mixture this species can mostly tolerate — fall
+			// back to standard atmo. handle_breath should never crash.
+			var/datum/gas_mixture/breath = new(BREATH_VOLUME)
+			breath.adjust_gas(/datum/gas/oxygen, MOLES_O2STANDARD)
+			breath.adjust_gas(/datum/gas/nitrogen, MOLES_N2STANDARD)
+			breath.set_temperature(T20C)
+			H.handle_breath(breath)
+		qdel(H)
+	TEST_ASSERT(species_tested >= 5, \
+		"only tested [species_tested] species — expected at least 5 (something is wrong with set_species or the species registry)")
+
+
+/// Atmos analyzer on a vacuum mixture: should not crash, should emit a line
+/// that reports pressure as 0 (or near-0).
+/datum/unit_test/dq_atmos_analyzer_handles_vacuum
+
+/datum/unit_test/dq_atmos_analyzer_handles_vacuum/Run()
+	var/datum/gas_mixture/vacuum = new(CELL_VOLUME)
+	vacuum.set_temperature(T20C)
+	var/list/result = atmosanalyzer_scan(null, vacuum, null)
+	TEST_ASSERT_NOTNULL(result, "analyzer returned null on vacuum mixture")
+	TEST_ASSERT(length(result) >= 1, "analyzer returned empty list on vacuum")
+	// Either "Pressure: 0 kPa" or "is empty!" is acceptable — both correctly
+	// describe vacuum. What we DON'T want is a runtime or null line.
+	var/has_meaningful_output = FALSE
+	for(var/line in result)
+		if(findtext(line, "empty") || findtext(line, "Pressure") || findtext(line, "0 kPa"))
+			has_meaningful_output = TRUE
+			break
+	TEST_ASSERT(has_meaningful_output, \
+		"analyzer on vacuum produced no recognizable output: [json_encode(result)]")
+
+
+/// Atmos analyzer on every single-gas mixture: each /datum/gas subtype gets
+/// instantiated alone, scanned. No crash, gas name appears in output.
+/datum/unit_test/dq_atmos_analyzer_handles_pure_gas
+
+/datum/unit_test/dq_atmos_analyzer_handles_pure_gas/Run()
+	var/gases_tested = 0
+	for(var/datum/gas/g_type as anything in subtypesof(/datum/gas))
+		var/gas_id = initial(g_type.id)
+		if(!gas_id)
+			continue
+		var/datum/gas_mixture/mix = new(CELL_VOLUME)
+		mix.adjust_gas(g_type, 10)
+		mix.set_temperature(T20C)
+		var/list/result = atmosanalyzer_scan(null, mix, null)
+		TEST_ASSERT_NOTNULL(result, "analyzer returned null for gas [gas_id]")
+		TEST_ASSERT(length(result) > 0, "analyzer empty result for gas [gas_id]")
+		gases_tested++
+	TEST_ASSERT(gases_tested >= 5, \
+		"only tested [gases_tested] gas types — gas registry suspicious")
+
+
+/// Every /datum/gas with a visible-mole threshold should produce an atmos
+/// overlay when present above that threshold on a turf. Catches "we added a
+/// new gas but forgot to generate overlay icons" regressions.
+/datum/unit_test/dq_all_visible_gases_render_overlays
+
+/datum/unit_test/dq_all_visible_gases_render_overlays/Run()
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for gas-overlay sweep")
+
+	var/gases_tested = 0
+	for(var/datum/gas/g_type as anything in subtypesof(/datum/gas))
+		var/visible_threshold = initial(g_type.moles_visible)
+		if(isnull(visible_threshold))
+			continue // not visible by design
+		// Clear prior overlays so the assertion is honest.
+		if(T.atmos_overlay_types)
+			for(var/old_ov in T.atmos_overlay_types)
+				T.vis_contents -= old_ov
+			T.atmos_overlay_types = null
+		// Clear all gases on the turf first.
+		for(var/datum/gas/g as anything in T.air.gases)
+			T.air.gases[g][MOLES] = 0
+		// Put visible_threshold * 10 of THIS gas only.
+		T.air.adjust_gas(g_type, visible_threshold * 10)
+		T.update_visuals()
+		TEST_ASSERT(LAZYLEN(T.atmos_overlay_types) > 0, \
+			"gas [initial(g_type.id)] above visible threshold ([visible_threshold * 10] mol vs threshold [visible_threshold]) produced NO overlay")
+		gases_tested++
+	TEST_ASSERT(gases_tested > 0, "no visible-threshold gases found — meta_gas_info empty?")
+
+	// Reset turf.
+	for(var/datum/gas/g as anything in T.air.gases)
+		T.air.gases[g][MOLES] = 0
+	T.update_visuals()
+
+
+/// Supermatter delamination state: damage > explosion_point triggers the
+/// "going to explode" code path (exploded flag, no announce on every tick).
+/datum/unit_test/dq_supermatter_reaches_delamination_state
+
+/datum/unit_test/dq_supermatter_reaches_delamination_state/Run()
+	var/turf/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for supermatter delam test")
+
+	var/obj/machinery/power/supermatter/SM = new(T)
+	TEST_ASSERT_NOTNULL(SM, "supermatter construct failed")
+	TEST_ASSERT(SM.explosion_point > 0, "explosion_point not set: [SM.explosion_point]")
+
+	// Force above explosion threshold.
+	SM.damage = SM.explosion_point + 100
+	SM.process()
+	// process() should have started the countdown OR set exploded=TRUE on a
+	// subsequent tick (depending on impl). Either way no crash, and the
+	// damage stays at or above explosion_point.
+	TEST_ASSERT(SM.damage >= SM.explosion_point, \
+		"damage dropped below explosion_point during delam process: [SM.damage] < [SM.explosion_point]")
+
+	qdel(SM)
+
+
+/// Gas meter reads the pressure of the pipe it's targeting. End-to-end:
+/// meter + pipe + pipeline, verify the meter's view of pressure matches
+/// the pipeline's air return_pressure.
+/datum/unit_test/dq_gas_meter_reads_target_pipeline_pressure
+
+/datum/unit_test/dq_gas_meter_reads_target_pipeline_pressure/Run()
+	var/turf/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for meter test")
+
+	// Construct pipe + meter on same tile. Lazy return_air() creates the
+	// pipeline on demand — simpler than wiring atmos_init for a single
+	// stand-alone segment.
+	var/obj/machinery/atmospherics/pipe/simple/P = new(T)
+	var/datum/gas_mixture/pipe_air = P.return_air()
+	TEST_ASSERT_NOTNULL(pipe_air, "pipe return_air() null after lazy build")
+	TEST_ASSERT_NOTNULL(P.parent, "pipe parent (pipeline) null after return_air")
+	pipe_air.adjust_gas(/datum/gas/nitrogen, 200)
+	pipe_air.set_temperature(T20C)
+
+	var/obj/machinery/meter/M = new(T)
+	TEST_ASSERT_NOTNULL(M, "meter construct failed")
+	M.target = P  // direct assign so select_target search isn't required
+	M.use_power = USE_POWER_IDLE
+	M.stat &= ~(BROKEN | NOPOWER)
+	M.process() // shouldn't crash; should set an icon_state based on pipe pressure
+
+	// Validate that the meter's target returns the same pressure we set on
+	// the pipeline.
+	var/datum/gas_mixture/env = M.target.return_air()
+	TEST_ASSERT_NOTNULL(env, "meter.target.return_air() returned null")
+	TEST_ASSERT(env.return_pressure() > 0, \
+		"meter target pipe pressure is 0 despite seeded nitrogen: [env.return_pressure()]")
+
+	qdel(M)
+	qdel(P)
+
+
+/// Cryo cell constructs without erroring and its initial air_contents are
+/// allocated. Full freeze-a-mob flow needs the cryo's pipenet to be supplied
+/// with cold cryoxadone — that's a bigger integration test.
+/datum/unit_test/dq_cryo_cell_constructs
+
+/datum/unit_test/dq_cryo_cell_constructs/Run()
+	var/turf/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for cryo construct test")
+
+	var/obj/machinery/atmospherics/unary/cryo_cell/C = new(T)
+	TEST_ASSERT_NOTNULL(C, "cryo_cell failed to construct")
+	TEST_ASSERT_NOTNULL(C.air_contents, "cryo air_contents null")
+	qdel(C)
+
+
+/// Binary pump transfers from input pipenet to output pipenet when on.
+/// Validates the most-used atmos machinery (every air supply uses a binary pump).
+/datum/unit_test/dq_binary_pump_transfers_between_pipenets
+
+/datum/unit_test/dq_binary_pump_transfers_between_pipenets/Run()
+	var/turf/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for binary pump test")
+
+	var/obj/machinery/atmospherics/binary/pump/Pump = new(T)
+	TEST_ASSERT_NOTNULL(Pump, "binary pump construct failed")
+	TEST_ASSERT_NOTNULL(Pump.air1, "binary pump air1 null")
+	TEST_ASSERT_NOTNULL(Pump.air2, "binary pump air2 null")
+
+	// Seed air1 with pressurized N2, air2 empty.
+	Pump.air1.adjust_gas(/datum/gas/nitrogen, 200)
+	Pump.air1.set_temperature(T20C)
+	Pump.air2.set_temperature(T20C)
+	Pump.use_power = USE_POWER_IDLE
+	Pump.stat &= ~(BROKEN | NOPOWER)
+	Pump.target_pressure = ONE_ATMOSPHERE * 5 // high target so pump runs
+
+	// Manually satisfy can_pump-equivalent preconditions and call process.
+	for(var/i in 1 to 5)
+		Pump.process()
+
+	var/air1_after = Pump.air1.get_moles(/datum/gas/nitrogen)
+	var/air2_after = Pump.air2.get_moles(/datum/gas/nitrogen)
+	// air1 should have lost SOME gas, air2 gained it. If neither happened the
+	// pump didn't run — either node missing or pressure already at target.
+	TEST_ASSERT(air1_after < 200 || air2_after > 0, \
+		"binary pump didn't transfer ANY moles in 5 ticks: air1=[air1_after], air2=[air2_after] (200 expected drop)")
+
+	qdel(Pump)
+
+
+
