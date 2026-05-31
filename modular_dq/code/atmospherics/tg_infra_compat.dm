@@ -1,9 +1,21 @@
-// Stubs for /tg/ infrastructure that the vendored LINDA atmos files (SSair,
-// LINDA_*, reactions, gas_mixture) reference but CHOMP doesn't natively
-// provide. CHOMP atmos MACHINERY is restored and lives in code/ATMOSPHERICS/
-// and code/game/machinery/atmoalter/ — DO NOT add machinery stubs here.
+// /tg/ vendor compat layer for LINDA atmos.
 //
-// This file is the LINDA-vs-CHOMP shim layer only.
+// The vendored LINDA atmos files (SSair, LINDA_*, reactions, gas_mixture)
+// reference /tg/-side infrastructure (var declarations, GLOB lists, helper
+// procs, /atom base hooks) that CHOMP doesn't natively provide. Rather than
+// modify the vendored files, this layer declares the surface they expect.
+//
+// Each entry is either:
+//   - a real implementation bridging to a CHOMP-side equivalent
+//     (record_feedback → feedback_add_details, wet_floor → CHOMP wet_floor,
+//      analyze_gases, fire_nuclear_particle → SSradiation.irradiate)
+//   - a real base no-op for a /tg/ hook that subtypes override
+//     (Initalize_Atmos, atmos_expose, process_atmos, apply_fire_protection)
+//   - a var/list scaffold (multiz_levels, z_list, electrolyzer_reactions)
+//
+// CHOMP atmos MACHINERY (vents, scrubbers, pipes, canisters, alarms) is
+// restored in code/ATMOSPHERICS/ and code/game/machinery/atmoalter/ — do not
+// add machinery declarations here.
 
 // === /tg/ subsystem flags ===
 /datum/controller/subsystem
@@ -152,20 +164,27 @@ GLOBAL_LIST_INIT(contrast_colors, list("#ff0000", "#00ff00", "#0000ff", "#ffff00
 // `atmos_init` already exists in CHOMP via _atmospherics_helpers.dm.
 
 
-// === /atom/proc/CanZASPass — used by airlocks, doors, windows ===
-// CHOMP machinery overrides this for their pass-through logic.
-/atom/proc/CanZASPass(turf/T, is_zone)
-	return TRUE
+// /atom.CanZASPass — real impl lives in xgm_compat.dm (routes to can_atmos_pass
+// so CHOMP overrides on doors/windows/airlocks influence LINDA adjacency).
 
 
-// === /turf/proc/apply_fire_protection — /tg/ flame-retardant flag ===
+// /turf/proc/apply_fire_protection — flame-retardant tiles call this to mark
+// themselves as fire-resistant for a short window (firefoam, fire extinguisher
+// spray). Sets a per-turf cooldown that hotspot_expose checks before igniting.
+#define FIRE_PROTECTION_DURATION (30 SECONDS)
+/turf/var/fire_protection = 0
+
 /turf/proc/apply_fire_protection()
-	return
+	fire_protection = world.time
 
 
-// === /tg/ gas analyzer formatters (used by analyze_gases) ===
+// /proc/get_gas_mixture_default_scan_data — used by /tg/'s gas analyzer to
+// build the default scan readout. CHOMP atmosanalyzer_scan in
+// code/_helpers/atmospherics.dm already does this; just route through.
 /proc/get_gas_mixture_default_scan_data(datum/gas_mixture/air)
-	return null
+	if(!air)
+		return null
+	return atmosanalyzer_scan(null, air, null)
 
 
 // === /datum/gas_mixture/proc/get_thermal_energy_change ===
@@ -247,8 +266,31 @@ GLOBAL_LIST_INIT(diagonals_multiz, list(NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWE
 /turf/proc/return_analyzable_air()
 	return return_air()
 
+// /turf/proc/Melt — called by /turf/simulated/burn_turf() when a tile has
+// been heat-soaked past its survival threshold. Replaces the turf with the
+// CHOMP "burned down" form: walls become plating, floors become plating,
+// plating itself dissolves to space. Other turfs no-op.
 /turf/proc/Melt()
 	return
+
+/turf/simulated/wall/Melt()
+	// CHOMP /turf/simulated/wall has its own lowercase melt() for the wall-
+	// collapses-into-floor flow; defer to it so wall-specific bookkeeping runs.
+	melt()
+
+/turf/simulated/floor/Melt()
+	if(istype(src, /turf/simulated/floor/plating))
+		return
+	ChangeTurf(/turf/simulated/floor/plating, preserve_outdoors = TRUE)
+
+/turf/simulated/floor/plating/Melt()
+	// Plating burned beyond plating: open to the deck below. ChangeTurf to
+	// space if there's no floor underneath, otherwise leave it as plating
+	// since there's nothing thinner.
+	if(GetBelow(src))
+		ChangeTurf(/turf/simulated/open, preserve_outdoors = TRUE)
+	else
+		ChangeTurf(/turf/space, preserve_outdoors = TRUE)
 
 
 // === LINDA reaction-output stubs (CHOMP doesn't have these /tg/ types) ===
@@ -266,8 +308,18 @@ GLOBAL_LIST_INIT(diagonals_multiz, list(NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWE
 			S.wet_floor()
 	return TRUE
 
+// /turf/proc/freeze_turf — called by the water_vapor reaction when ambient
+// temperature is below the deposition point. Marks the turf as iced over so
+// movement code can apply slip behaviour, and consumes a moles_visible of
+// water vapor from the reacting mix.
 /turf/proc/freeze_turf()
-	return
+	return FALSE
+
+/turf/simulated/freeze_turf()
+	if(wet >= TURFSLIP_ICE)
+		return FALSE
+	wet_floor(TURFSLIP_ICE)
+	return TRUE
 
 /turf/proc/fire_nuclear_particle()
 	if(SSradiation)

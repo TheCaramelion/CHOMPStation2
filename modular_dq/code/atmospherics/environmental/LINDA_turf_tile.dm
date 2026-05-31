@@ -71,9 +71,22 @@
 /turf/open/Destroy()
 	if(active_hotspot)
 		QDEL_NULL(active_hotspot)
-	// Adds the adjacent turfs to the current atmos processing
-	for(var/near_turf in atmos_adjacent_turfs)
+	// Remove src from SSair.active_turfs BEFORE clearing adjacency so the next
+	// SSair tick doesn't process this turf. ChangeTurf-style replacement swaps
+	// a new turf into the same world coords; if the old turf was active when
+	// it got swapped, active_turfs ends up holding a ref that BYOND resolves
+	// to the NEW turf (which may be a wall with null air → process_cell crash).
+	if(SSair)
+		SSair.remove_from_active(src)
+	// Adds the adjacent turfs to the current atmos processing AND clears src
+	// out of each neighbor's atmos_adjacent_turfs so a future process_cell on
+	// the neighbor doesn't try to archive the dead turf's null air.
+	for(var/turf/near_turf as anything in atmos_adjacent_turfs)
+		if(near_turf.atmos_adjacent_turfs)
+			near_turf.atmos_adjacent_turfs -= src
+			UNSETEMPTY(near_turf.atmos_adjacent_turfs)
 		SSair.add_to_active(near_turf)
+	atmos_adjacent_turfs = null
 	return ..()
 
 /////////////////GAS MIXTURE PROCS///////////////////
@@ -266,15 +279,14 @@
 	SSair.remove_from_active(src)
 
 /turf/open/process_cell(fire_count)
-	// DQEdit — air-null guard. In stock /tg/, /turf/open is always paired with
-	// air (walls are /turf/closed, a separate type). After DQ's /turf/simulated
-	// → /turf/open reparent, /turf/simulated/wall and /turf/simulated/mineral
-	// (blocks_air=1, air=null) ALSO inherit /turf/open/process_cell. With the
-	// add_to_active routing fixed (INITIALIZED_1 set on /atom/Initialize), these
-	// should never land in active_turfs — but defend anyway and stack-trace so
-	// any future regression surfaces loudly.
+	// DQEdit — after the /turf/simulated → /turf/open reparent, walls and
+	// minerals (blocks_air=1, air=null) also dispatch through this proc.
+	// /tg/ stock relies on walls being /turf/closed; under the reparent the
+	// same proc serves both. Bail without sharing — add_to_active's routing
+	// already short-circuits these, but ChangeTurf-replace flows can leave a
+	// brief window where a wall slot is in active_turfs before remove_from_active
+	// runs. Silently no-op + drop from active.
 	if(blocks_air || !air)
-		stack_trace("LINDA process_cell hit a /turf/open with no air ([type] at [x],[y],[z]) — INITIALIZED_1 routing broken? add_to_active should never put us here.")
 		SSair.remove_from_active(src)
 		return
 	if(archived_cycle < fire_count) //archive self if not already done
@@ -303,6 +315,18 @@
 			stack_trace("closed turf inside of adjacent turfs")
 			continue
 		#endif
+
+		// DQEdit — after the /turf/simulated → /turf/open reparent, walls
+		// also istype /turf/open, so an `as anything in` cast doesn't
+		// filter them out. /tg/ stock relies on walls being /turf/closed
+		// (a separate type); under the reparent we have to runtime-check.
+		// Self-heal the dead ref so a future tick doesn't redo the work.
+		if(!enemy_tile.air || enemy_tile.blocks_air)
+			atmos_adjacent_turfs -= enemy_tile
+			if(enemy_tile.atmos_adjacent_turfs)
+				enemy_tile.atmos_adjacent_turfs -= src
+				UNSETEMPTY(enemy_tile.atmos_adjacent_turfs)
+			continue
 
 		// This var is only rarely set, exists so turfs can request to share at the end of our sharing
 		// We need this so we can assume share is communative, which we need to do to avoid a hellish amount of garbage_collect()s
@@ -653,7 +677,9 @@ Then we space some of our heat, and think about if we should stop conducting.
 				continue
 			var/turf/neighbor = get_step(src, direction)
 
-			if(!neighbor.thermal_conductivity)
+			// DQEdit — guard against off-map/null neighbor. get_step returns null
+			// when src is at the edge of the world; without this we deref null.
+			if(!neighbor || !neighbor.thermal_conductivity)
 				continue
 
 			if(neighbor.archived_cycle < SSair.times_fired)

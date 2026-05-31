@@ -5777,6 +5777,7 @@
 #include "modular_dq\code\modules\consolidation\components\movable_misc.dm"
 #include "modular_dq\code\modules\map_stubs\map_stubs.dm"
 #include "modular_dq\code\modules\map_stubs\orphan_stubs.dm"
+#include "modular_dq\code\_helpers\soft_assert.dm"
 #include "modular_dq\code\atmospherics\gasmixtures\gas_types.dm"
 #include "modular_dq\code\atmospherics\gasmixtures\gas_mixture.dm"
 #include "modular_dq\code\atmospherics\gasmixtures\immutable_mixtures.dm"
@@ -5785,10 +5786,10 @@
 // atom_flags_1 declares /atom/flags_1 so /atom/Initialize can set INITIALIZED_1
 // for SSair.add_to_active routing.
 #include "modular_dq\code\atmospherics\atom_flags_1.dm"
-// tg_infra_stubs.dm provides /tg/ infrastructure pieces that SSair/LINDA_*
-// reference. Steadily shrinking as the migration replaces stubs with real
-// implementations. Must come BEFORE the LINDA atmos files.
-#include "modular_dq\code\atmospherics\tg_infra_stubs.dm"
+// /tg/ infrastructure compat: var/proc declarations the vendored LINDA atmos
+// files reference but CHOMP doesn't natively provide. Must come BEFORE the
+// LINDA atmos files.
+#include "modular_dq\code\atmospherics\tg_infra_compat.dm"
 #include "modular_dq\code\atmospherics\environmental\LINDA_fire.dm"
 #include "modular_dq\code\atmospherics\environmental\LINDA_system.dm"
 #include "modular_dq\code\atmospherics\environmental\LINDA_turf_tile.dm"
@@ -5804,14 +5805,10 @@
 // loads. Compiling bindings.dm here causes duplicate-proc errors. The slim
 // init/lifecycle subset lives in auxmos_init_bridge.dm.
 //#include "modular_dq\code\atmospherics\auxmos_bindings.dm"
-#include "modular_dq\code\atmospherics\xgm_compat_shim.dm"
+#include "modular_dq\code\atmospherics\xgm_compat.dm"
 // Slim init/lifecycle FFI bridge — calls into verdigris.dll to register gas
 // singletons + reaction tables with Rust at SSair init time.
 #include "modular_dq\code\atmospherics\auxmos_init_bridge.dm"
-// Inert stubs for the retired R-UST fusion engine (fuel rods, rad collectors,
-// fuel compressors). Maps and a handful of consumer files still reference the
-// type paths; the stubs are non-functional but let the build complete.
-#include "modular_dq\code\atmospherics\deleted_engine_stubs.dm"
 // DQ-native LINDA bridge: persistent per-turf air for CHOMP /turf/simulated.
 // Without this, /turf/return_air() creates a throwaway mixture per call and
 // CHOMP atmos machinery can't affect the actual turf air.

@@ -24,6 +24,11 @@
 	if(exposed_temperature < TCMB)
 		exposed_temperature = TCMB
 		CRASH("[src].hotspot_expose() called with exposed_temperature < [TCMB]")
+	// DQEdit — honor flame-retardant protection (set by firefoam, extinguishers,
+	// fire-resistant tile coatings). Protection lasts FIRE_PROTECTION_DURATION
+	// after apply_fire_protection() was called.
+	if(fire_protection && (world.time - fire_protection < FIRE_PROTECTION_DURATION))
+		return
 	//If the air doesn't exist we just return false
 	var/list/air_gases = air?.gases
 	if(!air_gases)

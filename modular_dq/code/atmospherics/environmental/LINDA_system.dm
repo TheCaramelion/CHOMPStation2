@@ -66,29 +66,31 @@
 	#endif
 	LAZYINITLIST(src.atmos_adjacent_turfs)
 	var/list/atmos_adjacent_turfs = src.atmos_adjacent_turfs
-	src._dq_init_diag = "step0_lazyinit"
 	var/canpass = CANATMOSPASS(src, src, FALSE)
-	src._dq_init_diag = "step1_canpass=[canpass]"
 	// I am essentially inlineing two get_dir_multizs here, because they're way too slow on their own. I'm sorry brother
+	// DQEdit — guard SSmapping.multiz_levels[z] indexing: if SSmapping isn't
+	// fully initialized (e.g. early test setup) or this z hasn't been
+	// registered, fall back to no-multiz so the proc doesn't runtime.
 	var/list/z_traits = (SSmapping?.multiz_levels && length(SSmapping.multiz_levels) >= z) ? SSmapping.multiz_levels[z] : null
-	src._dq_init_diag = "step2_ztraits_isnull=[isnull(z_traits)]"
-	// DQ DIAG (temporary)
-	var/dq_diag_added = 0
-	var/dq_diag_seen_north = 0
 	for(var/direction in GLOB.cardinals_multiz)
 		// Yes this is a reimplementation of get_step_mutliz. It's faster tho. fuck you
 		// Oh also yes UP and DOWN do just point to +1 and -1 and not z offsets
 		// Multiz is shitcode welcome home
+		// DQEdit — guard against z_traits being null (z-level has no multiz
+		// metadata registered with SSmapping). Skip vertical traversal entirely
+		// on such z-levels; horizontal cardinal still works.
 		var/turf/current_turf = (direction & (UP|DOWN)) ? \
-			(direction & UP) ? \
-				(z_traits[Z_LEVEL_UP]) ? \
-					(get_step(locate(x, y, z + 1), NONE)) : \
-				(null) : \
-				(z_traits[Z_LEVEL_DOWN]) ? \
-					(get_step(locate(x, y, z - 1), NONE)) : \
-				(null) : \
+			(z_traits ? ( \
+				(direction & UP) ? \
+					(z_traits[Z_LEVEL_UP]) ? \
+						(get_step(locate(x, y, z + 1), NONE)) : \
+					(null) : \
+					(z_traits[Z_LEVEL_DOWN]) ? \
+						(get_step(locate(x, y, z - 1), NONE)) : \
+					(null) \
+			) : null) : \
 			(get_step(src, direction))
-		if(!istype(current_turf, /turf/open)) // DQEdit — was isopenturf(); CHOMP isopenturf only matches /turf/simulated/open+/turf/space, after the /turf/simulated→/turf/open reparent we want all open turfs (floors included)
+		if(!istype(current_turf, /turf/open)) // DQEdit — was isopenturf(); after the /turf/simulated→/turf/open reparent we want all open turfs (floors included)
 			continue
 		// The assumption is that ONLY DURING INIT if two tiles have the same cycle, there's no way canpass(a->b) will be different then canpass(b->a), so this is faster
 		// Saves like 1.2 seconds
@@ -97,16 +99,12 @@
 		if(current_turf.current_cycle <= current_cycle)
 			continue
 
-		// DQ DIAG (temporary)
-		if(direction == NORTH)
-			dq_diag_seen_north = 1
 		//Can you and me form a deeper relationship, or is this just a passing wind
 		// (direction & (UP | DOWN)) is just "is this vertical" by the by
 		if(canpass && CANATMOSPASS(current_turf, src, (direction & (UP|DOWN))) && !(blocks_air || current_turf.blocks_air))
 			LAZYINITLIST(current_turf.atmos_adjacent_turfs)
 			atmos_adjacent_turfs[current_turf] = TRUE
 			current_turf.atmos_adjacent_turfs[src] = TRUE
-			dq_diag_added += 1
 		else
 			atmos_adjacent_turfs -= current_turf
 			if (current_turf.atmos_adjacent_turfs)
@@ -117,10 +115,6 @@
 	UNSETEMPTY(atmos_adjacent_turfs)
 	src.atmos_adjacent_turfs = atmos_adjacent_turfs
 	SEND_SIGNAL(src, COMSIG_TURF_CALCULATED_ADJACENT_ATMOS)
-	// DQ DIAG (temporary): record what happened on this run so the test can read it.
-	src._dq_init_diag = "saw_north=[dq_diag_seen_north] added=[dq_diag_added] final_len=[LAZYLEN(atmos_adjacent_turfs)] canpass=[canpass]"
-
-/turf/var/_dq_init_diag = ""
 
 /turf/proc/immediate_calculate_adjacent_turfs()
 	LAZYINITLIST(src.atmos_adjacent_turfs)

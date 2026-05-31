@@ -424,6 +424,23 @@ SUBSYSTEM_DEF(air)
 
 ///Adds a turf to active processing, handles duplicates. Call this with blockchanges == TRUE if you want to nuke the assoc excited group
 /datum/controller/subsystem/air/proc/add_to_active(turf/open/activate, blockchanges = FALSE)
+	// DQEdit — after the /turf/simulated → /turf/open reparent, walls and
+	// minerals match the /turf/open type but have blocks_air=1 / air=null.
+	// They reach this proc via legitimate paths — ChangeTurf calls
+	// mark_for_update on the new turf regardless of type, and /tg/'s design
+	// intent is that the activation simply routes to neighbors when the turf
+	// itself can't hold gas. Recurse on neighbors if init (so the room
+	// next to the changed wall gets re-shared), queue or mark otherwise.
+	if(activate && (activate.blocks_air || isnull(activate.air)))
+		if(activate.flags_1 & INITIALIZED_1)
+			for(var/turf/neighbor as anything in activate.atmos_adjacent_turfs)
+				add_to_active(neighbor, TRUE)
+		else if(map_loading)
+			if(queued_for_activation)
+				queued_for_activation[activate] = activate
+		else
+			activate.requires_activation = TRUE
+		return
 	if(istype(activate) && activate.air)
 		activate.significant_share_ticker = 0
 		if(blockchanges && activate.excited_group) //This is used almost exclusivly for shuttles, so the excited group doesn't stay behind
@@ -487,9 +504,18 @@ SUBSYSTEM_DEF(air)
 	for(var/turf/open/potential_diff as anything in difference_check)
 		// I can't use 0 here, so we're gonna do this instead. If it ever breaks I'll eat my shoe
 		potential_diff.current_cycle = -INFINITY
+		// DQEdit — defend against air=null turfs (walls/mineral after the
+		// /turf/simulated → /turf/open reparent, since walls inherit /turf/open
+		// by type but blocks_air=1 → no air). Skip them so we never try to
+		// .compare() against null or activate them.
+		if(!potential_diff.air)
+			continue
 		for(var/turf/open/enemy_tile as anything in potential_diff.atmos_adjacent_turfs)
 			// If it's already been processed, then it's already talked to us
 			if(enemy_tile.current_cycle == -INFINITY)
+				continue
+			// DQEdit — same null-air defense for the neighbor side.
+			if(!enemy_tile.air)
 				continue
 			// .air instead of .return_air() because we can guarantee that the proc won't do anything
 			if(potential_diff.air.compare(enemy_tile.air, MOLES))
