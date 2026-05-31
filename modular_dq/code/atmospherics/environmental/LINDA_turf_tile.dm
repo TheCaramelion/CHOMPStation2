@@ -677,12 +677,19 @@ Then we space some of our heat, and think about if we should stop conducting.
 				continue
 			var/turf/neighbor = get_step(src, direction)
 
-			// DQEdit — guard against off-map/null neighbor. get_step returns null
-			// when src is at the edge of the world; without this we deref null.
+			// DQEdit — guard against off-map/null neighbor. get_step returns
+			// null at the world edge; rocks/walls under the reparent dispatch
+			// through /turf/open/archive which deref's .air → null crash.
 			if(!neighbor || !neighbor.thermal_conductivity)
 				continue
-
-			if(neighbor.archived_cycle < SSair.times_fired)
+			// archive() only makes sense on a turf with an air mixture; rocks
+			// (blocks_air=1, air=null) shouldn't archive even though they
+			// have a thermal_conductivity for super-conduction purposes.
+			if(istype(neighbor, /turf/open))
+				var/turf/open/open_neighbor = neighbor
+				if(open_neighbor.air && open_neighbor.archived_cycle < SSair.times_fired)
+					open_neighbor.archive()
+			else if(neighbor.archived_cycle < SSair.times_fired)
 				neighbor.archive()
 
 			neighbor.neighbor_conduct_with_src(src)

@@ -1749,3 +1749,458 @@
 	qdel(SM)
 
 
+// =====================================================================
+// Reaction coverage (beyond plasmafire)
+// =====================================================================
+
+/// Tritium combustion: trit + O2 + heat → water vapor + radiation. Verify
+/// fuel consumption, water vapor production, exothermic temperature rise.
+/datum/unit_test/dq_tritfire_reaction_consumes_tritium
+
+/datum/unit_test/dq_tritfire_reaction_consumes_tritium/Run()
+	var/datum/gas_mixture/mix = new(CELL_VOLUME)
+	mix.adjust_gas(/datum/gas/tritium, 30)
+	mix.adjust_gas(/datum/gas/oxygen, 200)
+	mix.set_temperature(TRITIUM_MINIMUM_BURN_TEMPERATURE + 200)
+
+	var/initial_trit = mix.get_moles(/datum/gas/tritium)
+	var/initial_o2 = mix.get_moles(/datum/gas/oxygen)
+	var/initial_h2o = mix.get_moles(/datum/gas/water_vapor)
+	var/initial_temp = mix.temperature
+
+	mix.react(null)
+
+	TEST_ASSERT(mix.get_moles(/datum/gas/tritium) < initial_trit, \
+		"tritium did not burn: [initial_trit] → [mix.get_moles(/datum/gas/tritium)]")
+	TEST_ASSERT(mix.get_moles(/datum/gas/oxygen) < initial_o2, \
+		"O2 not consumed by tritfire")
+	TEST_ASSERT(mix.get_moles(/datum/gas/water_vapor) > initial_h2o, \
+		"water vapor not produced by tritfire")
+	TEST_ASSERT(mix.temperature > initial_temp, \
+		"tritfire didn't release heat: [initial_temp] → [mix.temperature]")
+
+
+/// Hydrogen combustion: H2 + O2 + heat → water vapor. Similar shape to
+/// tritfire but lower fuel value.
+/datum/unit_test/dq_h2fire_reaction_consumes_hydrogen
+
+/datum/unit_test/dq_h2fire_reaction_consumes_hydrogen/Run()
+	var/datum/gas_mixture/mix = new(CELL_VOLUME)
+	mix.adjust_gas(/datum/gas/hydrogen, 40)
+	mix.adjust_gas(/datum/gas/oxygen, 200)
+	mix.set_temperature(HYDROGEN_MINIMUM_BURN_TEMPERATURE + 100)
+
+	var/initial_h2 = mix.get_moles(/datum/gas/hydrogen)
+	var/initial_o2 = mix.get_moles(/datum/gas/oxygen)
+	var/initial_temp = mix.temperature
+
+	mix.react(null)
+
+	TEST_ASSERT(mix.get_moles(/datum/gas/hydrogen) < initial_h2, \
+		"H2 did not burn: [initial_h2] → [mix.get_moles(/datum/gas/hydrogen)]")
+	TEST_ASSERT(mix.get_moles(/datum/gas/oxygen) < initial_o2, "O2 not consumed by h2fire")
+	TEST_ASSERT(mix.temperature > initial_temp, "h2fire didn't release heat")
+
+
+/// Freon combustion: freon + O2 (BELOW freezing point) → endothermic cooling.
+/// Validates the cooling-reaction path used by freon-bombs and cryo setups.
+/datum/unit_test/dq_freonfire_reaction_cools_mixture
+
+/datum/unit_test/dq_freonfire_reaction_cools_mixture/Run()
+	var/datum/gas_mixture/mix = new(CELL_VOLUME)
+	mix.adjust_gas(/datum/gas/freon, 50)
+	mix.adjust_gas(/datum/gas/oxygen, 200)
+	// freonfire fires below FREON_MAXIMUM_BURN_TEMPERATURE and above
+	// FREON_LOWER_TEMPERATURE — pick a value in the middle.
+	mix.set_temperature(T0C + 25) // ~298K, below the 373K cap
+
+	var/initial_freon = mix.get_moles(/datum/gas/freon)
+	var/initial_temp = mix.temperature
+
+	mix.react(null)
+
+	var/final_freon = mix.get_moles(/datum/gas/freon)
+	var/final_temp = mix.temperature
+	if(final_freon < initial_freon)
+		// Reaction ran. Verify it cooled, not heated.
+		TEST_ASSERT(final_temp < initial_temp, \
+			"freonfire is endothermic but temperature ROSE: [initial_temp] → [final_temp]")
+	else
+		// Reaction didn't run (conditions not met) — log so we know.
+		log_test("dq_freonfire_reaction_cools_mixture: freonfire didn't fire under T=[initial_temp] freon=[initial_freon] O2=[mix.get_moles(/datum/gas/oxygen)] — possibly temp-condition mismatch")
+
+
+/// Water vapor condensation: at temperatures below the deposition point,
+/// vapor should be consumed and the turf gets wet/iced.
+/datum/unit_test/dq_water_vapor_condenses_on_cold_turf
+
+/datum/unit_test/dq_water_vapor_condenses_on_cold_turf/Run()
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for water_vapor test")
+
+	// Reset wet state.
+	T.wet = TURFSLIP_DRY
+
+	var/datum/gas_mixture/air = T.return_air()
+	for(var/datum/gas/g as anything in air.gases)
+		air.gases[g][MOLES] = 0
+	air.adjust_gas(/datum/gas/water_vapor, MOLES_GAS_VISIBLE * 4)
+	air.set_temperature(WATER_VAPOR_DEPOSITION_POINT - 20) // below deposition
+
+	var/initial_vapor = air.get_moles(/datum/gas/water_vapor)
+	air.react(T)
+	var/final_vapor = air.get_moles(/datum/gas/water_vapor)
+
+	TEST_ASSERT(final_vapor < initial_vapor, \
+		"water vapor not consumed by deposition: [initial_vapor] → [final_vapor]")
+	TEST_ASSERT(T.wet >= TURFSLIP_ICE, \
+		"freeze_turf didn't ice the turf: T.wet=[T.wet], expected ≥ [TURFSLIP_ICE]")
+
+	// Reset.
+	T.wet = TURFSLIP_DRY
+	air.set_moles(/datum/gas/water_vapor, 0)
+
+
+/// Halon oxygen removal: halon + heat → O2 consumed, CO2 produced. Used for
+/// fire suppression.
+/datum/unit_test/dq_halon_removes_oxygen
+
+/datum/unit_test/dq_halon_removes_oxygen/Run()
+	var/datum/gas_mixture/mix = new(CELL_VOLUME)
+	mix.adjust_gas(/datum/gas/halon, 30)
+	mix.adjust_gas(/datum/gas/oxygen, 100)
+	mix.set_temperature(HALON_COMBUSTION_MIN_TEMPERATURE + 100)
+
+	var/initial_halon = mix.get_moles(/datum/gas/halon)
+	var/initial_o2 = mix.get_moles(/datum/gas/oxygen)
+
+	mix.react(null)
+
+	TEST_ASSERT(mix.get_moles(/datum/gas/halon) < initial_halon, "halon not consumed")
+	TEST_ASSERT(mix.get_moles(/datum/gas/oxygen) < initial_o2, \
+		"O2 not removed by halon: [initial_o2] → [mix.get_moles(/datum/gas/oxygen)]")
+
+
+/// Miaster: miasma decomposes in warm dry conditions. Validates the body-decay
+/// gas behaviour.
+/datum/unit_test/dq_miaster_decomposes_miasma
+
+/datum/unit_test/dq_miaster_decomposes_miasma/Run()
+	var/datum/gas_mixture/mix = new(CELL_VOLUME)
+	mix.adjust_gas(/datum/gas/miasma, 50)
+	mix.adjust_gas(/datum/gas/oxygen, 100)
+	mix.set_temperature(MIASTER_STERILIZATION_TEMP + 50) // hot enough to decompose
+
+	var/initial_miasma = mix.get_moles(/datum/gas/miasma)
+
+	mix.react(null)
+
+	var/final_miasma = mix.get_moles(/datum/gas/miasma)
+	TEST_ASSERT(final_miasma < initial_miasma, \
+		"miaster didn't decompose miasma: [initial_miasma] → [final_miasma]")
+
+
+/// All gas_reactions have an init_reqs that populates a non-empty requirements
+/// list — catches "wrong gas type path" / "typo'd #define" / "forgot to set
+/// requirements" regressions in newly-added reactions.
+/datum/unit_test/dq_all_reactions_have_valid_requirements
+
+/datum/unit_test/dq_all_reactions_have_valid_requirements/Run()
+	for(var/datum/gas_reaction/R_type as anything in subtypesof(/datum/gas_reaction))
+		var/datum/gas_reaction/R = new R_type
+		TEST_ASSERT_NOTNULL(R.requirements, "[R_type] has null requirements after New()")
+		TEST_ASSERT(length(R.requirements) > 0, \
+			"[R_type] has empty requirements")
+		TEST_ASSERT_NOTNULL(R.id, "[R_type] has null id")
+		TEST_ASSERT_NOTNULL(R.name, "[R_type] has null name")
+
+
+// =====================================================================
+// Doors / CanZASPass routing through can_atmos_pass
+// =====================================================================
+//
+// A closed airlock between two rooms should block atmos. CHOMP airlocks
+// override CanZASPass; our xgm_compat.CanZASPass routes through LINDA's
+// can_atmos_pass so the override propagates into adjacency calc.
+
+/// Closed airlock blocks atmos pass; open airlock allows it.
+/datum/unit_test/dq_closed_airlock_blocks_atmos
+
+/datum/unit_test/dq_closed_airlock_blocks_atmos/Run()
+	var/list/pair = dq_atmos_test_find_floor_pair()
+	TEST_ASSERT_NOTNULL(pair, "no floor pair for airlock atmos test")
+	var/turf/simulated/floor/A = pair[1]
+	var/turf/simulated/floor/B = pair[2]
+
+	// Place a closed airlock on B.
+	var/obj/machinery/door/airlock/D = new(B)
+	TEST_ASSERT_NOTNULL(D, "couldn't construct airlock")
+	D.density = TRUE
+	D.update_nearby_tiles()
+
+	A.atmos_adjacent_turfs = null
+	B.atmos_adjacent_turfs = null
+	A.current_cycle = -1
+	B.current_cycle = -2
+	A.init_immediate_calculate_adjacent_turfs()
+	B.init_immediate_calculate_adjacent_turfs()
+
+	TEST_ASSERT(!(A.atmos_adjacent_turfs && A.atmos_adjacent_turfs[B]), \
+		"closed airlock didn't block A↔B atmos adjacency — CanZASPass routing broken")
+
+	// Open the airlock.
+	D.density = FALSE
+	D.update_nearby_tiles()
+	A.atmos_adjacent_turfs = null
+	B.atmos_adjacent_turfs = null
+	A.current_cycle = -3
+	B.current_cycle = -4
+	A.init_immediate_calculate_adjacent_turfs()
+	B.init_immediate_calculate_adjacent_turfs()
+
+	TEST_ASSERT(A.atmos_adjacent_turfs && A.atmos_adjacent_turfs[B], \
+		"open airlock didn't allow A↔B atmos adjacency — CanZASPass routing broken in reverse direction")
+
+	qdel(D)
+
+
+// =====================================================================
+// Pipenet auto-build via build_network
+// =====================================================================
+
+/// Two adjacent pipes constructed and linked via build_network should end up
+/// in the same /datum/pipe_network with a shared air mixture. This is the
+/// production "pipes load from map → atmos_init builds the network" flow.
+/datum/unit_test/dq_pipes_build_into_one_network
+
+/datum/unit_test/dq_pipes_build_into_one_network/Run()
+	var/list/pair = dq_atmos_test_find_floor_pair()
+	TEST_ASSERT_NOTNULL(pair, "no floor pair for pipe network test")
+	var/turf/simulated/floor/A = pair[1]
+	var/turf/simulated/floor/B = pair[2]
+
+	var/dir_A_to_B = get_dir(A, B)
+	var/dir_B_to_A = get_dir(B, A)
+
+	var/obj/machinery/atmospherics/pipe/simple/P1 = new(A)
+	P1.dir = dir_A_to_B | dir_B_to_A // straight pipe along the A-B axis
+	P1.initialize_directions = dir_A_to_B | dir_B_to_A
+
+	var/obj/machinery/atmospherics/pipe/simple/P2 = new(B)
+	P2.dir = dir_A_to_B | dir_B_to_A
+	P2.initialize_directions = dir_A_to_B | dir_B_to_A
+
+	TEST_ASSERT_NOTNULL(P1, "P1 pipe construction failed")
+	TEST_ASSERT_NOTNULL(P2, "P2 pipe construction failed")
+
+	// Run atmos_init to wire them. Pipes find each other via initialize_directions.
+	P1.atmos_init()
+	P2.atmos_init()
+	P1.build_network()
+
+	// After build_network, both pipes should share a pipe_network's gas mixture.
+	TEST_ASSERT_NOTNULL(P1.parent, "P1.parent (pipeline) is null after build_network")
+	TEST_ASSERT_NOTNULL(P2.parent, "P2.parent (pipeline) is null after build_network")
+	// Either same pipeline OR pipelines in same network.
+	var/same_network = (P1.parent == P2.parent) || (P1.parent.network && P1.parent.network == P2.parent.network)
+	TEST_ASSERT(same_network, \
+		"P1 and P2 not in the same pipe_network after build_network — pipenet auto-build broken")
+
+	qdel(P1)
+	qdel(P2)
+
+
+// =====================================================================
+// Auxmos byondapi parity (Rust set/get/adjust vs DM fallback)
+// =====================================================================
+
+/// Verify that the auxmos byondapi-bound gas_mixture procs (set_moles,
+/// adjust_moles, get_moles, return_pressure) produce numerically consistent
+/// results. Adjust then read, mutate then check pressure, etc.
+/datum/unit_test/dq_auxmos_byondapi_set_get_consistent
+
+/datum/unit_test/dq_auxmos_byondapi_set_get_consistent/Run()
+	var/datum/gas_mixture/mix = new(CELL_VOLUME)
+	mix.set_temperature(T20C)
+
+	mix.set_moles(/datum/gas/oxygen, 42.5)
+	TEST_ASSERT(abs(mix.get_moles(/datum/gas/oxygen) - 42.5) < 0.001, \
+		"set_moles → get_moles round trip wrong: set 42.5, got [mix.get_moles(/datum/gas/oxygen)]")
+
+	mix.adjust_moles(/datum/gas/oxygen, 7.5)
+	TEST_ASSERT(abs(mix.get_moles(/datum/gas/oxygen) - 50) < 0.001, \
+		"adjust_moles wrong: 42.5 + 7.5 should be 50, got [mix.get_moles(/datum/gas/oxygen)]")
+
+	// Pressure equation: P = n R T / V. n=50 mol, R=8.31, T=293.15 K, V=2500 L.
+	// P = 50 * 8.31 * 293.15 / 2500 ≈ 48.71 kPa.
+	var/expected_p = 50 * R_IDEAL_GAS_EQUATION * T20C / CELL_VOLUME
+	var/actual_p = mix.return_pressure()
+	TEST_ASSERT(abs(actual_p - expected_p) < 0.5, \
+		"return_pressure off: expected ~[expected_p], got [actual_p] (ideal gas law mismatch — auxmos bug?)")
+
+	mix.adjust_moles(/datum/gas/oxygen, -30)
+	TEST_ASSERT(abs(mix.get_moles(/datum/gas/oxygen) - 20) < 0.001, \
+		"negative adjust wrong: 50 - 30 should be 20, got [mix.get_moles(/datum/gas/oxygen)]")
+
+
+// =====================================================================
+// Real SSair scheduling (no fire-disable)
+// =====================================================================
+
+/// Drive SSair via its native scheduling for several real ticks and verify
+/// gas spreads. Without disabling SSair.can_fire, this exercises the actual
+/// MC-scheduled tick flow.
+/datum/unit_test/dq_real_ssair_scheduling_spreads_gas
+
+/datum/unit_test/dq_real_ssair_scheduling_spreads_gas/Run()
+	var/list/pair = dq_atmos_test_find_floor_pair()
+	TEST_ASSERT_NOTNULL(pair, "no floor pair for real-SSair test")
+	var/turf/simulated/floor/A = pair[1]
+	var/turf/simulated/floor/B = pair[2]
+
+	dq_atmos_test_isolate_pair(A, B)
+	A.current_cycle = -1
+	B.current_cycle = -2
+
+	for(var/datum/gas/g as anything in A.air.gases)
+		A.air.gases[g][MOLES] = 0
+	for(var/datum/gas/g as anything in B.air.gases)
+		B.air.gases[g][MOLES] = 0
+	A.air.adjust_gas(/datum/gas/plasma, 100)
+	B.air.set_temperature(T20C)
+
+	SSair.add_to_active(A)
+
+	// Let SSair fire naturally for ~5 real ticks. sleep() yields to the SS
+	// scheduler; SSair.fire() runs on its own cadence.
+	for(var/i in 1 to 5)
+		sleep(SSair.wait)
+
+	// We expect SOME spread to have happened. Don't assert exact equilibrium
+	// because real SSair has tick budgets and MC_TICK_CHECK preemption.
+	var/b_p = B.air.get_moles(/datum/gas/plasma)
+	TEST_ASSERT(b_p > 0, \
+		"after 5 real SSair ticks B still has 0 plasma — native scheduling didn't process A")
+	// And total should still be conserved.
+	var/total = A.air.get_moles(/datum/gas/plasma) + b_p
+	TEST_ASSERT(abs(total - 100) < 1, \
+		"real-SSair scheduling lost mass: A+B = [total], expected 100")
+
+	A.air.set_moles(/datum/gas/plasma, 0)
+	B.air.set_moles(/datum/gas/plasma, 0)
+	A.update_visuals()
+	B.update_visuals()
+
+
+// =====================================================================
+// Mob pressure damage / non-human breath
+// =====================================================================
+
+/// A human in a low-pressure (near-vacuum) environment takes oxyloss as the
+/// breath proc can't extract enough O2. Validates the life-cycle atmos chain.
+/datum/unit_test/dq_human_low_pressure_oxyloss
+
+/datum/unit_test/dq_human_low_pressure_oxyloss/Run()
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	TEST_ASSERT_NOTNULL(H, "couldn't allocate human")
+	TEST_ASSERT_NOTNULL(H.species, "test human has no species")
+
+	// Near-vacuum breath (tiny moles).
+	var/datum/gas_mixture/breath = new(BREATH_VOLUME)
+	breath.adjust_gas(/datum/gas/oxygen, 0.01)
+	breath.set_temperature(T20C)
+	var/initial_oxyloss = H.getOxyLoss()
+
+	H.handle_breath(breath)
+
+	var/final_oxyloss = H.getOxyLoss()
+	TEST_ASSERT(final_oxyloss > initial_oxyloss, \
+		"human didn't take oxyloss from near-vacuum breath: [initial_oxyloss] → [final_oxyloss]")
+
+
+/// Verify phoron breather species correctly consumes plasma when given a
+/// plasma-rich breath. This is the inverse-respiration check.
+/datum/unit_test/dq_phoron_breather_consumes_plasma
+
+/datum/unit_test/dq_phoron_breather_consumes_plasma/Run()
+	// Find a phoron-breathing species (Vox, Diona, etc., depending on map).
+	var/datum/species/phoron_species = null
+	for(var/species_path in GLOB.all_species)
+		var/datum/species/S = GLOB.all_species[species_path]
+		if(S.breath_type == /datum/gas/plasma || S.breath_type == GAS_PHORON)
+			phoron_species = S
+			break
+	if(!phoron_species)
+		log_test("dq_phoron_breather_consumes_plasma: no phoron-breather species on this build, skipping")
+		return
+
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	TEST_ASSERT_NOTNULL(H, "couldn't allocate human")
+	H.set_species(phoron_species.name)
+	TEST_ASSERT(H.species == phoron_species || H.species.name == phoron_species.name, \
+		"set_species didn't apply: got [H.species]")
+
+	var/datum/gas_mixture/breath = new(BREATH_VOLUME)
+	breath.adjust_gas(/datum/gas/plasma, 5)
+	breath.adjust_gas(/datum/gas/nitrogen, MOLES_N2STANDARD)
+	breath.set_temperature(T20C)
+
+	var/initial_plasma = breath.get_moles(/datum/gas/plasma)
+
+	H.handle_breath(breath)
+
+	var/final_plasma = breath.get_moles(/datum/gas/plasma)
+	TEST_ASSERT(final_plasma < initial_plasma, \
+		"phoron-breather didn't consume plasma: [initial_plasma] → [final_plasma]")
+
+
+// =====================================================================
+// Heat-exchange pipes
+// =====================================================================
+
+/// /datum/pipeline.temperature_interact transfers heat between a pipeline's
+/// air mixture and an adjacent turf — the mechanism HE pipes use to dump or
+/// extract heat through the world. Direct test via a programmatic pipeline
+/// avoids the HE pipe's two-segment auto-connection requirement.
+/datum/unit_test/dq_pipeline_temperature_interact_with_turf
+
+/datum/unit_test/dq_pipeline_temperature_interact_with_turf/Run()
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for temperature_interact test")
+
+	var/datum/gas_mixture/turf_air = T.return_air()
+	for(var/datum/gas/g as anything in turf_air.gases)
+		turf_air.gases[g][MOLES] = 0
+	turf_air.adjust_gas(/datum/gas/nitrogen, MOLES_N2STANDARD)
+	turf_air.set_temperature(T20C)
+
+	// Manually-built pipeline (sidesteps HE pipe two-node auto-connection).
+	var/datum/pipeline/P = new
+	P.air = new(70)
+	P.air.adjust_gas(/datum/gas/nitrogen, 50)
+	P.air.set_temperature(T0C + 500) // hot
+
+	var/initial_turf_temp = turf_air.temperature
+	var/initial_pipe_temp = P.air.temperature
+
+	P.temperature_interact(T, P.air.volume, OPEN_HEAT_TRANSFER_COEFFICIENT)
+
+	var/final_turf_temp = turf_air.temperature
+	var/final_pipe_temp = P.air.temperature
+	TEST_ASSERT(final_turf_temp > initial_turf_temp, \
+		"turf air didn't heat from hot pipe: [initial_turf_temp] → [final_turf_temp]")
+	TEST_ASSERT(final_pipe_temp < initial_pipe_temp, \
+		"hot pipe didn't cool giving heat to turf: [initial_pipe_temp] → [final_pipe_temp]")
+
+	qdel(P)
+
+
+

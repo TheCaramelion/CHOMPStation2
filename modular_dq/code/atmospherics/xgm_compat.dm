@@ -297,12 +297,14 @@
 /turf/proc/update_graphic(list/graphic_add = null, list/graphic_remove = null)
 	return
 
-// /atom.CanZASPass(T, is_zone) — many CHOMP atoms (doors, windows, mobs,
-// transit tubes, ceilings) override this to gate air passage. LINDA's
-// can_atmos_pass is the modern hook. Keep CanZASPass routed → can_atmos_pass
-// so overrides still influence LINDA adjacency without rewriting every caller.
+// /atom.CanZASPass(T, is_zone) — CHOMP atoms (doors, windows, mobs, transit
+// tubes, ceilings) override this to gate air passage. The base returns TRUE
+// ("passes") matching the old ZAS default. LINDA's CANATMOSPASS macro and
+// can_atmos_pass hook call this for objects with can_atmos_pass=ATMOS_PASS_PROC,
+// so the existing CHOMP CanZASPass overrides take effect under LINDA without
+// each needing a separate can_atmos_pass proc override.
 /atom/proc/CanZASPass(turf/T, is_zone)
-	return can_atmos_pass(T, FALSE) != ATMOS_PASS_NO
+	return TRUE
 
 
 // =====================================================================

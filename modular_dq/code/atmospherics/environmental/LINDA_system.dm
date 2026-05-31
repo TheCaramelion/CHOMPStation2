@@ -5,7 +5,11 @@
 /atom/proc/can_atmos_pass(turf/target_turf, vertical = FALSE)
 	switch (can_atmos_pass)
 		if (ATMOS_PASS_PROC)
-			return ATMOS_PASS_YES
+			// DQEdit — route to CanZASPass so CHOMP overrides on doors,
+			// windows, airlocks, blast doors, multi-tile doors, etc. take
+			// effect under LINDA without each needing its own can_atmos_pass
+			// proc override.
+			return CanZASPass(target_turf, FALSE)
 		if (ATMOS_PASS_DENSITY)
 			return !density
 		else
