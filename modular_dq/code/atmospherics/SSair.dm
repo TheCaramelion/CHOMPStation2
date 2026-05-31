@@ -105,7 +105,8 @@ SUBSYSTEM_DEF(air)
 	// their pipenets without SSair orchestrating it.
 	setup_turf_visuals()
 	process_adjacent_rebuild()
-	atmos_handbooks_init()
+	// DQEdit — atmos_handbooks_init() removed. /tg/'s gas handbook is an
+	// in-game wiki UI that DQ doesn't ship; the call had nothing to do.
 	return SS_INIT_SUCCESS
 
 

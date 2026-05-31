@@ -22,9 +22,6 @@
 	var/ss_flags = 0
 
 
-// === /tg/ atmos handbooks (called by SSair.Initialize) ===
-/proc/atmos_handbooks_init()
-	return
 
 
 // === /tg/ SSblackbox telemetry — wired to CHOMP's feedback_add_details ===
@@ -138,30 +135,20 @@ GLOBAL_LIST_INIT(contrast_colors, list("#ff0000", "#00ff00", "#0000ff", "#ffff00
 	smoothing_junction = new_junction
 
 
-// SSair admin debug TGUI procs — kept as no-op base impls because SSair.dm has
-// its own self-references (ui_state passed to ui_interact, etc.). Wire to real
-// /tg/ debug TGUI when DQ adds the corresponding admin tooling.
+// SSair admin TGUI base proc declarations. The REAL implementations live in
+// the vendored SSair.dm (line 774 onward) and use override syntax — without
+// these base declarations the compiler errors "ui_state: undefined proc"
+// because CHOMP's TGUI uses tgui_state/tgui_interact (different names) and
+// has no /datum-level base for /tg/'s ui_* convention.
 /datum/controller/subsystem/air/proc/ui_state(mob/user)
-	return null
-
 /datum/controller/subsystem/air/proc/ui_interact(mob/user, datum/tgui/ui)
-	return
-
 /datum/controller/subsystem/air/proc/ui_data(mob/user)
-	return list()
-
 /datum/controller/subsystem/air/proc/ui_act(action, list/params)
-	return
 
 
-// === /tg/ machinery atmos lifecycle hooks (LINDA SSair iterates these) ===
-// CHOMP /obj/machinery has its own machine init; LINDA expects these on every
-// machine. atmos_init is the post-init "wire up to pipenet" hook — CHOMP
-// machinery uses build_network() instead. Stub both as no-ops at the base.
-/obj/machinery/proc/get_rebuild_targets()
-	return list()
-
-// `atmos_init` already exists in CHOMP via _atmospherics_helpers.dm.
+// get_rebuild_targets — used to be needed by /tg/'s centralized pipenet
+// rebuild subsystem; removed when we dropped that subsystem in favour of
+// CHOMP's per-machine build_network(). No callers remain.
 
 
 // /atom.CanZASPass — real impl lives in xgm_compat.dm (routes to can_atmos_pass
