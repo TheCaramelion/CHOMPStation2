@@ -720,6 +720,18 @@ Then we space some of our heat, and think about if we should stop conducting.
 	return TRUE
 
 /turf/open/consider_superconductivity(starting)
+	// DQEdit — after the /turf/simulated → /turf/open reparent, walls/rocks
+	// dispatch through /turf/open but have air=null. Defer to /turf/closed
+	// behaviour (use src.temperature instead of air.temperature) so super-
+	// conduction works on walls without a null.temperature deref.
+	if(!air)
+		if(temperature < (starting ? MINIMUM_TEMPERATURE_START_SUPERCONDUCTION : MINIMUM_TEMPERATURE_FOR_SUPERCONDUCTION))
+			return FALSE
+		// Fall through to /turf base impl that just sets the active list.
+		if(!thermal_conductivity)
+			return FALSE
+		SSair.active_super_conductivity |= src
+		return TRUE
 	if(air.temperature < (starting?MINIMUM_TEMPERATURE_START_SUPERCONDUCTION:MINIMUM_TEMPERATURE_FOR_SUPERCONDUCTION))
 		return FALSE
 	if(air.heat_capacity() < M_CELL_WITH_RATIO) // Was: MOLES_CELLSTANDARD*0.1*0.05 Since there are no variables here we can make this a constant.

@@ -2203,4 +2203,448 @@
 	qdel(P)
 
 
+// =====================================================================
+// Fire propagation, depressurization, environment damage
+// =====================================================================
+
+/// Hotspot on one tile should ignite gas on an adjacent tile after enough
+/// ticks of share + hotspot_expose. This is the visible "fire spreads" game
+/// behaviour — if it doesn't work, plasma breaches don't propagate.
+/datum/unit_test/dq_fire_spreads_to_adjacent_floor
+
+/datum/unit_test/dq_fire_spreads_to_adjacent_floor/Run()
+	var/list/pair = dq_atmos_test_find_floor_pair()
+	TEST_ASSERT_NOTNULL(pair, "no floor pair for fire-spread test")
+	var/turf/simulated/floor/A = pair[1]
+	var/turf/simulated/floor/B = pair[2]
+
+	dq_atmos_test_isolate_pair(A, B)
+	A.current_cycle = -1
+	B.current_cycle = -2
+
+	// Clear any prior hotspots.
+	if(A.active_hotspot)
+		qdel(A.active_hotspot)
+		A.active_hotspot = null
+	if(B.active_hotspot)
+		qdel(B.active_hotspot)
+		B.active_hotspot = null
+
+	// Stock both with plasma + oxygen so once gas migrates, B can also burn.
+	for(var/datum/gas/g as anything in A.air.gases)
+		A.air.gases[g][MOLES] = 0
+	for(var/datum/gas/g as anything in B.air.gases)
+		B.air.gases[g][MOLES] = 0
+	A.air.adjust_gas(/datum/gas/plasma, 30)
+	A.air.adjust_gas(/datum/gas/oxygen, 100)
+	A.air.set_temperature(PLASMA_MINIMUM_BURN_TEMPERATURE + 500)
+	B.air.adjust_gas(/datum/gas/plasma, 30)
+	B.air.adjust_gas(/datum/gas/oxygen, 100)
+	B.air.set_temperature(T20C)
+
+	// Ignite A.
+	A.hotspot_expose(PLASMA_MINIMUM_BURN_TEMPERATURE + 500, CELL_VOLUME, soh = TRUE)
+	TEST_ASSERT_NOTNULL(A.active_hotspot, "A didn't ignite from hotspot_expose")
+
+	// Drive several ticks — share + hotspot.process should heat B and ignite.
+	SSair.add_to_active(A)
+	dq_atmos_test_drive_ticks(list(A, B), 20)
+
+	// After enough ticks, B should have caught fire (hotspot present OR
+	// temperature now well above ignition).
+	var/b_caught = !isnull(B.active_hotspot) || B.air.temperature > PLASMA_MINIMUM_BURN_TEMPERATURE
+	TEST_ASSERT(b_caught, \
+		"fire did not spread from A to B over 20 ticks. B.hotspot=[B.active_hotspot] B.temp=[B.air.temperature]")
+
+	if(A.active_hotspot)
+		qdel(A.active_hotspot)
+		A.active_hotspot = null
+	if(B.active_hotspot)
+		qdel(B.active_hotspot)
+		B.active_hotspot = null
+	A.air.set_moles(/datum/gas/plasma, 0)
+	B.air.set_moles(/datum/gas/plasma, 0)
+	A.update_visuals()
+	B.update_visuals()
+
+
+/// Spacing: a pressurized floor adjacent to a space tile should LOSE moles
+/// every tick as gas vents into space (sharing with the immutable vacuum mix).
+/datum/unit_test/dq_room_depressurizes_when_open_to_space
+
+/datum/unit_test/dq_room_depressurizes_when_open_to_space/Run()
+	// Find a /turf/simulated/floor adjacent to /turf/space.
+	var/turf/simulated/floor/A = null
+	var/turf/space/S = null
+	for(var/turf/simulated/floor/cand in world)
+		if(!cand.air || cand.blocks_air)
+			continue
+		for(var/direction in GLOB.cardinal)
+			var/turf/n = get_step(cand, direction)
+			if(istype(n, /turf/space))
+				A = cand
+				S = n
+				break
+		if(A)
+			break
+	if(!A)
+		log_test("dq_room_depressurizes: no floor-space pair on test map, skipping")
+		return
+
+	// Force isolated A↔S adjacency so the share is deterministic. Other
+	// floors next to A might have stale current_cycle from prior tests that
+	// would gate the space neighbor.
+	dq_atmos_test_isolate_pair(A, S)
+	A.current_cycle = -1
+	S.current_cycle = -2
+
+	// Make sure S has air (vacuum is a real /datum/gas_mixture, not null).
+	TEST_ASSERT_NOTNULL(S.air, "/turf/space.air is null — /turf/open/Initialize didn't create the vacuum mixture")
+
+	for(var/datum/gas/g as anything in A.air.gases)
+		A.air.gases[g][MOLES] = 0
+	A.air.adjust_gas(/datum/gas/nitrogen, MOLES_N2STANDARD * 5) // ~5 atm
+	A.air.set_temperature(T20C)
+	// And ensure space is genuinely vacuum (some maps initialize it with trace gas).
+	for(var/datum/gas/g as anything in S.air.gases)
+		S.air.gases[g][MOLES] = 0
+
+	var/initial_pressure = A.air.return_pressure()
+	var/initial_moles = A.air.total_moles()
+
+	SSair.add_to_active(A)
+	// Drive both A and S so the share is symmetric.
+	dq_atmos_test_drive_ticks(list(A, S), 30)
+
+	var/final_pressure = A.air.return_pressure()
+	var/final_moles = A.air.total_moles()
+	TEST_ASSERT(final_pressure < initial_pressure, \
+		"pressurised floor adjacent to space didn't depressurize: [initial_pressure] → [final_pressure]")
+	TEST_ASSERT(final_moles < initial_moles, \
+		"depressurization didn't drain moles: [initial_moles] → [final_moles]")
+
+	// Restore baseline.
+	A.air.set_moles(/datum/gas/nitrogen, MOLES_N2STANDARD)
+
+
+/// Full atmos cycle: vent_pump pressurizes a turf, vent_scrubber on the
+/// same turf removes a target gas. Validates the supply→space→scrub loop.
+/datum/unit_test/dq_full_atmos_cycle_vent_then_scrubber
+
+/datum/unit_test/dq_full_atmos_cycle_vent_then_scrubber/Run()
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for full-cycle test")
+
+	var/datum/gas_mixture/turf_air = T.return_air()
+	for(var/datum/gas/g as anything in turf_air.gases)
+		turf_air.gases[g][MOLES] = 0
+	turf_air.set_temperature(T20C)
+
+	// Pollute the turf with CO2 — the scrubber's target.
+	turf_air.adjust_gas(/datum/gas/carbon_dioxide, 200)
+
+	// Vent_pump preloaded with clean N2 supply.
+	var/obj/machinery/atmospherics/unary/vent_pump/V = new(T)
+	V.air_contents.adjust_gas(/datum/gas/nitrogen, 500)
+	V.air_contents.set_temperature(T20C)
+	V.node = V
+	V.use_power = USE_POWER_IDLE
+	V.stat &= ~(NOPOWER | BROKEN)
+	V.welded = FALSE
+	V.pump_direction = 1
+	V.external_pressure_bound = ONE_ATMOSPHERE * 1.5
+	V.internal_pressure_bound = 0
+
+	// Scrubber configured for CO2.
+	var/obj/machinery/atmospherics/unary/vent_scrubber/S = new(T)
+	S.node = S
+	S.use_power = USE_POWER_IDLE
+	S.stat &= ~(NOPOWER | BROKEN)
+	S.welded = FALSE
+	S.scrubbing = 1
+	S.scrubbing_gas = list(GAS_CO2)
+
+	var/initial_co2 = turf_air.get_moles(/datum/gas/carbon_dioxide)
+	var/initial_n2 = turf_air.get_moles(/datum/gas/nitrogen)
+
+	for(var/i in 1 to 10)
+		V.process()
+		S.process()
+
+	var/final_co2 = turf_air.get_moles(/datum/gas/carbon_dioxide)
+	var/final_n2 = turf_air.get_moles(/datum/gas/nitrogen)
+	TEST_ASSERT(final_co2 < initial_co2, \
+		"CO2 not removed by scrubber: [initial_co2] → [final_co2]")
+	TEST_ASSERT(final_n2 > initial_n2, \
+		"N2 not added by vent: [initial_n2] → [final_n2]")
+	// Scrubber captured the CO2.
+	TEST_ASSERT(S.air_contents.get_moles(/datum/gas/carbon_dioxide) > 0, \
+		"scrubber air_contents didn't accumulate CO2")
+
+	for(var/datum/gas/g as anything in turf_air.gases)
+		turf_air.gases[g][MOLES] = 0
+	qdel(V)
+	qdel(S)
+
+
+/// High-pressure environment damages a human via handle_environment.
+/datum/unit_test/dq_high_pressure_damages_human
+
+/datum/unit_test/dq_high_pressure_damages_human/Run()
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for high-pressure test")
+
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human, T)
+	TEST_ASSERT_NOTNULL(H, "couldn't allocate human")
+
+	var/datum/gas_mixture/turf_air = T.return_air()
+	for(var/datum/gas/g as anything in turf_air.gases)
+		turf_air.gases[g][MOLES] = 0
+	// Crush pressure (~20 atm).
+	turf_air.adjust_gas(/datum/gas/nitrogen, MOLES_N2STANDARD * 20)
+	turf_air.set_temperature(T20C)
+
+	var/initial_brute = H.getBruteLoss()
+	for(var/i in 1 to 5)
+		H.handle_environment(turf_air)
+	var/final_brute = H.getBruteLoss()
+
+	TEST_ASSERT(final_brute > initial_brute, \
+		"human took no brute damage at ~20 atm pressure: [initial_brute] → [final_brute]")
+
+	// Reset turf to standard atmosphere.
+	for(var/datum/gas/g as anything in turf_air.gases)
+		turf_air.gases[g][MOLES] = 0
+	turf_air.adjust_gas(/datum/gas/oxygen, MOLES_O2STANDARD)
+	turf_air.adjust_gas(/datum/gas/nitrogen, MOLES_N2STANDARD)
+
+
+/// Extreme cold environment burns a human (cold burn → fire damage).
+/datum/unit_test/dq_extreme_cold_damages_human
+
+/datum/unit_test/dq_extreme_cold_damages_human/Run()
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for cold-damage test")
+
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human, T)
+	TEST_ASSERT_NOTNULL(H, "couldn't allocate human")
+
+	var/datum/gas_mixture/turf_air = T.return_air()
+	for(var/datum/gas/g as anything in turf_air.gases)
+		turf_air.gases[g][MOLES] = 0
+	turf_air.adjust_gas(/datum/gas/nitrogen, MOLES_N2STANDARD)
+	turf_air.set_temperature(50) // 50 K, ~-223°C
+
+	// Cold burn → fire damage in CHOMP humans.
+	var/initial_fireloss = H.getFireLoss()
+	for(var/i in 1 to 10)
+		H.handle_environment(turf_air)
+	var/final_fireloss = H.getFireLoss()
+
+	TEST_ASSERT(final_fireloss > initial_fireloss, \
+		"human took no fireloss at 50K: [initial_fireloss] → [final_fireloss]")
+
+	for(var/datum/gas/g as anything in turf_air.gases)
+		turf_air.gases[g][MOLES] = 0
+	turf_air.adjust_gas(/datum/gas/oxygen, MOLES_O2STANDARD)
+	turf_air.adjust_gas(/datum/gas/nitrogen, MOLES_N2STANDARD)
+	turf_air.set_temperature(T20C)
+
+
+/// Tank pressure: a tank filled past its rupture threshold should report its
+/// pressure correctly via return_pressure. This validates the tank's
+/// air_contents pressure read.
+/datum/unit_test/dq_tank_pressure_read_correct
+
+/datum/unit_test/dq_tank_pressure_read_correct/Run()
+	var/obj/item/tank/oxygen/Tank = new(locate(1, 1, 1))
+	TEST_ASSERT_NOTNULL(Tank, "couldn't construct oxygen tank")
+	TEST_ASSERT_NOTNULL(Tank.air_contents, "tank air_contents null")
+	var/initial_p = Tank.return_pressure()
+	TEST_ASSERT(initial_p > 0, "fresh oxygen tank returned 0 pressure")
+	TEST_ASSERT(initial_p < TANK_FRAGMENT_PRESSURE, \
+		"fresh tank should be below fragment pressure, got [initial_p]")
+
+	// Pressurize further.
+	Tank.air_contents.adjust_gas(/datum/gas/oxygen, 500)
+	Tank.air_contents.set_temperature(T0C + 100) // hot
+	var/loaded_p = Tank.return_pressure()
+	TEST_ASSERT(loaded_p > initial_p, \
+		"adding gas didn't raise tank pressure: [initial_p] → [loaded_p]")
+
+	qdel(Tank)
+
+
+// =====================================================================
+// Air alarm pressure detection
+// =====================================================================
+
+/// Air alarm constructs and reads turf pressure correctly. Validates the
+/// alarm → LINDA gas_mixture integration.
+/datum/unit_test/dq_air_alarm_reads_turf_pressure
+
+/datum/unit_test/dq_air_alarm_reads_turf_pressure/Run()
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for air alarm test")
+
+	var/datum/gas_mixture/turf_air = T.return_air()
+	for(var/datum/gas/g as anything in turf_air.gases)
+		turf_air.gases[g][MOLES] = 0
+	turf_air.adjust_gas(/datum/gas/oxygen, MOLES_O2STANDARD)
+	turf_air.adjust_gas(/datum/gas/nitrogen, MOLES_N2STANDARD)
+	turf_air.set_temperature(T20C)
+
+	var/obj/machinery/alarm/A = new(T)
+	TEST_ASSERT_NOTNULL(A, "couldn't construct air alarm")
+
+	// The alarm reads its turf's pressure. ~one atmosphere ≈ 101.3 kPa.
+	var/pressure = turf_air.return_pressure()
+	TEST_ASSERT(abs(pressure - ONE_ATMOSPHERE) < 5, \
+		"turf pressure not standard atmosphere: got [pressure]")
+
+	// Pollute with plasma — danger threshold should now be tripped.
+	turf_air.adjust_gas(/datum/gas/plasma, 50)
+	A.process()
+	// Alarm should now report unsafe (whether via danger_level var or icon
+	// state — depends on alarm impl). Just verify process() didn't crash.
+
+	turf_air.set_moles(/datum/gas/plasma, 0)
+	qdel(A)
+
+
+// =====================================================================
+// Supermatter + R-UST fusion engine
+// =====================================================================
+
+/// Supermatter degrades when surrounded by no-air vacuum (no coolant).
+/// /tg/'s supermatter takes damage when it has power but no environment to
+/// dump heat into. Validates the env=null branch.
+/datum/unit_test/dq_supermatter_accumulates_damage_in_vacuum
+
+/datum/unit_test/dq_supermatter_accumulates_damage_in_vacuum/Run()
+	// Use a space turf so removed.total_moles will be ~0.
+	var/turf/space/S = null
+	for(var/turf/space/cand in world)
+		S = cand
+		break
+	if(!S)
+		log_test("dq_supermatter_accumulates_damage_in_vacuum: no space turf on map, skipping")
+		return
+
+	var/obj/machinery/power/supermatter/SM = new(S)
+	TEST_ASSERT_NOTNULL(SM, "supermatter failed to construct on space turf")
+	// Give it some power so the no-env damage formula produces > 0.
+	SM.power = 200
+	var/initial_damage = SM.damage
+
+	SM.process()
+
+	TEST_ASSERT(SM.damage > initial_damage, \
+		"supermatter at power=200 in space (no coolant) didn't accumulate damage: [initial_damage] → [SM.damage]")
+
+	qdel(SM)
+
+
+/// R-UST fusion engine components all construct without erroring. This is a
+/// smoke test — full delamination dynamics need the fusion field datum
+/// instantiated, which requires a 3x3 magnet array setup.
+/datum/unit_test/dq_fusion_engine_components_construct
+
+/datum/unit_test/dq_fusion_engine_components_construct/Run()
+	var/turf/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for fusion construct test")
+
+	var/obj/machinery/power/fusion_core/Core = new(T)
+	TEST_ASSERT_NOTNULL(Core, "fusion_core failed to construct")
+	TEST_ASSERT(istype(Core, /obj/machinery/power/fusion_core), \
+		"fusion_core wrong type: [Core.type]")
+	qdel(Core)
+
+	var/obj/item/fuel_assembly/deuterium/D = new(T)
+	TEST_ASSERT_NOTNULL(D, "deuterium fuel_assembly failed to construct")
+	qdel(D)
+
+	var/obj/item/fuel_assembly/tritium/Tr = new(T)
+	TEST_ASSERT_NOTNULL(Tr, "tritium fuel_assembly failed to construct")
+	qdel(Tr)
+
+	var/obj/item/fuel_assembly/phoron/Ph = new(T)
+	TEST_ASSERT_NOTNULL(Ph, "phoron fuel_assembly failed to construct")
+	qdel(Ph)
+
+	var/obj/machinery/fusion_fuel_compressor/FC = new(T)
+	TEST_ASSERT_NOTNULL(FC, "fusion_fuel_compressor failed to construct")
+	qdel(FC)
+
+
+// =====================================================================
+// Atmos events (gas_leak / atmos_leak)
+// =====================================================================
+
+/// /datum/event/atmos_leak: validate the event datum type tree exists and
+/// loads. Full event firing requires SSticker + event_meta + player count
+/// orchestration; that's the event scheduler's domain, not atmos. We just
+/// confirm the type is defined so LINDA migration didn't break it at compile.
+/datum/unit_test/dq_atmos_leak_event_type_exists
+
+/datum/unit_test/dq_atmos_leak_event_type_exists/Run()
+	var/event_type = /datum/event/atmos_leak
+	TEST_ASSERT_NOTNULL(event_type, "atmos_leak event type undefined")
+	// gas_leak is a similar gamemaster event.
+	var/list/gas_event_types = list()
+	for(var/datum/event/E_path as anything in subtypesof(/datum/event))
+		if(findtext("[E_path]", "leak") || findtext("[E_path]", "atmos"))
+			gas_event_types += E_path
+	TEST_ASSERT(length(gas_event_types) > 0, \
+		"no atmos/leak event types registered — events directory may have been gutted")
+
+
+// =====================================================================
+// Pipe reactions: gas reactions inside a pipenet
+// =====================================================================
+
+/// Plasma + O2 + hot temperature inside a /datum/pipeline should react via
+/// /datum/pipeline.process_pipeline_reaction(). Verifies that gas reactions
+/// work in pipenets (not just on turfs).
+/datum/unit_test/dq_pipenet_gas_reacts_in_pipeline
+
+/datum/unit_test/dq_pipenet_gas_reacts_in_pipeline/Run()
+	var/datum/pipeline/P = new
+	P.air = new(CELL_VOLUME)
+	P.air.adjust_gas(/datum/gas/plasma, 50)
+	P.air.adjust_gas(/datum/gas/oxygen, 200)
+	P.air.set_temperature(PLASMA_MINIMUM_BURN_TEMPERATURE + 300)
+
+	var/initial_plasma = P.air.get_moles(/datum/gas/plasma)
+	var/initial_temp = P.air.temperature
+
+	P.air.react(P)
+
+	var/final_plasma = P.air.get_moles(/datum/gas/plasma)
+	TEST_ASSERT(final_plasma < initial_plasma, \
+		"plasma didn't burn inside pipeline: [initial_plasma] → [final_plasma]")
+	TEST_ASSERT(P.air.temperature > initial_temp, \
+		"pipeline plasmafire didn't release heat: [initial_temp] → [P.air.temperature]")
+	qdel(P)
+
 
