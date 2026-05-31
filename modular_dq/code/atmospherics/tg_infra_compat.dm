@@ -135,15 +135,10 @@ GLOBAL_LIST_INIT(contrast_colors, list("#ff0000", "#00ff00", "#0000ff", "#ffff00
 	smoothing_junction = new_junction
 
 
-// SSair admin TGUI base proc declarations. The REAL implementations live in
-// the vendored SSair.dm (line 774 onward) and use override syntax — without
-// these base declarations the compiler errors "ui_state: undefined proc"
-// because CHOMP's TGUI uses tgui_state/tgui_interact (different names) and
-// has no /datum-level base for /tg/'s ui_* convention.
-/datum/controller/subsystem/air/proc/ui_state(mob/user)
-/datum/controller/subsystem/air/proc/ui_interact(mob/user, datum/tgui/ui)
-/datum/controller/subsystem/air/proc/ui_data(mob/user)
-/datum/controller/subsystem/air/proc/ui_act(action, list/params)
+// SSair admin TGUI procs (ui_state/ui_interact/ui_data/ui_act) are declared
+// directly on /datum/controller/subsystem/air in the vendored SSair.dm — no
+// stubs needed here. (Previously kept as base declarations because SSair.dm
+// used override syntax; promoted to fresh declarations in SSair.dm.)
 
 
 // get_rebuild_targets — used to be needed by /tg/'s centralized pipenet
@@ -179,16 +174,10 @@ GLOBAL_LIST_INIT(contrast_colors, list("#ff0000", "#00ff00", "#0000ff", "#ffff00
 	return heat_capacity() * (new_temperature - temperature)
 
 
-// === GLOB.electrolyzer_reactions + /datum/electrolyzer_reaction ===
-GLOBAL_LIST_EMPTY(electrolyzer_reactions)
-
-/datum/electrolyzer_reaction
-
-/datum/electrolyzer_reaction/proc/reaction_check(datum/gas_mixture/air_mixture, electrolyzer_args)
-	return FALSE
-
-/datum/electrolyzer_reaction/proc/react(datum/gas_mixture/air_mixture, working_power, electrolyzer_args)
-	return
+// /tg/'s electrolyzer scaffolding (GLOB.electrolyzer_reactions, /datum/
+// electrolyzer_reaction) was removed alongside /datum/gas_mixture/proc/
+// electrolyze in gasmixtures/gas_mixture.dm — DQ has no electrolyzer
+// machinery to populate or consume them.
 
 
 // atmosanalyzer_scan + analyze_gases live in code/_helpers/atmospherics.dm.

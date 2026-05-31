@@ -771,17 +771,22 @@ GLOBAL_LIST_EMPTY(colored_images)
 	if(currentpart == SSAIR_ATMOSMACHINERY)
 		currentrun -= machine
 
-/datum/controller/subsystem/air/ui_state(mob/user)
+// DQEdit — added /proc/ keyword so these are fresh declarations rather than
+// overrides. CHOMP's TGUI base uses tgui_state/tgui_interact (different proc
+// names) and has no /datum-level ui_* base, so the original /tg/ override
+// syntax was relying on a base declaration in tg_infra_compat.dm. Promoting
+// these to fresh declarations lets us delete that scaffolding.
+/datum/controller/subsystem/air/proc/ui_state(mob/user)
 	return ADMIN_STATE(R_DEBUG)
 
-/datum/controller/subsystem/air/ui_interact(mob/user, datum/tgui/ui)
+/datum/controller/subsystem/air/proc/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "AtmosControlPanel")
 		ui.set_autoupdate(FALSE)
 		ui.open()
 
-/datum/controller/subsystem/air/ui_data(mob/user)
+/datum/controller/subsystem/air/proc/ui_data(mob/user)
 	var/list/data = list()
 	data["excited_groups"] = list()
 	for(var/datum/excited_group/group in excited_groups)
@@ -818,9 +823,12 @@ GLOBAL_LIST_EMPTY(colored_images)
 	data["showing_user"] = user.hud_used.atmos_debug_overlays
 	return data
 
-/datum/controller/subsystem/air/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
-	. = ..()
-	if(. || !check_rights_for(usr.client, R_DEBUG))
+/datum/controller/subsystem/air/proc/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	// DQEdit — was . = ..(); but as a fresh declaration there's no parent to
+	// chain to. The /tg/ ..() called /datum/ui_state ancestry which CHOMP's
+	// TGUI doesn't have. Skip the parent chain; rights check below handles
+	// the permission gate that ..() would have asserted.
+	if(!check_rights_for(usr.client, R_DEBUG))
 		return
 	switch(action)
 		if("move-to-target")

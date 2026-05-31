@@ -759,22 +759,11 @@ GLOBAL_LIST_INIT(gaslist_cache, init_gaslist_cache())
 	output_air.merge(removed)
 	return TRUE
 
-/**
- * Calls for electrolyzer_reaction reactions on the gas_mixture.
- * Arguments:
- * * working_power - working_power to use for the electrolyzer_reaction reactions.
- * * electrolyzer_args - electrolysis arguments to use for the electrolyzer_reaction reactions.
- */
-/datum/gas_mixture/proc/electrolyze(working_power = 0, electrolyzer_args = list())
-	for(var/reaction in GLOB.electrolyzer_reactions)
-		var/datum/electrolyzer_reaction/current_reaction = GLOB.electrolyzer_reactions[reaction]
-
-		if(!current_reaction.reaction_check(air_mixture = src, electrolyzer_args = electrolyzer_args))
-			continue
-
-		current_reaction.react(air_mixture = src, working_power = working_power, electrolyzer_args = electrolyzer_args)
-
-	garbage_collect()
+// DQEdit — /datum/gas_mixture/proc/electrolyze removed. /tg/'s electrolyzer
+// machinery (which is the only caller) isn't ported to DQ; the proc had no
+// live callers, and keeping it required /datum/electrolyzer_reaction +
+// GLOB.electrolyzer_reactions stubs in tg_infra_compat. Re-add this proc
+// when porting /tg/ electrolyzer machinery.
 
 /// Convert a gas mixture to a string (ie. "o2=22;n2=82;TEMP=180")
 /// Rounds all temperature and gases to 0.01 and skips any gases less than that amount
