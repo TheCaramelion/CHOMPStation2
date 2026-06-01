@@ -3845,9 +3845,10 @@
 		"vacuum mixture has non-zero heat_capacity: [hc]")
 
 
-/// gas_mixture.remove(0) and remove(very small) must return a non-null but
-/// empty mixture without crashing the Rust side. Callers (filters, scrubbers,
-/// pumps) sometimes hit this branch when load is balanced.
+/// gas_mixture.remove(0) and remove(negative) must not crash and must NOT
+/// drain the source mixture. The contract is "amount <= 0 returns null"
+/// (see gas_mixture.dm); callers (filters, scrubbers, pumps) hit this
+/// branch when load is balanced and must handle null without leaking.
 /datum/unit_test/dq_gas_mixture_remove_zero_safe
 
 /datum/unit_test/dq_gas_mixture_remove_zero_safe/Run()
@@ -3856,18 +3857,15 @@
 	mix.set_temperature(T20C)
 	var/initial_moles = mix.total_moles()
 
+	// remove(0): contract returns null. Source must not change.
 	var/datum/gas_mixture/r0 = mix.remove(0)
-	TEST_ASSERT_NOTNULL(r0, "remove(0) returned null — should return an empty mixture")
-	TEST_ASSERT(r0.total_moles() < 0.001, \
-		"remove(0) returned [r0.total_moles()] moles — should be 0")
+	TEST_ASSERT_NULL(r0, "remove(0) returned non-null — contract is null for amount<=0")
 	TEST_ASSERT(abs(mix.total_moles() - initial_moles) < 0.001, \
 		"remove(0) drained source: [initial_moles] → [mix.total_moles()]")
 
-	// Negative remove should be treated as a no-op, not a leak.
+	// remove(negative): same contract — null, no drain.
 	var/datum/gas_mixture/rneg = mix.remove(-10)
-	if(rneg)
-		TEST_ASSERT(rneg.total_moles() < 0.001, \
-			"remove(-10) somehow extracted [rneg.total_moles()] moles")
+	TEST_ASSERT_NULL(rneg, "remove(-10) returned non-null — should be null per contract")
 	TEST_ASSERT(abs(mix.total_moles() - initial_moles) < 0.001, \
 		"remove(-10) drained source: [initial_moles] → [mix.total_moles()]")
 
@@ -4075,6 +4073,123 @@
 		"step3: drain conservation broken: tank lost [after_fill - final_moles], breath got [b2_moles]")
 
 	qdel(Tank)
+
+
+// =====================================================================
+// Round 12: vent_scrubber siphon mode, two-floor diffusion equilibrium
+// =====================================================================
+
+/// Vent_scrubber with scrubbing=0 (siphon/panic mode) drains ALL turf air
+/// into its pipe regardless of gas type — the emergency-vacuum path. Tests
+/// the pump_gas helper used in the siphon branch of vent_scrubber.process().
+/datum/unit_test/dq_vent_scrubber_siphon_drains_all_gas
+
+/datum/unit_test/dq_vent_scrubber_siphon_drains_all_gas/Run()
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for siphon test")
+
+	var/datum/gas_mixture/turf_air = T.return_air()
+	for(var/datum/gas/g as anything in turf_air.gases)
+		turf_air.gases[g][MOLES] = 0
+	// Mixed atmosphere — N2, O2, CO2 — none of which a scrubber would
+	// normally filter. Siphon mode should grab all three.
+	turf_air.adjust_gas(/datum/gas/nitrogen, 200)
+	turf_air.adjust_gas(/datum/gas/oxygen, 100)
+	turf_air.adjust_gas(/datum/gas/carbon_dioxide, 30)
+	turf_air.set_temperature(T20C)
+
+	var/obj/machinery/atmospherics/unary/vent_scrubber/S = new(T)
+	TEST_ASSERT_NOTNULL(S, "scrubber construct failed")
+	S.node = S
+	S.use_power = USE_POWER_IDLE
+	S.stat &= ~(NOPOWER | BROKEN)
+	S.welded = FALSE
+	S.scrubbing = 0  // SIPHON mode
+	S.scrubbing_gas = list() // siphon doesn't consult this
+
+	var/initial_n2 = turf_air.get_moles(/datum/gas/nitrogen)
+	var/initial_o2 = turf_air.get_moles(/datum/gas/oxygen)
+	var/initial_co2 = turf_air.get_moles(/datum/gas/carbon_dioxide)
+	var/initial_total = initial_n2 + initial_o2 + initial_co2
+
+	for(var/i in 1 to 20)
+		S.process()
+
+	var/final_n2 = turf_air.get_moles(/datum/gas/nitrogen)
+	var/final_o2 = turf_air.get_moles(/datum/gas/oxygen)
+	var/final_co2 = turf_air.get_moles(/datum/gas/carbon_dioxide)
+	TEST_ASSERT(final_n2 < initial_n2, "siphon didn't drain N2: [initial_n2] → [final_n2]")
+	TEST_ASSERT(final_o2 < initial_o2, "siphon didn't drain O2: [initial_o2] → [final_o2]")
+	TEST_ASSERT(final_co2 < initial_co2, "siphon didn't drain CO2: [initial_co2] → [final_co2]")
+
+	// Scrubber pipe should have accumulated the drained gas.
+	var/pipe_total = S.air_contents.total_moles()
+	TEST_ASSERT(pipe_total > 0, "siphon scrubber pipe gained no gas: [pipe_total]")
+	// Conservation: turf loss == pipe gain.
+	var/turf_lost = initial_total - (final_n2 + final_o2 + final_co2)
+	TEST_ASSERT(abs(turf_lost - pipe_total) < 1, \
+		"siphon conservation broken: turf lost [turf_lost], pipe got [pipe_total]")
+
+	for(var/datum/gas/g as anything in turf_air.gases)
+		turf_air.gases[g][MOLES] = 0
+	qdel(S)
+
+
+/// Two adjacent floor cells, one full of N2, one full of O2 — after enough
+/// process_cell ticks they should diffuse to roughly 50/50 in each cell.
+/// Validates the LINDA share() math drives gas mixing toward equilibrium,
+/// not just toward equal moles.
+/datum/unit_test/dq_diffusion_converges_to_balanced_composition
+
+/datum/unit_test/dq_diffusion_converges_to_balanced_composition/Run()
+	var/list/pair = dq_atmos_test_find_floor_pair()
+	TEST_ASSERT_NOTNULL(pair, "no adjacent-floor pair for diffusion test")
+	var/turf/open/A = pair[1]
+	var/turf/open/B = pair[2]
+	dq_atmos_test_isolate_pair(A, B)
+
+	var/datum/gas_mixture/A_air = A.return_air()
+	var/datum/gas_mixture/B_air = B.return_air()
+	for(var/datum/gas/g as anything in A_air.gases)
+		A_air.gases[g][MOLES] = 0
+	for(var/datum/gas/g as anything in B_air.gases)
+		B_air.gases[g][MOLES] = 0
+	A_air.adjust_gas(/datum/gas/nitrogen, 200)
+	A_air.set_temperature(T20C)
+	B_air.adjust_gas(/datum/gas/oxygen, 200)
+	B_air.set_temperature(T20C)
+
+	var/initial_total_n2 = A_air.get_moles(/datum/gas/nitrogen)
+	var/initial_total_o2 = B_air.get_moles(/datum/gas/oxygen)
+
+	// Drive equilibration.
+	dq_atmos_test_drive_ticks(list(A, B), 60)
+
+	// Each cell should now hold roughly half N2 and half O2.
+	var/a_n2 = A_air.get_moles(/datum/gas/nitrogen)
+	var/a_o2 = A_air.get_moles(/datum/gas/oxygen)
+	var/b_n2 = B_air.get_moles(/datum/gas/nitrogen)
+	var/b_o2 = B_air.get_moles(/datum/gas/oxygen)
+
+	// Composition: in each cell, N2 and O2 should be approximately equal.
+	TEST_ASSERT(abs(a_n2 - a_o2) < (initial_total_n2 * 0.1), \
+		"A didn't reach 50/50 composition: N2=[a_n2] O2=[a_o2]")
+	TEST_ASSERT(abs(b_n2 - b_o2) < (initial_total_o2 * 0.1), \
+		"B didn't reach 50/50 composition: N2=[b_n2] O2=[b_o2]")
+	// Cross-conservation: total N2 still ~200, total O2 still ~200.
+	TEST_ASSERT(abs((a_n2 + b_n2) - initial_total_n2) < 1, \
+		"N2 mass lost during diffusion: [initial_total_n2] → [a_n2 + b_n2]")
+	TEST_ASSERT(abs((a_o2 + b_o2) - initial_total_o2) < 1, \
+		"O2 mass lost during diffusion: [initial_total_o2] → [a_o2 + b_o2]")
+
+	for(var/datum/gas/g as anything in A_air.gases)
+		A_air.gases[g][MOLES] = 0
+	for(var/datum/gas/g as anything in B_air.gases)
+		B_air.gases[g][MOLES] = 0
 
 
 
