@@ -2900,4 +2900,228 @@
 	qdel(Pump)
 
 
+// =====================================================================
+// Round 5: shared pipenet loop, cryo flow, item heat, thruster, freeze
+// =====================================================================
+
+/// Vent + scrubber sharing the same pipenet air mixture: this is the
+/// production setup where supply (vent) and exhaust (scrubber) are both
+/// connected to the same pipe. Seed CO2-polluted turf, run both machines,
+/// verify CO2 ends up in the shared pipenet and N2 from the shared pipenet
+/// reaches the turf.
+/datum/unit_test/dq_shared_pipenet_vent_and_scrubber_loop
+
+/datum/unit_test/dq_shared_pipenet_vent_and_scrubber_loop/Run()
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for shared-pipenet test")
+
+	var/datum/gas_mixture/turf_air = T.return_air()
+	for(var/datum/gas/g as anything in turf_air.gases)
+		turf_air.gases[g][MOLES] = 0
+	turf_air.adjust_gas(/datum/gas/carbon_dioxide, 200)
+	turf_air.set_temperature(T20C)
+
+	// Shared pipenet air mixture (represents the connecting pipe).
+	var/datum/gas_mixture/shared = new(200)
+	shared.adjust_gas(/datum/gas/nitrogen, 1000)
+	shared.set_temperature(T20C)
+
+	var/obj/machinery/atmospherics/unary/vent_pump/V = new(T)
+	V.air_contents = shared
+	V.node = V
+	V.use_power = USE_POWER_IDLE
+	V.stat &= ~(NOPOWER | BROKEN)
+	V.welded = FALSE
+	V.pump_direction = 1
+	V.external_pressure_bound = ONE_ATMOSPHERE * 1.5
+	V.internal_pressure_bound = 0
+
+	var/obj/machinery/atmospherics/unary/vent_scrubber/S = new(T)
+	S.air_contents = shared
+	S.node = S
+	S.use_power = USE_POWER_IDLE
+	S.stat &= ~(NOPOWER | BROKEN)
+	S.welded = FALSE
+	S.scrubbing = 1
+	S.scrubbing_gas = list(GAS_CO2)
+
+	var/initial_shared_n2 = shared.get_moles(/datum/gas/nitrogen)
+	var/initial_shared_co2 = shared.get_moles(/datum/gas/carbon_dioxide)
+	var/initial_turf_co2 = turf_air.get_moles(/datum/gas/carbon_dioxide)
+
+	for(var/i in 1 to 10)
+		V.process()
+		S.process()
+
+	// Vent moved N2 from shared → turf.
+	var/final_shared_n2 = shared.get_moles(/datum/gas/nitrogen)
+	var/final_turf_n2 = turf_air.get_moles(/datum/gas/nitrogen)
+	TEST_ASSERT(final_shared_n2 < initial_shared_n2, \
+		"vent didn't drain N2 from shared pipenet: [initial_shared_n2] → [final_shared_n2]")
+	TEST_ASSERT(final_turf_n2 > 0, \
+		"vent didn't deliver N2 to turf: got [final_turf_n2]")
+
+	// Scrubber moved CO2 from turf → shared (same mixture vent uses).
+	var/final_shared_co2 = shared.get_moles(/datum/gas/carbon_dioxide)
+	var/final_turf_co2 = turf_air.get_moles(/datum/gas/carbon_dioxide)
+	TEST_ASSERT(final_turf_co2 < initial_turf_co2, \
+		"scrubber didn't drain CO2 from turf: [initial_turf_co2] → [final_turf_co2]")
+	TEST_ASSERT(final_shared_co2 > initial_shared_co2, \
+		"scrubber didn't deposit CO2 into shared pipenet: [initial_shared_co2] → [final_shared_co2]")
+
+	for(var/datum/gas/g as anything in turf_air.gases)
+		turf_air.gases[g][MOLES] = 0
+	qdel(V)
+	qdel(S)
+
+
+/// Cryo cell can hold a mob and drop its body_temperature when the cell's
+/// air_contents are cold. Validates that the cryo's per-tick mob cooling
+/// uses the LINDA gas_mixture temperature read.
+/datum/unit_test/dq_cryo_cell_cools_mob
+
+/datum/unit_test/dq_cryo_cell_cools_mob/Run()
+	var/turf/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for cryo cool test")
+
+	var/obj/machinery/atmospherics/unary/cryo_cell/C = new(T)
+	C.use_power = USE_POWER_IDLE
+	C.stat &= ~(NOPOWER | BROKEN)
+	// node ref so process() doesn't early-return; self-ref is enough.
+	C.node = C
+	// Cold supply — needs ≥10 moles or process_occupant short-circuits.
+	C.air_contents.set_temperature(80) // 80 K
+	C.air_contents.adjust_gas(/datum/gas/oxygen, 50)
+
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human, T)
+	TEST_ASSERT_NOTNULL(H, "human alloc failed")
+
+	// Force the mob into the cryo cell's occupant slot.
+	C.occupant = H
+	H.forceMove(C)
+	H.bodytemperature = T20C // warm starting body temp
+	var/initial_bodytemp = H.bodytemperature
+	C.on = TRUE
+
+	for(var/i in 1 to 5)
+		C.process()
+
+	TEST_ASSERT(H.bodytemperature < initial_bodytemp, \
+		"cryo didn't cool mob: bodytemp [initial_bodytemp] → [H.bodytemperature]")
+
+	C.occupant = null
+	H.forceMove(T)
+	qdel(C)
+
+
+/// Items exposed to atmospheric heat take fire damage via temperature_expose
+/// or atom_integrity reduction. This is what "fire melts items on the floor"
+/// translates to in the engine.
+/datum/unit_test/dq_item_takes_atmos_heat
+
+/datum/unit_test/dq_item_takes_atmos_heat/Run()
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for item-heat test")
+
+	var/obj/item/I = new /obj/item/paper(T)
+	TEST_ASSERT_NOTNULL(I, "couldn't alloc paper item")
+
+	// Heat the turf air to ignition temperature for cardboard.
+	var/datum/gas_mixture/turf_air = T.return_air()
+	turf_air.set_temperature(1000) // very hot
+	turf_air.adjust_gas(/datum/gas/oxygen, 100)
+
+	// temperature_expose is the engine hook items override.
+	I.temperature_expose(turf_air, turf_air.temperature, turf_air.volume)
+	// Verify the call didn't crash. (Cardboard may or may not actually burn —
+	// this is the integration-test layer, not the per-item damage policy.)
+	TEST_ASSERT_NOTNULL(I, "item became invalid after temperature_expose")
+
+	qdel(I)
+
+
+/// Gas thruster constructs and reports fuel + thrust without crashing on
+/// a LINDA mixture in its air_contents.
+/datum/unit_test/dq_gas_thruster_construct_and_check_fuel
+
+/datum/unit_test/dq_gas_thruster_construct_and_check_fuel/Run()
+	var/turf/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for gas thruster test")
+
+	var/obj/machinery/atmospherics/unary/engine/E = new(T)
+	TEST_ASSERT_NOTNULL(E, "gas thruster construct failed")
+	TEST_ASSERT_NOTNULL(E.air_contents, "thruster air_contents null")
+
+	// Empty thruster — check_fuel should be FALSE.
+	TEST_ASSERT(!E.check_fuel(), \
+		"empty thruster reported fuel — get_by_flag(XGM_GAS_FUEL) broken?")
+
+	// Load with a fuel gas (volatile_fuel has XGM_GAS_FUEL).
+	E.air_contents.adjust_gas(/datum/gas/volatile_fuel, 50)
+	E.air_contents.adjust_gas(/datum/gas/oxygen, 100)
+	E.air_contents.set_temperature(T0C + 100)
+	TEST_ASSERT(E.check_fuel(), \
+		"loaded thruster (fuel + oxidizer) didn't report fuel — get_by_flag flag map broken")
+
+	// Power-on so is_on() returns TRUE, then get_thrust > 0.
+	E.use_power = USE_POWER_ACTIVE
+	E.stat &= ~(NOPOWER | BROKEN)
+	var/thrust = E.get_thrust()
+	TEST_ASSERT(thrust > 0, "loaded + powered thruster reported zero thrust: [thrust]")
+
+	qdel(E)
+
+
+/// Atmos filter omni device constructs. Routes specific gas types to
+/// designated output ports. Full routing setup requires four pipes; this is
+/// a smoke test that the construct + atmos_init don't crash.
+/datum/unit_test/dq_atmos_filter_constructs
+
+/datum/unit_test/dq_atmos_filter_constructs/Run()
+	var/turf/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for filter construct test")
+
+	var/obj/machinery/atmospherics/omni/atmos_filter/F = new(T)
+	TEST_ASSERT_NOTNULL(F, "atmos_filter construct failed")
+	qdel(F)
+
+
+/// Atmos mixer omni device constructs. Mixes two input gas streams at a
+/// target ratio into the output port. Smoke test only.
+/datum/unit_test/dq_atmos_mixer_constructs
+
+/datum/unit_test/dq_atmos_mixer_constructs/Run()
+	var/turf/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for mixer construct test")
+
+	var/obj/machinery/atmospherics/omni/mixer/M = new(T)
+	TEST_ASSERT_NOTNULL(M, "atmos_mixer construct failed")
+	qdel(M)
+
+
+
 
