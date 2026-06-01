@@ -19,11 +19,17 @@
 
 /proc/generate_gas_overlays(old_offset, new_offset, datum/gas/gas_type)
 	var/list/to_return = list()
+	// DQEdit — pass the gas's primary_color through to the overlay so it can
+	// tint a generic smoke icon. /tg/'s atmospherics.dmi (with per-gas
+	// icon_states "plasma", "tritium", etc.) isn't shipped on this fork;
+	// chemsmoke.dmi gives us a colorable cloud-shaped overlay that works for
+	// every gas without needing per-gas-type icon assets.
+	var/tint = initial(gas_type.primary_color) || "#ffffff"
 	for(var/i in old_offset to new_offset)
 		var/fill = list()
 		to_return += list(fill)
 		for(var/j in 1 to TOTAL_VISIBLE_STATES)
-			var/obj/effect/overlay/gas/gas = new (initial(gas_type.gas_overlay), log(4, (j+0.4*TOTAL_VISIBLE_STATES) / (0.35*TOTAL_VISIBLE_STATES)) * 255, i)
+			var/obj/effect/overlay/gas/gas = new (initial(gas_type.gas_overlay), log(4, (j+0.4*TOTAL_VISIBLE_STATES) / (0.35*TOTAL_VISIBLE_STATES)) * 255, i, tint)
 			fill += gas
 	return to_return
 
@@ -306,10 +312,12 @@
 	primary_color = COLOR_MAROON
 
 /obj/effect/overlay/gas
-	// DQEdit — 'icons/effects/atmospherics.dmi' is a /tg/ asset CHOMP doesn't ship.
-	// Reuse the existing effects.dmi as a generic gas-visualization overlay until
-	// the /tg/ asset is vendored. Visual is degraded but compile passes.
-	icon = 'icons/effects/effects.dmi'
+	// DQEdit — /tg/'s 'icons/effects/atmospherics.dmi' (with per-gas icon_states
+	// "plasma", "tritium", "freon", etc., each with TOTAL_VISIBLE_STATES frames)
+	// isn't shipped on this fork. Substitute chemsmoke.dmi (a generic colorable
+	// cloud overlay) and tint via the `color` var from the gas's primary_color.
+	// Each gas type gets a distinct color, alpha varies by concentration.
+	icon = 'icons/effects/chemsmoke.dmi'
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	anchored = TRUE  // should only appear in vis_contents, but to be safe
 	layer = FLY_LAYER
@@ -320,10 +328,16 @@
 	// Can't use the traditional loc because we are stored in nullspace, and we can't set plane before init because of the helping that SET_PLANE_EXPLICIT does IN init
 	var/plane_offset = 0
 
-/obj/effect/overlay/gas/New(state, alph, offset)
+/obj/effect/overlay/gas/New(state, alph, offset, tint)
 	. = ..()
+	// `state` is the gas_overlay name (e.g. "plasma"); chemsmoke.dmi doesn't
+	// have per-gas states so we leave icon_state at the dmi default and tint
+	// via color instead. Keep `state` recorded as the icon_state for telemetry
+	// / debugging but the dmi will fall back to its default frame.
 	icon_state = state
 	alpha = alph
+	if(tint)
+		color = tint
 	plane_offset = offset
 
 /obj/effect/overlay/gas/Initialize(mapload)
