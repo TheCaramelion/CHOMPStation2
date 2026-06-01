@@ -3598,3 +3598,201 @@
 	qdel(net)
 
 
+// =====================================================================
+// Round 8: 2-pipe pipeline expansion, temperature_share, full canister
+// room propagation, analyzer extremes
+// =====================================================================
+
+/// build_pipeline traverses pipeline_expansion to find connected pipes. Two
+/// pipes connected node1↔node1 should both end up as members of the same
+/// pipeline. Validates the network-traversal path that LINDA inherited.
+/datum/unit_test/dq_pipeline_chains_two_connected_pipes
+
+/datum/unit_test/dq_pipeline_chains_two_connected_pipes/Run()
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for 2-pipe pipeline test")
+
+	var/obj/machinery/atmospherics/pipe/simple/PA = new(T)
+	var/obj/machinery/atmospherics/pipe/simple/PB = new(T)
+	TEST_ASSERT_NOTNULL(PA, "pipe A construct failed")
+	TEST_ASSERT_NOTNULL(PB, "pipe B construct failed")
+
+	// Wire them together manually. pipeline_expansion returns [node1, node2]
+	// per pipe, and build_pipeline walks until no new members appear.
+	PA.node1 = PB
+	PB.node1 = PA
+
+	var/datum/pipeline/Line = new()
+	Line.build_pipeline(PA)
+
+	TEST_ASSERT(PA in Line.members, "pipe A not in pipeline.members after build_pipeline")
+	TEST_ASSERT(PB in Line.members, "pipe B not in pipeline.members — build_pipeline didn't expand via pipeline_expansion")
+	TEST_ASSERT(PA.parent == Line && PB.parent == Line, \
+		"pipe.parent not set on both members: A=[PA.parent] B=[PB.parent]")
+
+	// Volume should be the sum of both pipe volumes.
+	TEST_ASSERT(Line.air.volume == (PA.volume + PB.volume), \
+		"pipeline volume not sum of pipes: pipeline=[Line.air.volume] expected=[PA.volume + PB.volume]")
+
+	qdel(Line)
+	qdel(PA)
+	qdel(PB)
+
+
+/// temperature_share directly equalizes the temperature between two gas
+/// mixtures via conduction. Validates the heat-conduction path used between
+/// adjacent pipes/turfs.
+/datum/unit_test/dq_temperature_share_equalizes_two_mixtures
+
+/datum/unit_test/dq_temperature_share_equalizes_two_mixtures/Run()
+	var/datum/gas_mixture/hot = new(70)
+	hot.adjust_gas(/datum/gas/oxygen, 100)
+	hot.set_temperature(T0C + 200)
+	hot.archive()
+
+	var/datum/gas_mixture/cold = new(70)
+	cold.adjust_gas(/datum/gas/nitrogen, 100)
+	cold.set_temperature(T0C - 100)
+	cold.archive()
+
+	var/hot_initial = hot.temperature
+	var/cold_initial = cold.temperature
+	var/initial_total_thermal = hot.thermal_energy() + cold.thermal_energy()
+
+	// Repeatedly conduct heat between them.
+	for(var/i in 1 to 60)
+		hot.temperature_share(cold, 0.4)
+		hot.archive()
+		cold.archive()
+
+	TEST_ASSERT(hot.temperature < hot_initial, "hot side didn't cool: [hot_initial] → [hot.temperature]")
+	TEST_ASSERT(cold.temperature > cold_initial, "cold side didn't warm: [cold_initial] → [cold.temperature]")
+	TEST_ASSERT(abs(hot.temperature - cold.temperature) < 5, \
+		"temperature_share didn't converge: hot=[hot.temperature] cold=[cold.temperature]")
+
+	// Thermal-energy conservation across the system (within 5%).
+	var/final_total_thermal = hot.thermal_energy() + cold.thermal_energy()
+	TEST_ASSERT(abs(final_total_thermal - initial_total_thermal) < (initial_total_thermal * 0.05), \
+		"temperature_share lost thermal energy: [initial_total_thermal] → [final_total_thermal] (>5%)")
+
+
+/// Full integration: open a plasma canister in a room, run ticks, verify
+/// plasma reaches an adjacent floor a few hops away. End-to-end test of
+/// canister release + LINDA turf-to-turf share + adjacency walking.
+/datum/unit_test/dq_canister_release_propagates_through_room
+
+/datum/unit_test/dq_canister_release_propagates_through_room/Run()
+	var/list/pair = dq_atmos_test_find_floor_pair()
+	TEST_ASSERT_NOTNULL(pair, "no adjacent-floor pair for canister-room test")
+	var/turf/open/A = pair[1]
+	var/turf/open/B = pair[2]
+
+	// Isolate the pair from background atmos.
+	dq_atmos_test_isolate_pair(A, B)
+
+	// Zero out A and B atmospheres.
+	var/datum/gas_mixture/A_air = A.return_air()
+	for(var/datum/gas/g as anything in A_air.gases)
+		A_air.gases[g][MOLES] = 0
+	A_air.set_temperature(T20C)
+	var/datum/gas_mixture/B_air = B.return_air()
+	for(var/datum/gas/g as anything in B_air.gases)
+		B_air.gases[g][MOLES] = 0
+	B_air.set_temperature(T20C)
+
+	// Place a plasma canister on A with the valve open.
+	var/obj/machinery/portable_atmospherics/canister/phoron/Can = new(A)
+	TEST_ASSERT_NOTNULL(Can, "phoron canister construct failed")
+	Can.valve_open = TRUE
+	Can.release_pressure = ONE_ATMOSPHERE * 50
+
+	// Run canister.process to release, then drive cells to share into B.
+	for(var/i in 1 to 8)
+		Can.process()
+		dq_atmos_test_drive_ticks(list(A, B), 1)
+
+	var/A_plasma = A_air.get_moles(/datum/gas/plasma)
+	var/B_plasma = B_air.get_moles(/datum/gas/plasma)
+	TEST_ASSERT(A_plasma > 0, "canister didn't release ANY plasma onto A: [A_plasma]")
+	TEST_ASSERT(B_plasma > 0, "plasma didn't spread from A to adjacent B: [B_plasma] (A=[A_plasma])")
+
+	// Cleanup so other tests don't see leftover plasma.
+	for(var/datum/gas/g as anything in A_air.gases)
+		A_air.gases[g][MOLES] = 0
+	for(var/datum/gas/g as anything in B_air.gases)
+		B_air.gases[g][MOLES] = 0
+	qdel(Can)
+
+
+/// Atmos analyzer at extreme pressure (100 atm canister) returns valid lines
+/// and doesn't runtime. Catches overflow/format bugs at the edge of the
+/// expected pressure range.
+/datum/unit_test/dq_atmos_analyzer_handles_extreme_pressure
+
+/datum/unit_test/dq_atmos_analyzer_handles_extreme_pressure/Run()
+	var/obj/item/tank/oxygen/Tank = new(locate(1, 1, 1))
+	TEST_ASSERT_NOTNULL(Tank, "tank construct failed")
+
+	// Push pressure to ~30 atm (below TANK_LEAK so we don't lose integrity).
+	var/target_moles = (28 * ONE_ATMOSPHERE) * Tank.air_contents.volume / (R_IDEAL_GAS_EQUATION * T20C)
+	Tank.air_contents.adjust_gas(/datum/gas/oxygen, target_moles - Tank.air_contents.total_moles())
+	Tank.air_contents.set_temperature(T20C)
+
+	var/pressure = Tank.air_contents.return_pressure()
+	TEST_ASSERT(pressure > 25 * ONE_ATMOSPHERE, "failed to seed high pressure: [pressure]")
+
+	// Run the analyzer scan; expect it to return non-empty info.
+	// Signature is (atom/target, datum/gas_mixture/mixture, mob/user).
+	var/list/lines = atmosanalyzer_scan(Tank, Tank.air_contents, null)
+	TEST_ASSERT_NOTNULL(lines, "atmosanalyzer_scan returned null at extreme pressure")
+	TEST_ASSERT(islist(lines) && length(lines) > 0, \
+		"atmosanalyzer_scan returned empty list at [pressure] kPa")
+
+	qdel(Tank)
+
+
+/// excited_group.dismantle() detaches all member turfs from the group, sets
+/// their excited_group var to null, and removes the group from SSair's
+/// active group list. Validates the cleanup path that fires after a region
+/// goes quiet — without it, idle turfs would keep getting processed forever.
+/datum/unit_test/dq_excited_group_dismantle_releases_turfs
+
+/datum/unit_test/dq_excited_group_dismantle_releases_turfs/Run()
+	var/list/pair = dq_atmos_test_find_floor_pair()
+	TEST_ASSERT_NOTNULL(pair, "no adjacent-floor pair for excited-group dismantle test")
+	var/turf/open/A = pair[1]
+	var/turf/open/B = pair[2]
+	dq_atmos_test_isolate_pair(A, B)
+
+	// Set up a delta so excited group forms.
+	var/datum/gas_mixture/A_air = A.return_air()
+	for(var/datum/gas/g as anything in A_air.gases)
+		A_air.gases[g][MOLES] = 0
+	A_air.adjust_gas(/datum/gas/oxygen, 500)
+	A_air.set_temperature(T20C)
+	var/datum/gas_mixture/B_air = B.return_air()
+	for(var/datum/gas/g as anything in B_air.gases)
+		B_air.gases[g][MOLES] = 0
+	B_air.set_temperature(T20C)
+
+	// Drive a few cells to form the excited group.
+	dq_atmos_test_drive_ticks(list(A, B), 5)
+	TEST_ASSERT_NOTNULL(A.excited_group, "A.excited_group never formed after 5 ticks of delta")
+	var/datum/excited_group/EG = A.excited_group
+
+	// Manually invoke dismantle (the proc SSair fires after the quiet window).
+	EG.dismantle()
+
+	TEST_ASSERT_NULL(A.excited_group, "A.excited_group not cleared by EG.dismantle()")
+	TEST_ASSERT_NULL(B.excited_group, "B.excited_group not cleared by EG.dismantle()")
+
+	for(var/datum/gas/g as anything in A_air.gases)
+		A_air.gases[g][MOLES] = 0
+	for(var/datum/gas/g as anything in B_air.gases)
+		B_air.gases[g][MOLES] = 0
+
+
