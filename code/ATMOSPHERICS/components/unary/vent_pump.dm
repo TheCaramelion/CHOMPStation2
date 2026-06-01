@@ -236,6 +236,15 @@
 	if (power_draw >= 0)
 		last_power_draw = power_draw
 		use_power(power_draw)
+		// DQEdit — pump_gas mutates loc's air mix directly via gas_mixture ref;
+		// it can't tell that the sink is a turf, so it doesn't enroll the turf
+		// in active_turfs or call update_visuals. Without this, the turf never
+		// gets processed by SSair and the gas overlay never updates.
+		if(isturf(loc))
+			var/turf/open/T = loc
+			if(istype(T))
+				T.update_visuals()
+				T.air_update_turf(FALSE, FALSE)
 		if(network)
 			network.update = 1
 

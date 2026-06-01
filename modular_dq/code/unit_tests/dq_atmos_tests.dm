@@ -720,6 +720,43 @@
 // propagation, total-moles conservation, pressure-driven flow, and
 // regressions for the ChangeTurf / make_floor LINDA fixes.
 
+/// Find a pair of adjacent floor turfs whose atmos_adjacent_turfs lists were
+/// actually built by init_immediate_calculate_adjacent_turfs during world
+/// init. If init never ran or the proc skipped these turfs, the test that
+/// uses this pair won't be testable — but that's the bug we want to surface.
+/proc/dq_atmos_test_find_floor_pair_with_real_adjacency()
+	for(var/turf/simulated/floor/cand in world)
+		if(!cand.air || cand.blocks_air)
+			continue
+		if(!cand.atmos_adjacent_turfs)
+			continue
+		for(var/turf/n as anything in cand.atmos_adjacent_turfs)
+			if(istype(n, /turf/simulated/floor))
+				var/turf/simulated/floor/floor_n = n
+				if(floor_n.air && !floor_n.blocks_air)
+					return list(cand, floor_n)
+	return null
+
+
+/// Wait for the real Master.Loop to tick SSair N times. Unit tests run via
+/// SSticker.OnRoundstart 10s after world init — Master.Loop is already
+/// firing subsystems normally by then. Sleeping yields to the BYOND scheduler,
+/// during which Master ticks SSair on its real schedule (SSair.wait = 0.5s).
+/// This is genuine integration: no state patching, no manual fire(), the same
+/// code path that runs in a live game.
+/proc/dq_atmos_test_wait_real_ssair_ticks(ticks)
+	var/baseline = SSair.times_fired
+	var/wait_per_tick = SSair.wait
+	// Cap at a sane upper bound so a broken SSair doesn't hang the test forever.
+	var/max_wait = wait_per_tick * ticks * 3
+	var/started = world.time
+	while(SSair.times_fired < baseline + ticks)
+		if(world.time - started > max_wait)
+			break
+		sleep(wait_per_tick)
+	return SSair.times_fired - baseline
+
+
 /proc/dq_atmos_test_find_floor_pair()
 	for(var/turf/simulated/floor/cand in world)
 		if(!cand.air || cand.blocks_air)
@@ -4190,6 +4227,208 @@
 		A_air.gases[g][MOLES] = 0
 	for(var/datum/gas/g as anything in B_air.gases)
 		B_air.gases[g][MOLES] = 0
+
+
+// =====================================================================
+// REAL-TEST suite — goes through SSair.fire() and production APIs only.
+// No manual adjacency wiring, no can_fire=FALSE bypass, no direct
+// process_cell calls. If LINDA is broken in production, these will fail.
+// =====================================================================
+
+/// Real-world integration: drop plasma onto a turf via the same path
+/// canister.process / atmos_spawn_air uses, then SLEEP and let the real
+/// Master.Loop tick SSair the same way it ticks for a connected player.
+/// Asserts that ticks actually advanced (so we know we're not just waiting
+/// for a frozen MC) and that plasma reached the adjacent turf.
+/datum/unit_test/dq_real_spread_via_ssair_fire
+
+/datum/unit_test/dq_real_spread_via_ssair_fire/Run()
+	var/list/pair = dq_atmos_test_find_floor_pair_with_real_adjacency()
+	TEST_ASSERT_NOTNULL(pair, "no floor pair with init-built atmos_adjacent_turfs — adjacency was never built, that's the bug")
+	var/turf/open/A = pair[1]
+	var/turf/open/B = pair[2]
+
+	TEST_ASSERT(A.atmos_adjacent_turfs && A.atmos_adjacent_turfs[B], \
+		"A's adjacency list doesn't contain B — init_immediate_calculate_adjacent_turfs is broken")
+	TEST_ASSERT(B.atmos_adjacent_turfs && B.atmos_adjacent_turfs[A], \
+		"B's adjacency list doesn't contain A — adjacency wasn't built symmetrically")
+
+	// Snapshot starting plasma in both turfs.
+	var/initial_a_plasma = A.air.get_moles(/datum/gas/plasma)
+	var/initial_b_plasma = B.air.get_moles(/datum/gas/plasma)
+
+	// Production gas injection — exactly what canister.process / atmos_spawn_air does.
+	var/datum/gas_mixture/donor = new(70)
+	donor.adjust_gas(/datum/gas/plasma, 100)
+	donor.set_temperature(T20C)
+	A.assume_air(donor)
+
+	// After assume_air, A.air should have the plasma (merge) and A should
+	// be in SSair.active_turfs (via air_update_turf → add_to_active).
+	TEST_ASSERT(A.air.get_moles(/datum/gas/plasma) > initial_a_plasma + 50, \
+		"A didn't accept the donor plasma after assume_air: [A.air.get_moles(/datum/gas/plasma)]")
+	TEST_ASSERT(A in SSair.active_turfs, \
+		"A not in SSair.active_turfs after assume_air — air_update_turf/add_to_active broken")
+
+	// Sleep to let the live Master.Loop fire SSair normally. No state hacking.
+	var/ticks_advanced = dq_atmos_test_wait_real_ssair_ticks(30)
+	TEST_ASSERT(ticks_advanced >= 10, \
+		"SSair only fired [ticks_advanced] times in [SSair.wait * 30 * 3]ds wall time — Master.Loop isn't ticking SSair. THIS IS THE BUG.")
+
+	var/final_b_plasma = B.air.get_moles(/datum/gas/plasma)
+	TEST_ASSERT(final_b_plasma > initial_b_plasma + 0.1, \
+		"plasma DID NOT SPREAD to adjacent turf B after [ticks_advanced] real SSair ticks: A=[A.air.get_moles(/datum/gas/plasma)] B=[final_b_plasma]. The atmos engine isn't moving gas under normal Master.Loop firing — THIS IS THE PRODUCTION BUG.")
+
+	// Cleanup so other tests don't see leftover plasma.
+	for(var/datum/gas/g as anything in A.air.gases)
+		A.air.gases[g][MOLES] = 0
+	for(var/datum/gas/g as anything in B.air.gases)
+		B.air.gases[g][MOLES] = 0
+
+
+/// True end-to-end production scenario: spawn a phoron canister on an open
+/// floor, set valve_open and a release pressure, sleep while Master.Loop
+/// fires the canister's process() AND SSair's fire() naturally, and assert
+/// plasma reaches the neighboring tile. If a player opens a canister in
+/// game and gas doesn't spread, THIS test catches it.
+/datum/unit_test/dq_real_canister_release_spreads_via_master_loop
+
+/datum/unit_test/dq_real_canister_release_spreads_via_master_loop/Run()
+	var/list/pair = dq_atmos_test_find_floor_pair_with_real_adjacency()
+	TEST_ASSERT_NOTNULL(pair, "no floor pair with built adjacency")
+	var/turf/open/A = pair[1]
+	var/turf/open/B = pair[2]
+
+	// Clear A and B to a known state so the canister's release is observable.
+	for(var/datum/gas/g as anything in A.air.gases)
+		A.air.gases[g][MOLES] = 0
+	for(var/datum/gas/g as anything in B.air.gases)
+		B.air.gases[g][MOLES] = 0
+	A.air.set_temperature(T20C)
+	B.air.set_temperature(T20C)
+
+	// Real CHOMP phoron canister, valve open at high pressure — exact
+	// scenario a player invokes via admin verb.
+	var/obj/machinery/portable_atmospherics/canister/phoron/Can = new(A)
+	TEST_ASSERT_NOTNULL(Can, "phoron canister construct failed")
+	Can.valve_open = TRUE
+	Can.release_pressure = ONE_ATMOSPHERE * 10
+
+	// Begin processing through the SSmachines list — this is what
+	// machinery does in a live game. Canister is portable_atmospherics
+	// which is already a machine processor target.
+	var/initial_a_plasma = A.air.get_moles(/datum/gas/plasma)
+	var/initial_b_plasma = B.air.get_moles(/datum/gas/plasma)
+
+	// Sleep and let the real game tick. Master.Loop ticks SSmachines
+	// (which calls Can.process()) AND SSair (which spreads gas tile-to-tile).
+	dq_atmos_test_wait_real_ssair_ticks(30)
+
+	var/final_a_plasma = A.air.get_moles(/datum/gas/plasma)
+	var/final_b_plasma = B.air.get_moles(/datum/gas/plasma)
+
+	TEST_ASSERT(final_a_plasma > initial_a_plasma + 1, \
+		"canister DID NOT release plasma onto A after 30 SSair ticks: A=[final_a_plasma]. canister.process() not running or not pumping.")
+
+	// A must be in active_turfs after canister released gas into it.
+	// Without this, SSair has nothing to process and gas can't spread.
+	TEST_ASSERT(A in SSair.active_turfs, \
+		"A not in SSair.active_turfs after canister release — canister.process pumped gas into the turf but didn't enroll it. SSair will never process this turf. THIS IS THE PLAYER-VISIBLE PRODUCTION BUG.")
+
+	TEST_ASSERT(final_b_plasma > initial_b_plasma + 0.1, \
+		"plasma DID NOT spread from canister-released A to adjacent B: A=[final_a_plasma] B=[final_b_plasma]. Even though A has plasma, SSair never spread it. THIS IS THE PRODUCTION BUG players see.")
+
+	// Cleanup
+	Can.valve_open = FALSE
+	qdel(Can)
+	for(var/datum/gas/g as anything in A.air.gases)
+		A.air.gases[g][MOLES] = 0
+	for(var/datum/gas/g as anything in B.air.gases)
+		B.air.gases[g][MOLES] = 0
+
+
+/// Bisects the bug: skip SSair.fire() and call process_cell directly on a
+/// turf that's been gas-loaded via assume_air. If THIS passes but
+/// dq_real_spread_via_ssair_fire fails, the bug is in SSair.fire() /
+/// process_active_turfs, not in process_cell or share(). If THIS fails too,
+/// the bug is in process_cell or its inputs.
+/datum/unit_test/dq_real_process_cell_direct_on_loaded_turf
+
+/datum/unit_test/dq_real_process_cell_direct_on_loaded_turf/Run()
+	var/list/pair = dq_atmos_test_find_floor_pair_with_real_adjacency()
+	TEST_ASSERT_NOTNULL(pair, "no floor pair with built adjacency")
+	var/turf/open/A = pair[1]
+	var/turf/open/B = pair[2]
+
+	// Clear both to a known state.
+	for(var/datum/gas/g as anything in A.air.gases)
+		A.air.gases[g][MOLES] = 0
+	for(var/datum/gas/g as anything in B.air.gases)
+		B.air.gases[g][MOLES] = 0
+	A.air.set_temperature(T20C)
+	B.air.set_temperature(T20C)
+
+	var/datum/gas_mixture/donor = new(70)
+	donor.adjust_gas(/datum/gas/plasma, 100)
+	donor.set_temperature(T20C)
+	A.assume_air(donor)
+
+	var/before_a = A.air.get_moles(/datum/gas/plasma)
+	var/before_b = B.air.get_moles(/datum/gas/plasma)
+	TEST_ASSERT(before_a > 50, "donor plasma didn't end up on A: [before_a]")
+	TEST_ASSERT(before_b < 0.001, "B somehow already has plasma: [before_b]")
+
+	// Walk the engine the same way process_active_turfs does — by hand,
+	// without the can_fire / times_fired hack. Just one cycle.
+	SSair.times_fired++
+	A.process_cell(SSair.times_fired)
+
+	var/after_a = A.air.get_moles(/datum/gas/plasma)
+	var/after_b = B.air.get_moles(/datum/gas/plasma)
+	log_test("dq_real_process_cell_direct: A=[before_a]→[after_a] B=[before_b]→[after_b]")
+	TEST_ASSERT(after_b > 0.001, \
+		"DIRECT process_cell on A didn't push plasma to B: A=[after_a] B=[after_b]. process_cell or share() is the bug.")
+
+	for(var/datum/gas/g as anything in A.air.gases)
+		A.air.gases[g][MOLES] = 0
+	for(var/datum/gas/g as anything in B.air.gases)
+		B.air.gases[g][MOLES] = 0
+
+
+/// After assume_air, update_visuals must produce a visible overlay on the
+/// turf. If atmos LOOKS empty in-game despite gas being present, this is
+/// the test that catches it.
+/datum/unit_test/dq_real_overlay_appears_after_assume_air
+
+/datum/unit_test/dq_real_overlay_appears_after_assume_air/Run()
+	var/turf/open/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for overlay test")
+
+	// Snapshot any existing overlay state.
+	var/list/before_vis = T.vis_contents ? T.vis_contents.Copy() : list()
+
+	// Use the production assume_air path to dump enough plasma to cross the
+	// visible threshold (MOLES_GAS_VISIBLE in atmos_core.dm, typically ~0.5).
+	var/datum/gas_mixture/donor = new(70)
+	donor.adjust_gas(/datum/gas/plasma, 50) // way above visible threshold
+	donor.set_temperature(T20C)
+	T.assume_air(donor)
+
+	TEST_ASSERT(T.air.get_moles(/datum/gas/plasma) > 40, "donor plasma didn't land on T")
+
+	// assume_air calls update_visuals() internally. Verify a plasma overlay
+	// was appended to vis_contents (the /tg/-style overlay container).
+	TEST_ASSERT(length(T.vis_contents) > length(before_vis), \
+		"vis_contents didn't grow after assume_air with 50 moles plasma — update_visuals not adding overlays. Players will see empty turfs filled with invisible gas.")
+
+	// Cleanup
+	for(var/datum/gas/g as anything in T.air.gases)
+		T.air.gases[g][MOLES] = 0
+	T.update_visuals()
 
 
 

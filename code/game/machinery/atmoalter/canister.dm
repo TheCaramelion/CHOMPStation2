@@ -225,6 +225,17 @@ update_flag
 			var/returnval = pump_gas_passive(src, air_contents, environment, transfer_moles)
 			if(returnval >= 0)
 				src.update_icon()
+				// DQEdit — pump_gas_passive directly mutates the turf's air mix via
+				// the gas_mixture reference returned by loc.return_air(); it doesn't
+				// know what type of sink it's writing to, so it can't enroll a turf
+				// in SSair.active_turfs. Without this, under LINDA the gas lands on
+				// the turf but never spreads (active_turfs stays empty) and the gas
+				// overlay never updates (update_visuals is never called).
+				if(!holding && isturf(loc))
+					var/turf/open/T = loc
+					if(istype(T))
+						T.update_visuals()
+						T.air_update_turf(FALSE, FALSE)
 
 	if(air_contents.return_pressure() < 1)
 		can_label = 1

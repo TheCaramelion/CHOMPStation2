@@ -102,6 +102,13 @@
 		last_power_draw = power_draw
 
 		update_connected_network()
+		// DQEdit — pump_gas mutated loc.return_air() directly when not piped
+		// to a holding tank. Enroll the turf so SSair sees the change.
+		if(!holding && isturf(loc))
+			var/turf/open/T = loc
+			if(istype(T))
+				T.update_visuals()
+				T.air_update_turf(FALSE, FALSE)
 
 		//ran out of charge
 		if (!cell.charge)
