@@ -3378,4 +3378,223 @@
 	qdel(D)
 
 
+// =====================================================================
+// Round 7: tank overpressure, tank breath path, hotspot threshold,
+// pipeline build, 3-pipe reconcile
+// =====================================================================
+
+/// Tank.check_status() should reduce integrity when air_contents.return_pressure
+/// exceeds TANK_RUPTURE_PRESSURE but stays under TANK_FRAGMENT_PRESSURE — the
+/// "slowly leaking" branch. Catches LINDA pressure-read regressions at the
+/// tank boundary without triggering an explosion.
+/datum/unit_test/dq_tank_overpressure_loses_integrity
+
+/datum/unit_test/dq_tank_overpressure_loses_integrity/Run()
+	var/obj/item/tank/oxygen/Tank = new(locate(1, 1, 1))
+	TEST_ASSERT_NOTNULL(Tank, "couldn't construct oxygen tank")
+	TEST_ASSERT_NOTNULL(Tank.air_contents, "tank air_contents null")
+
+	// Stash baseline integrity, then push pressure into the rupture band (40-50 atm).
+	var/initial_integrity = Tank.integrity
+	TEST_ASSERT(initial_integrity > 0, "tank integrity zero at construct")
+
+	// Pressure target: ~37 atm. DQ's TANK_RUPTURE_PRESSURE is 35 atm and
+	// TANK_FRAGMENT_PRESSURE is 40 atm — we need to sit between those so
+	// check_status takes the "integrity damage, no explosion" branch.
+	var/target_moles = (37 * ONE_ATMOSPHERE) * Tank.air_contents.volume / (R_IDEAL_GAS_EQUATION * T20C)
+	Tank.air_contents.adjust_gas(/datum/gas/oxygen, target_moles - Tank.air_contents.total_moles())
+	Tank.air_contents.set_temperature(T20C)
+
+	var/pressure = Tank.air_contents.return_pressure()
+	TEST_ASSERT(pressure > TANK_RUPTURE_PRESSURE, \
+		"failed to seed tank above rupture pressure: pressure=[pressure] target=[TANK_RUPTURE_PRESSURE]")
+	TEST_ASSERT(pressure < TANK_FRAGMENT_PRESSURE, \
+		"seeded tank above fragment pressure ([TANK_FRAGMENT_PRESSURE]) — test would detonate the world")
+
+	Tank.check_status()
+
+	TEST_ASSERT(Tank.integrity < initial_integrity, \
+		"check_status didn't reduce integrity under rupture pressure: [initial_integrity] → [Tank.integrity]")
+
+	qdel(Tank)
+
+
+/// Tank.remove_air_volume() is the breath path — it computes moles by the ideal
+/// gas law against distribute_pressure and pulls them out via remove(). Verify
+/// the LINDA gas_mixture properly drains across this code path.
+/datum/unit_test/dq_tank_remove_air_volume_drains_moles
+
+/datum/unit_test/dq_tank_remove_air_volume_drains_moles/Run()
+	var/obj/item/tank/oxygen/Tank = new(locate(1, 1, 1))
+	TEST_ASSERT_NOTNULL(Tank, "tank construct failed")
+	TEST_ASSERT_NOTNULL(Tank.air_contents, "tank air_contents null")
+
+	// Sanity: tank starts at default pressure with some O2 already.
+	var/initial_moles = Tank.air_contents.total_moles()
+	TEST_ASSERT(initial_moles > 0, "fresh tank has zero moles — invalid setup")
+
+	// Pull a typical breath (BREATH_VOLUME at distribute_pressure).
+	var/datum/gas_mixture/breath = Tank.remove_air_volume(BREATH_VOLUME)
+	TEST_ASSERT_NOTNULL(breath, "remove_air_volume returned null on a loaded tank")
+	TEST_ASSERT(breath.total_moles() > 0, "breath mixture has zero moles")
+
+	// Tank should have lost the moles that ended up in the breath.
+	var/after_moles = Tank.air_contents.total_moles()
+	var/lost = initial_moles - after_moles
+	var/gained = breath.total_moles()
+	TEST_ASSERT(abs(lost - gained) < 0.01, \
+		"breath conservation broken: tank lost [lost], breath got [gained]")
+
+	qdel(Tank)
+
+
+/// Tank.assume_air() merges donor gas into the tank. Validates the LINDA
+/// path used when a canister releases into a tank, or when a transfer valve
+/// dumps gas into a connected tank.
+/datum/unit_test/dq_tank_assume_air_merges_donor
+
+/datum/unit_test/dq_tank_assume_air_merges_donor/Run()
+	var/obj/item/tank/oxygen/Tank = new(locate(1, 1, 1))
+	TEST_ASSERT_NOTNULL(Tank, "tank construct failed")
+	var/initial_moles = Tank.air_contents.total_moles()
+
+	var/datum/gas_mixture/donor = new(70)
+	donor.adjust_gas(/datum/gas/nitrogen, 50)
+	donor.set_temperature(T20C)
+	var/donor_moles = donor.total_moles()
+
+	Tank.assume_air(donor)
+
+	var/after_moles = Tank.air_contents.total_moles()
+	TEST_ASSERT(abs((after_moles - initial_moles) - donor_moles) < 0.5, \
+		"tank.assume_air didn't merge donor: initial=[initial_moles] after=[after_moles] donor=[donor_moles]")
+
+	// Per the Rust auxmos contract, merge() doesn't drain the giver — it only
+	// copies into self. So `donor` still holds its original moles. This differs
+	// from /tg/'s pure-DM merge which doesn't drain either, so we're consistent.
+	TEST_ASSERT(donor.total_moles() > donor_moles - 0.5, \
+		"donor was unexpectedly drained — merge contract changed")
+
+	qdel(Tank)
+
+
+/// hotspot_expose at a temperature below PLASMA_MINIMUM_BURN_TEMPERATURE on a
+/// turf with plasma + O2 must NOT spawn an active_hotspot. Validates the
+/// ignition threshold gate inside /turf/open/hotspot_expose.
+/datum/unit_test/dq_hotspot_below_minimum_heat_no_ignition
+
+/datum/unit_test/dq_hotspot_below_minimum_heat_no_ignition/Run()
+	var/turf/open/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for hotspot threshold test")
+
+	var/datum/gas_mixture/turf_air = T.return_air()
+	for(var/datum/gas/g as anything in turf_air.gases)
+		turf_air.gases[g][MOLES] = 0
+	turf_air.adjust_gas(/datum/gas/plasma, 50)
+	turf_air.adjust_gas(/datum/gas/oxygen, 100)
+	turf_air.set_temperature(T20C)
+
+	// Clear any preexisting hotspot from earlier tests.
+	if(T.active_hotspot)
+		qdel(T.active_hotspot)
+		T.active_hotspot = null
+
+	// Expose at 300K — well below PLASMA_MINIMUM_BURN_TEMPERATURE (399.15K).
+	T.hotspot_expose(300, 500, FALSE)
+	TEST_ASSERT_NULL(T.active_hotspot, \
+		"hotspot ignited under [300]K despite minimum_burn being [PLASMA_MINIMUM_BURN_TEMPERATURE]K")
+
+	// Now expose above the threshold — should ignite.
+	T.hotspot_expose(PLASMA_MINIMUM_BURN_TEMPERATURE + 50, 500, FALSE)
+	TEST_ASSERT_NOTNULL(T.active_hotspot, \
+		"hotspot did NOT ignite above the threshold with plasma+O2 present")
+
+	if(T.active_hotspot)
+		qdel(T.active_hotspot)
+		T.active_hotspot = null
+	for(var/datum/gas/g as anything in turf_air.gases)
+		turf_air.gases[g][MOLES] = 0
+
+
+/// /datum/pipeline.build_pipeline() on a single pipe should: allocate a fresh
+/// gas_mixture as the pipeline.air, set pipe.parent to the pipeline, and size
+/// the pipeline volume to the pipe's volume. Validates the pipenet construction
+/// math LINDA inherited from CHOMP.
+/datum/unit_test/dq_pipeline_build_pipeline_single_pipe
+
+/datum/unit_test/dq_pipeline_build_pipeline_single_pipe/Run()
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for pipeline build test")
+
+	var/obj/machinery/atmospherics/pipe/simple/Pipe = new(T)
+	TEST_ASSERT_NOTNULL(Pipe, "pipe construct failed")
+	TEST_ASSERT(Pipe.volume > 0, "pipe has zero volume — bad init")
+
+	var/datum/pipeline/Line = new()
+	Line.build_pipeline(Pipe)
+
+	TEST_ASSERT_NOTNULL(Line.air, "build_pipeline didn't allocate pipeline.air")
+	TEST_ASSERT(Line.air.volume == Pipe.volume, \
+		"pipeline volume mismatch: pipeline=[Line.air.volume] pipe=[Pipe.volume]")
+	TEST_ASSERT(Pipe.parent == Line, \
+		"pipe.parent not set to the pipeline: pipe.parent=[Pipe.parent] line=[Line]")
+	TEST_ASSERT(Line.members && Pipe in Line.members, \
+		"pipe not in pipeline.members after build_pipeline")
+
+	qdel(Line)
+	qdel(Pipe)
+
+
+/// reconcile_air() on a pipe_network with THREE pipes must conserve total
+/// moles and total thermal energy when redistributing. Round 2 covered the
+/// 2-pipe case; this catches off-by-one or per-pipe-loss bugs that only
+/// surface with > 2 pipes.
+/datum/unit_test/dq_reconcile_air_three_pipes_conserves_mass
+
+/datum/unit_test/dq_reconcile_air_three_pipes_conserves_mass/Run()
+	var/datum/pipe_network/net = new
+	var/datum/gas_mixture/p1 = new(70)
+	p1.adjust_gas(/datum/gas/oxygen, 150)
+	p1.set_temperature(T20C)
+	var/datum/gas_mixture/p2 = new(70)
+	p2.adjust_gas(/datum/gas/nitrogen, 50)
+	p2.set_temperature(T0C + 80)
+	var/datum/gas_mixture/p3 = new(70)
+	p3.set_temperature(T0C + 40)
+	net.gases += p1
+	net.gases += p2
+	net.gases += p3
+	for(var/datum/gas_mixture/m in net.gases)
+		net.volume += m.volume
+
+	var/initial_total = p1.total_moles() + p2.total_moles() + p3.total_moles()
+	var/initial_thermal = p1.thermal_energy() + p2.thermal_energy() + p3.thermal_energy()
+
+	net.reconcile_air()
+
+	var/final_total = p1.total_moles() + p2.total_moles() + p3.total_moles()
+	var/final_thermal = p1.thermal_energy() + p2.thermal_energy() + p3.thermal_energy()
+	TEST_ASSERT(abs(final_total - initial_total) < 0.5, \
+		"reconcile_air lost mass with 3 pipes: [initial_total] → [final_total]")
+	// All three equal-volume pipes should hold equal moles after reconcile.
+	var/m1 = p1.total_moles()
+	var/m2 = p2.total_moles()
+	var/m3 = p3.total_moles()
+	TEST_ASSERT(abs(m1 - m2) < 0.5 && abs(m2 - m3) < 0.5, \
+		"reconcile_air didn't equalize 3 pipes: m1=[m1] m2=[m2] m3=[m3]")
+	// Temperatures should all converge.
+	TEST_ASSERT(abs(p1.temperature - p2.temperature) < 1 && abs(p2.temperature - p3.temperature) < 1, \
+		"reconcile_air didn't equalize temperatures: T1=[p1.temperature] T2=[p2.temperature] T3=[p3.temperature]")
+	TEST_ASSERT(abs(final_thermal - initial_thermal) < (initial_thermal * 0.05), \
+		"reconcile_air lost thermal energy with 3 pipes: [initial_thermal] → [final_thermal] (>5%)")
+	qdel(net)
+
 
