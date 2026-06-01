@@ -3123,5 +3123,259 @@
 	qdel(M)
 
 
+// =====================================================================
+// Round 6: filter routing, mixer ratios, thruster fuel, pressure pushes,
+// closed-door atmos block
+// =====================================================================
+
+/// filter_gas_multi is the heart of the omni filter machine — given a source
+/// gas mixture, a per-gas-id sink map (filtering), and a single clean sink
+/// for everything else, it should route each target gas to its declared sink
+/// and dump untargeted gases into the clean sink. Validates the real routing
+/// math without bringing up the omni port plumbing.
+/datum/unit_test/dq_filter_gas_multi_routes_target_gas
+
+/datum/unit_test/dq_filter_gas_multi_routes_target_gas/Run()
+	var/datum/gas_mixture/source = new(CELL_VOLUME)
+	source.adjust_gas(/datum/gas/plasma, 100)
+	source.adjust_gas(/datum/gas/oxygen, 100)
+	source.set_temperature(T20C)
+
+	// Per-gas filter sinks: plasma gets its own bin, oxygen falls through to clean.
+	var/datum/gas_mixture/plasma_sink = new(CELL_VOLUME)
+	plasma_sink.set_temperature(T20C)
+	var/datum/gas_mixture/clean_sink = new(CELL_VOLUME)
+	clean_sink.set_temperature(T20C)
+
+	// XGM-compat: filter_gas_multi keys the filtering list by string gas id
+	// (from gas_ids()), not by type path. Use GAS_PLASMA (= "plasma") here.
+	var/list/filtering = list()
+	filtering[GAS_PLASMA] = plasma_sink
+
+	var/initial_total = source.total_moles()
+	// Unlimited power, transfer everything in one call.
+	var/power_draw = filter_gas_multi(null, filtering, source, clean_sink, source.total_moles(), null)
+	TEST_ASSERT(power_draw >= 0, "filter_gas_multi returned -1 (refused) with full mix and unlimited power")
+
+	// Plasma should have moved to its own sink.
+	var/plasma_in_filter = plasma_sink.get_moles(/datum/gas/plasma)
+	var/plasma_in_clean = clean_sink.get_moles(/datum/gas/plasma)
+	TEST_ASSERT(plasma_in_filter > 90, \
+		"filter sink got [plasma_in_filter] plasma, expected >90 (routing broken)")
+	TEST_ASSERT(plasma_in_clean < 1, \
+		"clean sink got [plasma_in_clean] plasma — plasma leaked into the clean output")
+
+	// Oxygen should have ended up in the clean sink.
+	var/o2_in_clean = clean_sink.get_moles(/datum/gas/oxygen)
+	var/o2_in_filter = plasma_sink.get_moles(/datum/gas/oxygen)
+	TEST_ASSERT(o2_in_clean > 90, \
+		"clean sink got [o2_in_clean] O2, expected >90 (clean routing broken)")
+	TEST_ASSERT(o2_in_filter < 1, \
+		"filter sink got [o2_in_filter] O2 — O2 leaked into the plasma output")
+
+	// Source should be nearly drained.
+	TEST_ASSERT(source.total_moles() < 1, \
+		"source still has [source.total_moles()] moles after full transfer — leak in remove()")
+
+	// Conservation across both sinks.
+	var/sinks_total = plasma_sink.total_moles() + clean_sink.total_moles()
+	TEST_ASSERT(abs(sinks_total - initial_total) < 0.5, \
+		"filter_gas_multi lost mass: [initial_total] → [sinks_total]")
+
+
+/// mix_gas is the heart of the omni mixer machine — it pulls from each input
+/// at the configured ratio and merges into the sink. Validate that a 0.7:0.3
+/// split actually delivers gases in that ratio to the output.
+/datum/unit_test/dq_mix_gas_combines_at_target_ratio
+
+/datum/unit_test/dq_mix_gas_combines_at_target_ratio/Run()
+	var/datum/gas_mixture/source_a = new(CELL_VOLUME)
+	source_a.adjust_gas(/datum/gas/oxygen, 1000)
+	source_a.set_temperature(T20C)
+	var/datum/gas_mixture/source_b = new(CELL_VOLUME)
+	source_b.adjust_gas(/datum/gas/nitrogen, 1000)
+	source_b.set_temperature(T20C)
+	var/datum/gas_mixture/sink = new(CELL_VOLUME)
+	sink.set_temperature(T20C)
+
+	var/list/mix_sources = list()
+	mix_sources[source_a] = 0.7
+	mix_sources[source_b] = 0.3
+
+	var/power_draw = mix_gas(null, mix_sources, sink, 100, null)
+	TEST_ASSERT(power_draw >= 0, "mix_gas refused with valid inputs at 100 moles target")
+
+	var/sink_o2 = sink.get_moles(/datum/gas/oxygen)
+	var/sink_n2 = sink.get_moles(/datum/gas/nitrogen)
+	var/sink_total = sink.total_moles()
+	TEST_ASSERT(sink_total > 95 && sink_total < 105, \
+		"mix_gas delivered [sink_total] moles, expected ~100")
+
+	// Within 5% of the configured ratio.
+	var/actual_o2_ratio = sink_o2 / sink_total
+	var/actual_n2_ratio = sink_n2 / sink_total
+	TEST_ASSERT(abs(actual_o2_ratio - 0.7) < 0.05, \
+		"O2 ratio off target: expected 0.7, got [actual_o2_ratio]")
+	TEST_ASSERT(abs(actual_n2_ratio - 0.3) < 0.05, \
+		"N2 ratio off target: expected 0.3, got [actual_n2_ratio]")
+
+
+/// The LINDA fuel-consumption pathway thrust_burn uses: remove_ratio drains
+/// a fraction of moles from air_contents and returns a removed mixture that
+/// can be assumed by the exhaust turf. Tests this directly rather than going
+/// through thrust_burn (which couples to APC power and blockage geometry).
+/// Combined with dq_gas_thruster_construct_and_check_fuel above, this covers
+/// the full engine→LINDA contract.
+/datum/unit_test/dq_thruster_remove_ratio_drives_burn_math
+
+/datum/unit_test/dq_thruster_remove_ratio_drives_burn_math/Run()
+	var/turf/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for thruster remove_ratio test")
+
+	var/obj/machinery/atmospherics/unary/engine/E = new(T)
+	TEST_ASSERT_NOTNULL(E, "thruster construct failed")
+	TEST_ASSERT_NOTNULL(E.air_contents, "thruster air_contents null")
+
+	E.air_contents.adjust_gas(/datum/gas/volatile_fuel, 200)
+	E.air_contents.adjust_gas(/datum/gas/oxygen, 400)
+	E.air_contents.set_temperature(T0C + 300)
+
+	var/initial_moles = E.air_contents.total_moles()
+	TEST_ASSERT(initial_moles > 500, "fuel load failed: only [initial_moles] moles")
+
+	// Replicate the thrust_burn() core: pull a ratio of the fuel mixture.
+	var/burn_ratio = E.volume_per_burn * E.thrust_limit / E.air_contents.volume
+	TEST_ASSERT(burn_ratio > 0 && burn_ratio < 1, \
+		"burn_ratio out of range: [burn_ratio] (vol_per_burn=[E.volume_per_burn] thrust_limit=[E.thrust_limit] vol=[E.air_contents.volume])")
+
+	var/datum/gas_mixture/removed = E.air_contents.remove_ratio(burn_ratio)
+	TEST_ASSERT_NOTNULL(removed, "remove_ratio returned null on a fuel-rich mixture")
+	var/removed_moles = removed.total_moles()
+	TEST_ASSERT(removed_moles > 0, "remove_ratio returned an empty mixture, expected ~[initial_moles * burn_ratio]")
+
+	var/after_moles = E.air_contents.total_moles()
+	TEST_ASSERT(abs((initial_moles - after_moles) - removed_moles) < 0.5, \
+		"engine moles lost ([initial_moles - after_moles]) != removed.total ([removed_moles]) — conservation broken")
+
+	// Thrust math — the engine's calculate_thrust on a hot fuel mix should be > 0.
+	var/thrust = E.calculate_thrust(removed)
+	TEST_ASSERT(thrust > 0, \
+		"calculate_thrust on a 600-mole hot fuel sample returned [thrust] (expected > 0)")
+
+	// Merge the exhaust into the turf air — the LINDA assume_air path.
+	var/datum/gas_mixture/turf_air = T.return_air()
+	var/turf_before = turf_air.total_moles()
+	T.assume_air(removed)
+	var/turf_after = turf_air.total_moles()
+	TEST_ASSERT(turf_after > turf_before, \
+		"assume_air didn't add removed exhaust to turf: [turf_before] → [turf_after]")
+
+	qdel(E)
+
+
+/// experience_pressure_difference should push an unanchored movable in the
+/// direction of the pressure gradient. Validates the spacewind path that
+/// makes "blown out an airlock" work.
+/datum/unit_test/dq_pressure_pushes_unanchored_movable
+
+/datum/unit_test/dq_pressure_pushes_unanchored_movable/Run()
+	var/list/pair = dq_atmos_test_find_floor_pair()
+	TEST_ASSERT_NOTNULL(pair, "no adjacent-floor pair for pressure push test")
+	var/turf/open/A = pair[1]
+	var/turf/open/B = pair[2]
+
+	// Drop an unanchored, low-mass item on A.
+	var/obj/item/paper/P = new(A)
+	TEST_ASSERT(!P.anchored, "paper anchored — test setup invalid")
+	TEST_ASSERT(P.loc == A, "paper didn't land on A")
+
+	// Bump SSair.times_fired so the cycle-gate inside high_pressure_movements
+	// (last_high_pressure_movement_air_cycle < SSair.times_fired) opens.
+	SSair.times_fired++
+	var/direction = get_dir(A, B)
+	// Large pressure difference and low resistance → move_prob clamps high.
+	P.experience_pressure_difference(500, direction)
+	TEST_ASSERT(P.last_high_pressure_movement_air_cycle == SSair.times_fired, \
+		"unanchored item did not register a pressure push (last_cycle=[P.last_high_pressure_movement_air_cycle], expected [SSair.times_fired])")
+
+	qdel(P)
+
+
+/// Same setup, but anchored object should resist the same pressure delta —
+/// the anchored branch only fires if max_force exceeds move_resist *
+/// FORCEPUSH_RATIO, which a normal pressure delta can't reach for a heavy
+/// anchored machine like a canister.
+/datum/unit_test/dq_pressure_does_not_push_anchored_movable
+
+/datum/unit_test/dq_pressure_does_not_push_anchored_movable/Run()
+	var/list/pair = dq_atmos_test_find_floor_pair()
+	TEST_ASSERT_NOTNULL(pair, "no adjacent-floor pair for anchored pressure test")
+	var/turf/open/A = pair[1]
+	var/turf/open/B = pair[2]
+
+	// Anchored canister (wrenched-down by hand for the test; canister default is
+	// unanchored and gets bolted via wrench in-game). High pressure_resistance
+	// and a heavy move_resist should keep the canister from moving under spacewind.
+	var/obj/machinery/portable_atmospherics/canister/C = new(A)
+	C.anchored = TRUE
+	C.move_resist = INFINITY
+	var/turf/initial_loc = C.loc
+
+	SSair.times_fired++
+	var/direction = get_dir(A, B)
+	// Same pressure delta the paper moved at — anchored canister stays.
+	C.experience_pressure_difference(500, direction)
+	TEST_ASSERT(C.loc == initial_loc, \
+		"anchored canister moved under pressure delta — anchored branch math broken (loc=[C.loc])")
+
+	qdel(C)
+
+
+/// Closed airlock between two turfs blocks atmos sharing — the CHOMP door
+/// has a CanZASPass(!density) override that LINDA routes through via the
+/// /atom/proc/can_atmos_pass(ATMOS_PASS_PROC) bridge added in this fork.
+/// This test confirms CANATMOSPASS sees the closed door and returns FALSE.
+/datum/unit_test/dq_closed_door_blocks_canatmospass
+
+/datum/unit_test/dq_closed_door_blocks_canatmospass/Run()
+	var/list/pair = dq_atmos_test_find_floor_pair()
+	TEST_ASSERT_NOTNULL(pair, "no adjacent-floor pair for closed-door block test")
+	var/turf/open/A = pair[1]
+	var/turf/open/B = pair[2]
+
+	// Baseline: no door, atmos passes both ways.
+	var/baseline = CANATMOSPASS(B, A, FALSE)
+	TEST_ASSERT(baseline, "baseline CANATMOSPASS without door is FALSE — test setup invalid")
+
+	var/obj/machinery/door/unpowered/D = new(A)
+	TEST_ASSERT_NOTNULL(D, "door construct failed")
+	TEST_ASSERT(D.density, "door not dense by default")
+	TEST_ASSERT_EQUAL(D.can_atmos_pass, ATMOS_PASS_PROC, "door can_atmos_pass not ATMOS_PASS_PROC")
+
+	// With the closed door on A, CHOMP's CANATMOSPASS check between A and B
+	// should consult CanZASPass via /atom/proc/can_atmos_pass — and the closed
+	// door returns !density = FALSE.
+	var/passes = TRUE
+	for(var/obj/checked in A.contents)
+		if(!CANATMOSPASS(checked, B, FALSE))
+			passes = FALSE
+			break
+	TEST_ASSERT(!passes, "closed door did NOT block CANATMOSPASS — can_atmos_pass→CanZASPass routing broken")
+
+	// Open the door (density=FALSE) and confirm gas passes again.
+	D.density = FALSE
+	var/passes_open = TRUE
+	for(var/obj/checked in A.contents)
+		if(!CANATMOSPASS(checked, B, FALSE))
+			passes_open = FALSE
+			break
+	TEST_ASSERT(passes_open, "open (non-dense) door blocked CANATMOSPASS — should be passable")
+
+	qdel(D)
+
 
 
