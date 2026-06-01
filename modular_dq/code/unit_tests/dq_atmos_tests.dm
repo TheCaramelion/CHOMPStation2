@@ -3796,3 +3796,118 @@
 		B_air.gases[g][MOLES] = 0
 
 
+// =====================================================================
+// Round 9: edge-case safety (vacuum, TCMB, zero-remove), freezer/heater
+// smoke tests
+// =====================================================================
+
+/// /datum/gas_mixture.react() must be safe at TCMB (2.7K) — the coldest
+/// the atmos engine allows. Without a guard, plasma fire math at near-zero
+/// temperature can divide by zero or blow up the Rust reaction state.
+/datum/unit_test/dq_gas_react_safe_at_tcmb
+
+/datum/unit_test/dq_gas_react_safe_at_tcmb/Run()
+	var/datum/gas_mixture/mix = new(CELL_VOLUME)
+	mix.adjust_gas(/datum/gas/plasma, 50)
+	mix.adjust_gas(/datum/gas/oxygen, 100)
+	mix.set_temperature(TCMB)
+
+	// react() must NOT crash, NOT consume reagents (too cold to burn), and
+	// must NOT touch temperature (no exothermic energy to release).
+	mix.react(null)
+
+	TEST_ASSERT_EQUAL(mix.get_moles(/datum/gas/plasma), 50, \
+		"plasma reacted at TCMB — temperature gate broken")
+	TEST_ASSERT_EQUAL(mix.get_moles(/datum/gas/oxygen), 100, \
+		"oxygen consumed at TCMB — temperature gate broken")
+	// Allow tiny floating drift but no significant change.
+	TEST_ASSERT(abs(mix.temperature - TCMB) < 1, \
+		"temperature shifted at TCMB react: [mix.temperature]")
+
+
+/// An empty (vacuum) gas mixture should return 0 pressure without crashing —
+/// the LINDA pressure read goes through Rust auxmos, which has to handle
+/// total_moles==0 cleanly.
+/datum/unit_test/dq_vacuum_mixture_pressure_is_zero
+
+/datum/unit_test/dq_vacuum_mixture_pressure_is_zero/Run()
+	var/datum/gas_mixture/vac = new(CELL_VOLUME)
+	vac.set_temperature(T20C)
+	TEST_ASSERT_EQUAL(vac.total_moles(), 0, "fresh mixture has non-zero moles")
+
+	var/p = vac.return_pressure()
+	TEST_ASSERT(p == 0 || p < 0.001, \
+		"vacuum mixture returned non-zero pressure: [p]")
+
+	// Same check on heat_capacity — should be 0 (or very near).
+	var/hc = vac.heat_capacity()
+	TEST_ASSERT(hc == 0 || hc < 0.001, \
+		"vacuum mixture has non-zero heat_capacity: [hc]")
+
+
+/// gas_mixture.remove(0) and remove(very small) must return a non-null but
+/// empty mixture without crashing the Rust side. Callers (filters, scrubbers,
+/// pumps) sometimes hit this branch when load is balanced.
+/datum/unit_test/dq_gas_mixture_remove_zero_safe
+
+/datum/unit_test/dq_gas_mixture_remove_zero_safe/Run()
+	var/datum/gas_mixture/mix = new(CELL_VOLUME)
+	mix.adjust_gas(/datum/gas/oxygen, 100)
+	mix.set_temperature(T20C)
+	var/initial_moles = mix.total_moles()
+
+	var/datum/gas_mixture/r0 = mix.remove(0)
+	TEST_ASSERT_NOTNULL(r0, "remove(0) returned null — should return an empty mixture")
+	TEST_ASSERT(r0.total_moles() < 0.001, \
+		"remove(0) returned [r0.total_moles()] moles — should be 0")
+	TEST_ASSERT(abs(mix.total_moles() - initial_moles) < 0.001, \
+		"remove(0) drained source: [initial_moles] → [mix.total_moles()]")
+
+	// Negative remove should be treated as a no-op, not a leak.
+	var/datum/gas_mixture/rneg = mix.remove(-10)
+	if(rneg)
+		TEST_ASSERT(rneg.total_moles() < 0.001, \
+			"remove(-10) somehow extracted [rneg.total_moles()] moles")
+	TEST_ASSERT(abs(mix.total_moles() - initial_moles) < 0.001, \
+		"remove(-10) drained source: [initial_moles] → [mix.total_moles()]")
+
+
+/// Freezer machinery constructs without crashing and can be qdeleted cleanly.
+/// Smoke test — full process() requires a connected pipe network with active
+/// air; we already cover the LINDA gas-cooling math via cryo_cell_cools_mob.
+/datum/unit_test/dq_freezer_constructs
+
+/datum/unit_test/dq_freezer_constructs/Run()
+	var/turf/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for freezer construct test")
+
+	var/obj/machinery/atmospherics/unary/freezer/F = new(T)
+	TEST_ASSERT_NOTNULL(F, "freezer construct failed")
+	TEST_ASSERT_NOTNULL(F.air_contents, "freezer air_contents null")
+	qdel(F)
+
+
+/// Heater machinery constructs without crashing and can be qdeleted cleanly.
+/// Counterpart to dq_freezer_constructs — covers the heat-source machinery
+/// init path under LINDA.
+/datum/unit_test/dq_heater_constructs
+
+/datum/unit_test/dq_heater_constructs/Run()
+	var/turf/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for heater construct test")
+
+	var/obj/machinery/atmospherics/unary/heater/H = new(T)
+	TEST_ASSERT_NOTNULL(H, "heater construct failed")
+	TEST_ASSERT_NOTNULL(H.air_contents, "heater air_contents null")
+	qdel(H)
+
+
+
