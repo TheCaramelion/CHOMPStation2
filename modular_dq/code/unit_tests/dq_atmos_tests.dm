@@ -3979,4 +3979,102 @@
 		"internal var not cleared when AIRTIGHT gate fails")
 
 
+// =====================================================================
+// Round 11: volume pump, tank lifecycle
+// =====================================================================
+
+/// Volume pump transfers a fixed volume of gas per tick regardless of the
+/// downstream pressure — unlike pressure pump which only pumps when target
+/// > current. Used in production for hard-vacuum supply (e.g. SM coolant)
+/// and atmos engine fuel feeds.
+/datum/unit_test/dq_volume_pump_transfers_by_volume
+
+/datum/unit_test/dq_volume_pump_transfers_by_volume/Run()
+	var/turf/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for volume_pump test")
+
+	var/obj/machinery/atmospherics/binary/volume_pump/V = new(T)
+	TEST_ASSERT_NOTNULL(V, "volume_pump construct failed")
+	TEST_ASSERT_NOTNULL(V.air1, "volume_pump air1 null")
+	TEST_ASSERT_NOTNULL(V.air2, "volume_pump air2 null")
+
+	V.air1.adjust_gas(/datum/gas/oxygen, 500)
+	V.air1.set_temperature(T20C)
+	// Pre-load air2 with enough pressure that a pressure pump would refuse —
+	// volume_pump should still transfer.
+	V.air2.adjust_gas(/datum/gas/nitrogen, 100)
+	V.air2.set_temperature(T20C)
+
+	V.use_power = USE_POWER_IDLE
+	V.stat &= ~(NOPOWER | BROKEN)
+
+	var/air1_initial = V.air1.total_moles()
+	var/air2_initial = V.air2.total_moles()
+
+	for(var/i in 1 to 5)
+		V.process()
+
+	var/air1_after = V.air1.total_moles()
+	var/air2_after = V.air2.total_moles()
+
+	TEST_ASSERT(air1_after < air1_initial, \
+		"volume_pump didn't drain input: [air1_initial] → [air1_after]")
+	TEST_ASSERT(air2_after > air2_initial, \
+		"volume_pump didn't fill output: [air2_initial] → [air2_after]")
+	// Mole conservation: input loss == output gain.
+	var/lost = air1_initial - air1_after
+	var/gained = air2_after - air2_initial
+	TEST_ASSERT(abs(lost - gained) < 0.5, \
+		"volume_pump conservation broken: lost [lost], gained [gained]")
+
+	qdel(V)
+
+
+/// Full tank lifecycle: assume donor air → pull a breath → assume more →
+/// pull a second breath. Each step's mass change must be conserved against
+/// the donor/breath mixtures.
+/datum/unit_test/dq_tank_round_trip_drain_fill_drain
+
+/datum/unit_test/dq_tank_round_trip_drain_fill_drain/Run()
+	var/obj/item/tank/oxygen/Tank = new(locate(1, 1, 1))
+	TEST_ASSERT_NOTNULL(Tank, "tank construct failed")
+	TEST_ASSERT_NOTNULL(Tank.air_contents, "tank air_contents null")
+
+	var/start_moles = Tank.air_contents.total_moles()
+
+	// Step 1: drain a breath.
+	var/datum/gas_mixture/b1 = Tank.remove_air_volume(BREATH_VOLUME)
+	TEST_ASSERT_NOTNULL(b1, "step1: remove_air_volume null")
+	var/b1_moles = b1.total_moles()
+	TEST_ASSERT(b1_moles > 0, "step1: breath has zero moles")
+	var/after_drain_1 = Tank.air_contents.total_moles()
+	TEST_ASSERT(abs((start_moles - after_drain_1) - b1_moles) < 0.01, \
+		"step1: drain conservation broken: tank lost [start_moles - after_drain_1], breath got [b1_moles]")
+
+	// Step 2: refill with a donor.
+	var/datum/gas_mixture/donor = new(70)
+	donor.adjust_gas(/datum/gas/oxygen, 30)
+	donor.set_temperature(T20C)
+	var/donor_moles = donor.total_moles()
+	Tank.assume_air(donor)
+	var/after_fill = Tank.air_contents.total_moles()
+	TEST_ASSERT(abs((after_fill - after_drain_1) - donor_moles) < 0.5, \
+		"step2: refill conservation broken: tank gained [after_fill - after_drain_1], donor had [donor_moles]")
+
+	// Step 3: drain again. Tank still has more than the first breath could pull,
+	// so this second breath should also return non-null with some moles.
+	var/datum/gas_mixture/b2 = Tank.remove_air_volume(BREATH_VOLUME)
+	TEST_ASSERT_NOTNULL(b2, "step3: remove_air_volume null after refill")
+	var/b2_moles = b2.total_moles()
+	var/final_moles = Tank.air_contents.total_moles()
+	TEST_ASSERT(abs((after_fill - final_moles) - b2_moles) < 0.01, \
+		"step3: drain conservation broken: tank lost [after_fill - final_moles], breath got [b2_moles]")
+
+	qdel(Tank)
+
+
 
