@@ -3910,4 +3910,73 @@
 	qdel(H)
 
 
+// =====================================================================
+// Round 10: full mob internals breath path
+// =====================================================================
+
+/// Full integration of the breath-from-internals path: a human with an
+/// airtight breath mask and an oxygen tank set as internal pulls breath
+/// gas from the tank rather than the surrounding air. Verifies the tank
+/// drains and the breath mixture has the right oxygen.
+///
+/// This exercises every link in the chain:
+///   mob.internal = tank
+/// → get_breath_from_internal(BREATH_VOLUME)
+/// → suit_supply/contents check
+/// → wear_mask AIRTIGHT check
+/// → tank.remove_air_volume(BREATH_VOLUME)
+/// → tank.remove(moles_needed)
+/// → LINDA gas_mixture.remove()
+///
+/// If LINDA breaks any of those, internals stop working — players asphyxiate
+/// in vacuum even with a full tank. So this is the breath-path regression
+/// canary.
+/datum/unit_test/dq_breath_from_internals_drains_tank
+
+/datum/unit_test/dq_breath_from_internals_drains_tank/Run()
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	TEST_ASSERT_NOTNULL(H, "couldn't allocate human")
+
+	// Airtight breath mask in the wear_mask slot.
+	var/obj/item/clothing/mask/breath/M = new(H)
+	H.wear_mask = M
+	TEST_ASSERT(M.item_flags & AIRTIGHT, "test mask not AIRTIGHT — setup invalid")
+
+	// Oxygen tank in the human's contents, set as the internal supply.
+	var/obj/item/tank/oxygen/Tank = new(H)
+	TEST_ASSERT_NOTNULL(Tank, "tank construct failed")
+	TEST_ASSERT_NOTNULL(Tank.air_contents, "tank air_contents null")
+	TEST_ASSERT(Tank in H.contents, "tank not in human contents — setup invalid")
+	H.internal = Tank
+
+	var/initial_tank_moles = Tank.air_contents.total_moles()
+	TEST_ASSERT(initial_tank_moles > 0, "tank starts empty — setup invalid")
+
+	// Pull a breath through the internals path.
+	var/datum/gas_mixture/breath = H.get_breath_from_internal(BREATH_VOLUME)
+
+	TEST_ASSERT_NOTNULL(breath, "get_breath_from_internal returned null — AIRTIGHT/contents gate broken")
+	var/breath_moles = breath.total_moles()
+	TEST_ASSERT(breath_moles > 0, "breath has zero moles — remove_air_volume didn't pull")
+
+	// Tank must have lost what the breath got (conservation across the chain).
+	var/after_tank_moles = Tank.air_contents.total_moles()
+	var/tank_lost = initial_tank_moles - after_tank_moles
+	TEST_ASSERT(abs(tank_lost - breath_moles) < 0.01, \
+		"internals conservation broken: tank lost [tank_lost] moles, breath got [breath_moles]")
+
+	// The breath should be oxygen-rich (it came from an O2 tank).
+	var/breath_o2 = breath.get_moles(/datum/gas/oxygen)
+	TEST_ASSERT(breath_o2 > 0, "breath from O2 tank has no oxygen: [breath_o2] moles")
+
+	// Removing the AIRTIGHT mask should detach the internal supply: next call
+	// returns null because the AIRTIGHT gate fails.
+	H.wear_mask = null
+	var/datum/gas_mixture/no_breath = H.get_breath_from_internal(BREATH_VOLUME)
+	TEST_ASSERT_NULL(no_breath, \
+		"internals stayed active without AIRTIGHT mask — security gate broken")
+	TEST_ASSERT_NULL(H.internal, \
+		"internal var not cleared when AIRTIGHT gate fails")
+
+
 
