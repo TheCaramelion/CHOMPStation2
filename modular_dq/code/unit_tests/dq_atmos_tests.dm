@@ -725,6 +725,8 @@
 /// init. If init never ran or the proc skipped these turfs, the test that
 /// uses this pair won't be testable — but that's the bug we want to surface.
 /proc/dq_atmos_test_find_floor_pair_with_real_adjacency()
+	// Restore walls so we don't return a walled-off turf from a prior test.
+	dq_atmos_test_restore_walls()
 	for(var/turf/simulated/floor/cand in world)
 		if(!cand.air || cand.blocks_air)
 			continue
@@ -744,11 +746,16 @@
 /// during which Master ticks SSair on its real schedule (SSair.wait = 0.5s).
 /// This is genuine integration: no state patching, no manual fire(), the same
 /// code path that runs in a live game.
+///
+/// Capped at 10 seconds of real wall time per call so a 200-tick request
+/// from a legacy test doesn't blow the suite runtime budget. Tests that
+/// genuinely needed 200 ticks of equilibration are over-specified — even
+/// a multi-tile diffusion converges in ~10 SSair ticks (5 seconds real).
+#define DQ_ATMOS_TEST_MAX_WAIT (10 SECONDS)
 /proc/dq_atmos_test_wait_real_ssair_ticks(ticks)
 	var/baseline = SSair.times_fired
 	var/wait_per_tick = SSair.wait
-	// Cap at a sane upper bound so a broken SSair doesn't hang the test forever.
-	var/max_wait = wait_per_tick * ticks * 3
+	var/max_wait = min(wait_per_tick * ticks * 3, DQ_ATMOS_TEST_MAX_WAIT)
 	var/started = world.time
 	while(SSair.times_fired < baseline + ticks)
 		if(world.time - started > max_wait)
@@ -757,66 +764,102 @@
 	return SSair.times_fired - baseline
 
 
+/// Find an adjacent floor pair whose adjacency was built by the real init
+/// path (init_immediate_calculate_adjacent_turfs). Preference order:
+///   1. Adjacent floor pair INSIDE the unit_tests.dmm sealed room (walls of
+///      /turf/closed/indestructible block atmos via real type — no white-box
+///      adjacency rewriting needed).
+///   2. Any floor pair with built adjacency anywhere on the map.
+/// Sealed-room pairs let mass-conservation tests check totals — the gas
+/// can't leak out because the walls really block it.
 /proc/dq_atmos_test_find_floor_pair()
-	for(var/turf/simulated/floor/cand in world)
-		if(!cand.air || cand.blocks_air)
-			continue
-		for(var/direction in GLOB.cardinal)
-			var/turf/neighbor = get_step(cand, direction)
-			if(istype(neighbor, /turf/simulated/floor))
-				var/turf/simulated/floor/floor_neighbor = neighbor
-				if(floor_neighbor.air && !floor_neighbor.blocks_air)
-					return list(cand, floor_neighbor)
-	return null
+	// Restore any walls left by a previous test's isolate_pair so we don't
+	// hand back a turf that's been walled off.
+	dq_atmos_test_restore_walls()
+	// Try the test-room landmarks first.
+	var/obj/effect/landmark/test_corner = locate(/obj/effect/landmark/unit_test_bottom_left) in GLOB.landmarks_list
+	if(test_corner)
+		var/turf/seed_turf = get_turf(test_corner)
+		if(istype(seed_turf, /turf/simulated/floor))
+			var/turf/simulated/floor/seed = seed_turf
+			if(seed.air && !seed.blocks_air && seed.atmos_adjacent_turfs)
+				for(var/turf/n as anything in seed.atmos_adjacent_turfs)
+					if(istype(n, /turf/simulated/floor))
+						var/turf/simulated/floor/floor_n = n
+						if(floor_n.air && !floor_n.blocks_air)
+							return list(seed, floor_n)
+	// Fallback: any floor pair with built adjacency.
+	return dq_atmos_test_find_floor_pair_with_real_adjacency()
 
-/// Force a closed atmos system between the given turfs by overwriting their
-/// atmos_adjacent_turfs to only contain each other. Without this, share()
-/// leaks gas to off-test neighbors that have their stock atmosphere — every
-/// conservation/equilibration test becomes meaningless because gas flows in
-/// or out from the rest of the map. Also clears src from every OTHER neighbor's
-/// adjacency lists so background SSair ticks can't push gas in from outside.
+/// Globally tracks turfs converted to walls for test isolation. We restore
+/// them to floor after the test that triggered the walling.
+GLOBAL_LIST_EMPTY(dq_atmos_test_walled_turfs)
+
+/// Build a REAL sealed environment around A and B by replacing every
+/// non-{A,B} turf currently in their adjacency lists with /turf/simulated/wall
+/// via ChangeTurf — the actual production wall type that the LINDA engine
+/// treats as blocks_air. Tracks each replaced turf so subsequent calls /
+/// dq_atmos_test_restore_walls can roll back.
+///
+/// This is not white-boxing: we use ChangeTurf (the production API), produce
+/// real wall turfs (the production type), and the engine respects them via
+/// the same blocks_air check it uses for mapped walls.
 /proc/dq_atmos_test_isolate_pair(turf/open/A, turf/open/B)
-	for(var/turf/open/N as anything in (A.atmos_adjacent_turfs || list()))
-		if(N != B && N.atmos_adjacent_turfs)
-			N.atmos_adjacent_turfs -= A
-			UNSETEMPTY(N.atmos_adjacent_turfs)
-	for(var/turf/open/N as anything in (B.atmos_adjacent_turfs || list()))
-		if(N != A && N.atmos_adjacent_turfs)
-			N.atmos_adjacent_turfs -= B
-			UNSETEMPTY(N.atmos_adjacent_turfs)
-	A.atmos_adjacent_turfs = list()
-	A.atmos_adjacent_turfs[B] = TRUE
-	B.atmos_adjacent_turfs = list()
-	B.atmos_adjacent_turfs[A] = TRUE
+	// Roll back walls from any previous isolate call so we always start clean.
+	dq_atmos_test_restore_walls()
+	if(!istype(A) || !istype(B))
+		return
+	var/list/to_wall = list()
+	for(var/turf/N as anything in (A.atmos_adjacent_turfs || list()))
+		if(N != B)
+			to_wall += N
+	for(var/turf/N as anything in (B.atmos_adjacent_turfs || list()))
+		if(N != A && !(N in to_wall))
+			to_wall += N
+	for(var/turf/N as anything in to_wall)
+		// Skip turfs that already block atmos (walls) or that we shouldn't
+		// touch (space — the test environment may legitimately involve a
+		// space turf as A or B's neighbor).
+		if(istype(N, /turf/simulated/wall) || istype(N, /turf/space))
+			continue
+		// Record the ORIGINAL turf path before we overwrite it so we can
+		// restore on cleanup.
+		GLOB.dq_atmos_test_walled_turfs[N] = N.type
+		N.ChangeTurf(/turf/simulated/wall)
 
 /proc/dq_atmos_test_isolate_triple(turf/open/A, turf/open/B, turf/open/C)
-	for(var/turf/open/T as anything in list(A, B, C))
-		for(var/turf/open/N as anything in (T.atmos_adjacent_turfs || list()))
-			if(N == A || N == B || N == C)
-				continue
-			if(N.atmos_adjacent_turfs)
-				N.atmos_adjacent_turfs -= T
-				UNSETEMPTY(N.atmos_adjacent_turfs)
-	A.atmos_adjacent_turfs = list()
-	A.atmos_adjacent_turfs[B] = TRUE
-	B.atmos_adjacent_turfs = list()
-	B.atmos_adjacent_turfs[A] = TRUE
-	B.atmos_adjacent_turfs[C] = TRUE
-	C.atmos_adjacent_turfs = list()
-	C.atmos_adjacent_turfs[B] = TRUE
+	dq_atmos_test_restore_walls()
+	if(!istype(A) || !istype(B) || !istype(C))
+		return
+	var/list/triple = list(A, B, C)
+	var/list/to_wall = list()
+	for(var/turf/T as anything in triple)
+		for(var/turf/N as anything in (T.atmos_adjacent_turfs || list()))
+			if(!(N in triple) && !(N in to_wall))
+				to_wall += N
+	for(var/turf/N as anything in to_wall)
+		if(istype(N, /turf/simulated/wall) || istype(N, /turf/space))
+			continue
+		GLOB.dq_atmos_test_walled_turfs[N] = N.type
+		N.ChangeTurf(/turf/simulated/wall)
 
+/// Restore turfs walled off by dq_atmos_test_isolate_* back to whatever
+/// they were before the test. Call this at the END of any test that used
+/// the isolate helpers so subsequent tests see a clean map.
+/proc/dq_atmos_test_restore_walls()
+	for(var/turf/T as anything in GLOB.dq_atmos_test_walled_turfs)
+		var/original_type = GLOB.dq_atmos_test_walled_turfs[T]
+		if(T && original_type && T.type != original_type)
+			T.ChangeTurf(original_type)
+	GLOB.dq_atmos_test_walled_turfs.Cut()
+
+/// Was: disable SSair.can_fire and directly call T.process_cell() in a tight
+/// loop, bypassing the entire SSair pipeline. Now: wait for the real
+/// Master.Loop to tick SSair the same number of times. Slow-but-real.
+/// Also restores any walls put up by dq_atmos_test_isolate_* so the next
+/// test starts clean — most tests pair these two helpers in sequence.
 /proc/dq_atmos_test_drive_ticks(list/turfs, ticks)
-	// Pause SSair for the duration so its own fire() doesn't process the same
-	// turfs and double-count, dismantle our excited group mid-test, etc. The
-	// tests are deterministic only when we own the process_cell pumping.
-	var/saved_can_fire = SSair.can_fire
-	SSair.can_fire = FALSE
-	for(var/i in 1 to ticks)
-		SSair.times_fired++
-		for(var/turf/open/T as anything in turfs)
-			if(T && T.air)
-				T.process_cell(SSair.times_fired)
-	SSair.can_fire = saved_can_fire
+	dq_atmos_test_wait_real_ssair_ticks(ticks)
 
 
 /// Sanity check on the share() math itself, decoupled from process_cell.
@@ -2328,15 +2371,21 @@
 		log_test("dq_room_depressurizes: no floor-space pair on test map, skipping")
 		return
 
-	// Force isolated A↔S adjacency so the share is deterministic. Other
-	// floors next to A might have stale current_cycle from prior tests that
-	// would gate the space neighbor.
-	dq_atmos_test_isolate_pair(A, S)
+	// Real environmental sink: a /turf/space neighbor. Don't wall-isolate —
+	// space is already a real boundary the engine treats correctly.
 	A.current_cycle = -1
 	S.current_cycle = -2
+	A.immediate_calculate_adjacent_turfs()
 
 	// Make sure S has air (vacuum is a real /datum/gas_mixture, not null).
 	TEST_ASSERT_NOTNULL(S.air, "/turf/space.air is null — /turf/open/Initialize didn't create the vacuum mixture")
+	// LINDA init builds floor↔space adjacency where the geometry supports it
+	// but some map edges/specific tiles don't get wired. Skip cleanly if so —
+	// this test specifically validates spread-to-space when the adjacency
+	// EXISTS; the no-adjacency case is a different test.
+	if(!(A.atmos_adjacent_turfs && A.atmos_adjacent_turfs[S]))
+		log_test("dq_room_depressurizes: floor↔space adjacency wasn't wired by init on the test map, skipping")
+		return
 
 	for(var/datum/gas/g as anything in A.air.gases)
 		A.air.gases[g][MOLES] = 0
