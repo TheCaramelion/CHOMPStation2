@@ -109,7 +109,9 @@
 	id = GAS_PLASMA
 	specific_heat = 200
 	name = "Plasma"
-	gas_overlay = "plasma"
+	// DQEdit — was "plasma" (/tg/ name); the asset on this fork is the legacy
+	// CHOMP/ZAS tile_effects.dmi whose icon_state for this gas is "phoron".
+	gas_overlay = "phoron"
 	moles_visible = MOLES_GAS_VISIBLE
 	dangerous = TRUE
 	rarity = 800
@@ -312,12 +314,12 @@
 	primary_color = COLOR_MAROON
 
 /obj/effect/overlay/gas
-	// DQEdit — /tg/'s 'icons/effects/atmospherics.dmi' (with per-gas icon_states
-	// "plasma", "tritium", "freon", etc., each with TOTAL_VISIBLE_STATES frames)
-	// isn't shipped on this fork. Substitute chemsmoke.dmi (a generic colorable
-	// cloud overlay) and tint via the `color` var from the gas's primary_color.
-	// Each gas type gets a distinct color, alpha varies by concentration.
-	icon = 'icons/effects/chemsmoke.dmi'
+	// DQEdit — restored the pre-LINDA ZAS-era overlay asset (tile_effects.dmi).
+	// /tg/'s 'icons/effects/atmospherics.dmi' (with per-gas icon_states
+	// "plasma", "tritium", "freon", etc.) isn't shipped on this fork; CHOMP's
+	// existing tile_effects.dmi has the legacy phoron/nitrous_oxide/miasma
+	// sprites the codebase always used.
+	icon = 'icons/effects/tile_effects.dmi'
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	anchored = TRUE  // should only appear in vis_contents, but to be safe
 	layer = FLY_LAYER
@@ -330,14 +332,8 @@
 
 /obj/effect/overlay/gas/New(state, alph, offset, tint)
 	. = ..()
-	// `state` is the gas_overlay name (e.g. "plasma"); chemsmoke.dmi doesn't
-	// have per-gas states so we leave icon_state at the dmi default and tint
-	// via color instead. Keep `state` recorded as the icon_state for telemetry
-	// / debugging but the dmi will fall back to its default frame.
 	icon_state = state
 	alpha = alph
-	if(tint)
-		color = tint
 	plane_offset = offset
 
 /obj/effect/overlay/gas/Initialize(mapload)

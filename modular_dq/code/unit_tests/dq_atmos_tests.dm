@@ -323,6 +323,45 @@
 		"breath CO2 didn't rise: [initial_co2] → [final_co2] — human handle_breath didn't exhale CO2")
 
 
+/// Breathing a plasma-laden gas mixture MUST add a toxin reagent to the
+/// human's bloodstream. If this fails, players can stand in phoron with no
+/// consequences — the breath path's toxin damage hook is broken.
+/datum/unit_test/dq_phoron_breath_applies_toxin_reagent
+
+/datum/unit_test/dq_phoron_breath_applies_toxin_reagent/Run()
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
+	TEST_ASSERT_NOTNULL(H, "couldn't allocate test human")
+	TEST_ASSERT_NOTNULL(H.species, "test human has no species")
+	TEST_ASSERT_NOTNULL(H.reagents, "test human has no reagents holder — damage path can't fire")
+
+	// Default human species poison_type is GAS_PHORON (which #defines to
+	// GAS_PLASMA = "plasma" under LINDA). If that's been broken, the breath
+	// path won't recognize plasma as toxic.
+	TEST_ASSERT_EQUAL(H.species.poison_type, GAS_PHORON, \
+		"species.poison_type isn't GAS_PHORON ([H.species.poison_type] vs [GAS_PHORON]) — tox detection won't trigger")
+
+	// Build a breath with plasma at high partial pressure (well above
+	// safe_toxins_max=0.2 kPa).
+	var/datum/gas_mixture/breath = new(BREATH_VOLUME)
+	breath.adjust_gas(/datum/gas/oxygen, MOLES_O2STANDARD * 0.5)
+	breath.adjust_gas(/datum/gas/nitrogen, MOLES_N2STANDARD * 0.5)
+	breath.adjust_gas(/datum/gas/plasma, MOLES_O2STANDARD * 0.5)  // ~16 mol per breath
+	breath.set_temperature(T20C)
+
+	// Verify LINDA_GAS_AMT correctly resolves "plasma" string → /datum/gas/plasma.
+	var/plasma_seen = LINDA_GAS_AMT(breath, GAS_PHORON)
+	TEST_ASSERT(plasma_seen > 5, \
+		"LINDA_GAS_AMT(breath, GAS_PHORON) = [plasma_seen] — string→type lookup broken")
+
+	var/initial_toxin = H.reagents.get_reagent_amount(REAGENT_ID_TOXIN)
+
+	H.handle_breath(breath)
+
+	var/final_toxin = H.reagents.get_reagent_amount(REAGENT_ID_TOXIN)
+	TEST_ASSERT(final_toxin > initial_toxin, \
+		"plasma in breath did NOT add toxin reagent: [initial_toxin] → [final_toxin]. Player can breathe plasma without consequences.")
+
+
 /// Verifies atmosanalyzer_scan returns lines with real gas names. This was
 /// broken pre-fix because GLOB.gas_data.name was empty and `for(g in mix.gas)`
 /// iterated an empty list — analyzers would say "Pressure: 100 kPa" with no
