@@ -3,6 +3,9 @@ SUBSYSTEM_DEF(air)
 	dependencies = list(
 		/datum/controller/subsystem/mapping,
 		/datum/controller/subsystem/atoms,
+		// DQEdit — setup_atmos_machinery iterates SSmachines.all_machines, so
+		// SSmachines must finish populating that list before SSair inits.
+		/datum/controller/subsystem/machines,
 	)
 	priority = FIRE_PRIORITY_AIR
 	wait = 0.5 SECONDS
@@ -11,14 +14,18 @@ SUBSYSTEM_DEF(air)
 
 	var/cached_cost = 0
 
-	var/cost_atoms = 0
+	// DQEdit — cost_atoms / atom_process / process_atoms removed alongside
+	// /atom/proc/process_exposure. /tg/'s atom-exposure pipeline (paper
+	// burning, etc.) isn't wired on this fork — atoms use CHOMP's fire_act
+	// dispatch instead. Strip the SSAIR_PROCESS_ATOMS step + atom_process
+	// list (nothing was ever registered) so the dispatcher's hot loop only
+	// touches code that does work.
 	var/cost_turfs = 0
 	var/cost_hotspots = 0
 	var/cost_groups = 0
 	var/cost_highpressure = 0
 	var/cost_superconductivity = 0
 	var/cost_pipenets = 0
-	var/cost_atmos_machinery = 0
 	var/cost_rebuilds = 0
 	var/cost_adjacent = 0
 
@@ -31,8 +38,13 @@ SUBSYSTEM_DEF(air)
 	var/list/expansion_queue = list()
 	/// List of turfs to recalculate adjacent turfs on before processing
 	var/list/adjacent_rebuild = list()
-	/// A list of machines that will be processed when currentpart == SSAIR_ATMOSMACHINERY. Use SSair.begin_processing_machine and SSair.stop_processing_machine to add and remove machines.
-	var/list/obj/machinery/atmos_machinery = list()
+	// DQEdit — /tg/'s SSair.atmos_machinery (an atmos-tick-scheduled device
+	// queue) is dead code on this fork: atmospherics devices run via
+	// SSmachines.processing_machines (CHOMP-legacy /obj/machinery process()).
+	// Nothing ever called start_processing_machine, so the list was always
+	// empty. Removed along with cost_atmos_machinery, process_atmos_machinery,
+	// the SSAIR_ATMOSMACHINERY currentpart step, and the no-op
+	// /atom/proc/process_atmos hook.
 
 	var/list/pipe_init_dirs_cache = list()
 	//atmos singletons
@@ -46,7 +58,7 @@ SUBSYSTEM_DEF(air)
 	//Special functions lists
 	var/list/turf/active_super_conductivity = list()
 	var/list/turf/open/high_pressure_delta = list()
-	var/list/atom_process = list()
+	// DQEdit — atom_process removed; see cost_atoms comment.
 	/// Reactions which will contribute to a hotspot's size.
 	var/list/hotspot_reactions
 
@@ -70,8 +82,6 @@ SUBSYSTEM_DEF(air)
 	msg += "HP:[round(cost_highpressure,1)]|"
 	msg += "SC:[round(cost_superconductivity,1)]|"
 	msg += "PN:[round(cost_pipenets,1)]|"
-	msg += "AM:[round(cost_atmos_machinery,1)]|"
-	msg += "AO:[round(cost_atoms, 1)]|"
 	msg += "RB:[round(cost_rebuilds,1)]|"
 	msg += "AJ:[round(cost_adjacent,1)]|"
 	msg += "} "
@@ -81,8 +91,6 @@ SUBSYSTEM_DEF(air)
 	msg += "HP:[high_pressure_delta.len]|"
 	msg += "SC:[active_super_conductivity.len]|"
 	msg += "PN:[networks.len]|"
-	msg += "AM:[atmos_machinery.len]|"
-	msg += "AO:[atom_process.len]|"
 	msg += "RB:[rebuild_queue.len]|"
 	msg += "EP:[expansion_queue.len]|"
 	msg += "AJ:[adjacent_rebuild.len]|"
@@ -98,11 +106,10 @@ SUBSYSTEM_DEF(air)
 
 	setup_allturfs()
 	setup_atmos_machinery()
-	// DQEdit — setup_pipenets() removed. /tg/'s blocking pipenet build (via
-	// /datum/pipeline/build_pipeline_blocking) doesn't exist on CHOMP's
-	// /datum/pipe_network. CHOMP pipes call build_network() themselves in
-	// /obj/machinery/atmospherics/pipe Initialize, which fully constructs
-	// their pipenets without SSair orchestrating it.
+	// DQEdit — setup_pipenets() removed: CHOMP pipes call build_network()
+	// themselves lazily through return_air() / build_network(), so no
+	// central pipenet construction phase is needed once each device's
+	// atmos_init() has wired its node references.
 	setup_turf_visuals()
 	process_adjacent_rebuild()
 	// DQEdit — atmos_handbooks_init() removed. /tg/'s gas handbook is an
@@ -144,19 +151,9 @@ SUBSYSTEM_DEF(air)
 			return
 		cost_pipenets = MC_AVERAGE(cost_pipenets, TICK_DELTA_TO_MS(cached_cost))
 		resumed = FALSE
-		currentpart = SSAIR_ATMOSMACHINERY
-
-	if(currentpart == SSAIR_ATMOSMACHINERY)
-		timer = TICK_USAGE_REAL
-		if(!resumed)
-			cached_cost = 0
-		process_atmos_machinery(resumed)
-		cached_cost += TICK_USAGE_REAL - timer
-		if(state != SS_RUNNING)
-			return
-		cost_atmos_machinery = MC_AVERAGE(cost_atmos_machinery, TICK_DELTA_TO_MS(cached_cost))
-		resumed = FALSE
 		currentpart = SSAIR_ACTIVETURFS
+
+	// DQEdit — SSAIR_ATMOSMACHINERY step removed: see vars block comment.
 
 	if(currentpart == SSAIR_ACTIVETURFS)
 		timer = TICK_USAGE_REAL
@@ -216,19 +213,8 @@ SUBSYSTEM_DEF(air)
 			return
 		cost_superconductivity = MC_AVERAGE(cost_superconductivity, TICK_DELTA_TO_MS(cached_cost))
 		resumed = FALSE
-		currentpart = SSAIR_PROCESS_ATOMS
 
-	if(currentpart == SSAIR_PROCESS_ATOMS)
-		timer = TICK_USAGE_REAL
-		if(!resumed)
-			cached_cost = 0
-		process_atoms(resumed)
-		cached_cost += TICK_USAGE_REAL - timer
-		if(state != SS_RUNNING)
-			return
-		cost_atoms = MC_AVERAGE(cost_atoms, TICK_DELTA_TO_MS(cached_cost))
-		resumed = FALSE
-
+	// DQEdit — SSAIR_PROCESS_ATOMS step removed; see cost_atoms comment.
 
 	currentpart = SSAIR_PIPENETS
 	SStgui.update_uis(SSair) //Lightning fast debugging motherfucker
@@ -241,14 +227,12 @@ SUBSYSTEM_DEF(air)
 	rebuild_queue = SSair.rebuild_queue
 	expansion_queue = SSair.expansion_queue
 	adjacent_rebuild = SSair.adjacent_rebuild
-	atmos_machinery = SSair.atmos_machinery
 	pipe_init_dirs_cache = SSair.pipe_init_dirs_cache
 	gas_reactions = SSair.gas_reactions
 	atmos_gen = SSair.atmos_gen
 	planetary = SSair.planetary
 	active_super_conductivity = SSair.active_super_conductivity
 	high_pressure_delta = SSair.high_pressure_delta
-	atom_process = SSair.atom_process
 	currentrun = SSair.currentrun
 	queued_for_activation = SSair.queued_for_activation
 
@@ -291,35 +275,8 @@ SUBSYSTEM_DEF(air)
 // /tg/-style pipenet rebuild queues are unused under CHOMP's /datum/pipe_network
 // pipeline model.
 
-/datum/controller/subsystem/air/proc/process_atoms(resumed = FALSE)
-	if(!resumed)
-		src.currentrun = atom_process.Copy()
-	//cache for sanic speed (lists are references anyways)
-	var/list/currentrun = src.currentrun
-	while(currentrun.len)
-		var/atom/talk_to = currentrun[currentrun.len]
-		currentrun.len--
-		if(!talk_to)
-			return
-		talk_to.process_exposure()
-		if(MC_TICK_CHECK)
-			return
-
-/datum/controller/subsystem/air/proc/process_atmos_machinery(resumed = FALSE)
-	if (!resumed)
-		src.currentrun = atmos_machinery.Copy()
-	//cache for sanic speed (lists are references anyways)
-	var/list/currentrun = src.currentrun
-	while(currentrun.len)
-		var/obj/machinery/M = currentrun[currentrun.len]
-		currentrun.len--
-		if(!M)
-			atmos_machinery -= M
-		if(M.process_atmos(wait * 0.1) == PROCESS_KILL)
-			stop_processing_machine(M)
-		if(MC_TICK_CHECK)
-			return
-
+// DQEdit — process_atoms removed alongside atom_process / process_exposure.
+// DQEdit — process_atmos_machinery removed; see vars block comment.
 
 /datum/controller/subsystem/air/proc/process_super_conductivity(resumed = FALSE)
 	if (!resumed)
@@ -660,13 +617,19 @@ SUBSYSTEM_DEF(air)
 /turf/open/space/resolve_active_graph()
 	return list()
 
+// DQEdit — single-pass init for every map-loaded /obj/machinery/atmospherics.
+// /tg/ ran this off SSair.atmos_machinery (which doubled as the per-tick
+// process queue). On this fork devices process via SSmachines, so we don't
+// need a duplicate registry — SSmachines.all_machines already holds every
+// /obj/machinery, and /obj/machinery/Initialize populates it during SSatoms.
+// SSair runs after SSatoms (mapping/atoms deps), so by the time this fires
+// every atmos device exists with init_dir() done; it's safe to wire nodes.
 /datum/controller/subsystem/air/proc/setup_atmos_machinery()
-	for (var/obj/machinery/atmospherics/AM in atmos_machinery)
+	for (var/obj/machinery/atmospherics/AM in SSmachines.all_machines)
 		AM.atmos_init()
 		CHECK_TICK
 
-// setup_pipenets removed — CHOMP pipes call build_network() in their own
-// Initialize, no central pipenet setup phase needed.
+// setup_pipenets removed — see Initialize() comment.
 
 GLOBAL_LIST_EMPTY(colored_turfs)
 GLOBAL_LIST_EMPTY(colored_images)
@@ -738,38 +701,8 @@ GLOBAL_LIST_EMPTY(colored_images)
 	var/datum/atmosphere/mix = atmos_gen[gas_string]
 	return mix.gas_string
 
-/**
- * Adds a given machine to the processing system for SSAIR_ATMOSMACHINERY processing.
- *
- * Arguments:
- * * machine - The machine to start processing. Can be any /obj/machinery.
- */
-/datum/controller/subsystem/air/proc/start_processing_machine(obj/machinery/machine)
-	if(machine.atmos_processing)
-		return
-	if(QDELETED(machine))
-		stack_trace("We tried to add a garbage collecting machine to SSair. Don't")
-		return
-	machine.atmos_processing = TRUE
-	atmos_machinery += machine
-
-/**
- * Removes a given machine to the processing system for SSAIR_ATMOSMACHINERY processing.
- *
- * Arguments:
- * * machine - The machine to stop processing.
- */
-/datum/controller/subsystem/air/proc/stop_processing_machine(obj/machinery/machine)
-	if(!machine.atmos_processing)
-		return
-	machine.atmos_processing = FALSE
-	atmos_machinery -= machine
-
-	// If we're currently processing atmos machines, there's a chance this machine is in
-	// the currentrun list, which is a cache of atmos_machinery. Remove it from that list
-	// as well to prevent processing qdeleted objects in the cache.
-	if(currentpart == SSAIR_ATMOSMACHINERY)
-		currentrun -= machine
+// DQEdit — start_processing_machine / stop_processing_machine removed.
+// See vars block comment: SSair never owned device processing on this fork.
 
 // DQEdit — added /proc/ keyword so these are fresh declarations rather than
 // overrides. CHOMP's TGUI base uses tgui_state/tgui_interact (different proc

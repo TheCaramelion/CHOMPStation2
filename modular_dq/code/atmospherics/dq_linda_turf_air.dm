@@ -13,7 +13,7 @@
 
 // /turf/open is what SSair.setup_allturfs() expects to walk and call
 // Initalize_Atmos() on. The base /turf/proc/Initalize_Atmos in
-// tg_infra_stubs.dm is a no-op; we override it on /turf/open here to do the
+// tg_infra_compat.dm is a no-op; we override it on /turf/open here to do the
 // /tg/-canonical thing — build the adjacency graph and seed current_cycle.
 /turf/open/Initalize_Atmos(times_fired)
 	// Set current_cycle BEFORE building adjacency — init_immediate_calculate_adjacent_turfs

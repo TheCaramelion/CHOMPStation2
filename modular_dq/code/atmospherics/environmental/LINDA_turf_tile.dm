@@ -179,7 +179,11 @@
 
 /turf/open/temperature_expose(datum/gas_mixture/air, exposed_temperature)
 	SEND_SIGNAL(src, COMSIG_TURF_EXPOSE, air, exposed_temperature)
-	check_atmos_process(src, air, exposed_temperature) //Manually do this to avoid needing to use elements, don't want 200 second atom init times
+	// DQEdit — was calling a no-op check_atmos_process() shim that swallowed
+	// the work; replaced with the direct should-then-expose check. (/tg/'s
+	// original used a /datum/element to dispatch; we skip the element layer.)
+	if(should_atmos_process(air, exposed_temperature))
+		atmos_expose(air, exposed_temperature)
 
 /turf/proc/archive()
 	temperature_archived = temperature

@@ -323,6 +323,61 @@
 		"breath CO2 didn't rise: [initial_co2] → [final_co2] — human handle_breath didn't exhale CO2")
 
 
+/// FULL end-to-end: human stands on a turf that has plasma in its air,
+/// then breathe() runs through the production chain — get_breath_from_environment
+/// → environment.remove_volume → mask filter_air → handle_breath →
+/// adjustToxLoss / reagent. If THIS passes but dq_phoron_breath_applies_toxin_reagent
+/// also passes and in-game tox still doesn't apply, the live scenario's
+/// plasma concentration is too low (not enough phoron made it to the
+/// player's tile to cross safe_toxins_max).
+/datum/unit_test/dq_phoron_breath_via_full_chain_applies_toxin
+
+/datum/unit_test/dq_phoron_breath_via_full_chain_applies_toxin/Run()
+	// Find a floor on the test map (the unit_tests.dmm landmark template
+	// isn't loaded on this fork, so allocate's default loc is null).
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor available for full-chain breath test")
+
+	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human, T)
+	TEST_ASSERT_NOTNULL(H, "couldn't allocate test human")
+	TEST_ASSERT_NOTNULL(H.species, "test human has no species")
+	TEST_ASSERT_NOTNULL(H.reagents, "human has no reagents")
+	TEST_ASSERT_NOTNULL(T.air, "turf has no air mixture")
+
+	// Inject plasma into the player's tile via the production API. This is
+	// the path canister.process / atmos_spawn_air go through.
+	var/datum/gas_mixture/donor = new(70)
+	donor.adjust_gas(/datum/gas/plasma, 200)
+	donor.adjust_gas(/datum/gas/oxygen, MOLES_O2STANDARD)
+	donor.adjust_gas(/datum/gas/nitrogen, MOLES_N2STANDARD)
+	donor.set_temperature(T20C)
+	T.assume_air(donor)
+
+	var/turf_plasma = T.air.get_moles(/datum/gas/plasma)
+	TEST_ASSERT(turf_plasma > 100, "donor plasma didn't land on player turf: [turf_plasma]")
+
+	// Make sure player has no internals / mask filtering distorting the test.
+	H.internal = null
+	if(H.wear_mask)
+		H.wear_mask = null
+
+	var/initial_toxin = H.reagents.get_reagent_amount(REAGENT_ID_TOXIN)
+
+	// Drive the production breath path.
+	H.breathe()
+
+	var/final_toxin = H.reagents.get_reagent_amount(REAGENT_ID_TOXIN)
+	TEST_ASSERT(final_toxin > initial_toxin, \
+		"breathe() on a 200-mol-plasma turf did NOT add toxin reagent: [initial_toxin] → [final_toxin]. Turf plasma was [turf_plasma]. The chain from turf → breath → handle_breath → reagent is broken under LINDA.")
+
+	for(var/datum/gas/g as anything in T.air.gases)
+		T.air.gases[g][MOLES] = 0
+
+
 /// Breathing a plasma-laden gas mixture MUST add a toxin reagent to the
 /// human's bloodstream. If this fails, players can stand in phoron with no
 /// consequences — the breath path's toxin damage hook is broken.
@@ -2115,6 +2170,186 @@ GLOBAL_LIST_EMPTY(dq_atmos_test_walled_turfs)
 
 	qdel(P1)
 	qdel(P2)
+
+
+// =====================================================================
+// Pipenet dispatch (catches "START_PROCESSING_PIPENET targets wrong list")
+// =====================================================================
+
+/// build_network() registers a /datum/pipe_network through START_PROCESSING_PIPENET.
+/// That macro must point at SSair.networks (where SSair.process_pipenets reads),
+/// NOT SSmachines.networks (whose process_pipenets is a stub on this fork).
+/// If the macro is mis-targeted, the network builds but reconcile_air never
+/// runs — silent failure that this test catches.
+/datum/unit_test/dq_pipenet_dispatches_through_ssair
+
+/datum/unit_test/dq_pipenet_dispatches_through_ssair/Run()
+	var/list/pair = dq_atmos_test_find_floor_pair()
+	TEST_ASSERT_NOTNULL(pair, "no floor pair for pipenet dispatch test")
+	var/turf/simulated/floor/A = pair[1]
+	var/turf/simulated/floor/B = pair[2]
+
+	var/dir_A_to_B = get_dir(A, B)
+	var/dir_B_to_A = get_dir(B, A)
+
+	var/obj/machinery/atmospherics/pipe/simple/P1 = new(A)
+	P1.dir = dir_A_to_B | dir_B_to_A
+	P1.initialize_directions = dir_A_to_B | dir_B_to_A
+	var/obj/machinery/atmospherics/pipe/simple/P2 = new(B)
+	P2.dir = dir_A_to_B | dir_B_to_A
+	P2.initialize_directions = dir_A_to_B | dir_B_to_A
+
+	P1.atmos_init()
+	P2.atmos_init()
+	P1.build_network()
+
+	TEST_ASSERT_NOTNULL(P1.parent, "P1.parent (pipeline) null after build_network")
+	TEST_ASSERT_NOTNULL(P1.parent.network, "pipeline has no parent network after build_network")
+
+	var/datum/pipe_network/N = P1.parent.network
+	TEST_ASSERT(N in SSair.networks, \
+		"pipe_network NOT in SSair.networks after build_network — START_PROCESSING_PIPENET is targeting the wrong list, reconcile_air will never run in the live game")
+	// SSmachines.networks was removed entirely (see machines.dm DQEdit). If
+	// a future merge re-adds it, the macro's redirect should still keep
+	// pipenets out of it.
+
+	qdel(P1)
+	qdel(P2)
+
+
+// =====================================================================
+// Scrubber trace-gas conservation (catches XGM .gas no-op shim mutation)
+// =====================================================================
+
+/// scrub_gas's "scrub the remaining trace" branch used to write `source.gas -= g`,
+/// but under LINDA `.gas` is the empty compat shim on /datum/gas_mixture so the
+/// removal was a no-op. The gas was added to sink WITHOUT being removed from
+/// source — every trace tick duplicated moles. This test feeds scrub_gas a
+/// source with sub-threshold gas, checks moles are conserved across the pair.
+/datum/unit_test/dq_scrubber_trace_remnant_conserves_moles
+
+/datum/unit_test/dq_scrubber_trace_remnant_conserves_moles/Run()
+	var/datum/gas_mixture/source = new(CELL_VOLUME)
+	var/datum/gas_mixture/sink = new(CELL_VOLUME)
+
+	// 0.5 moles phoron + 0.5 moles N2O — both well over the per-gas
+	// MINIMUM_MOLES_TO_FILTER threshold (0.04) so they hit the "remainder"
+	// branch deterministically: after the main loop's transfer, the leftover
+	// fraction of each filtered gas is dumped through the source.gas -= g path.
+	// (The bug also bites smaller fills that fall straight into the trace
+	// branch — adding plenty here ensures the branch executes regardless of
+	// the main loop's transfer math rounding.)
+	source.adjust_gas(/datum/gas/plasma, 0.5)
+	source.adjust_gas(/datum/gas/nitrous_oxide, 0.5)
+	// Padding so total_moles() > MINIMUM_MOLES_TO_PUMP and scrub_gas proceeds
+	// past its early-return guard.
+	source.adjust_gas(/datum/gas/oxygen, 5)
+	source.set_temperature(T20C)
+
+	var/initial_total_plasma = source.get_moles(/datum/gas/plasma) + sink.get_moles(/datum/gas/plasma)
+	var/initial_total_n2o = source.get_moles(/datum/gas/nitrous_oxide) + sink.get_moles(/datum/gas/nitrous_oxide)
+
+	// Call scrub_gas with a tiny per-call budget so multiple passes are
+	// required to exhaust the gas — each pass exercises the trace remainder
+	// branch on whatever scrap is left below MINIMUM_MOLES_TO_FILTER.
+	for(var/i in 1 to 25)
+		scrub_gas(null, list(GAS_PHORON, GAS_N2O), source, sink, total_transfer_moles = 0.1)
+
+	var/final_total_plasma = source.get_moles(/datum/gas/plasma) + sink.get_moles(/datum/gas/plasma)
+	var/final_total_n2o = source.get_moles(/datum/gas/nitrous_oxide) + sink.get_moles(/datum/gas/nitrous_oxide)
+
+	// Conservation: source+sink moles must equal what we started with.
+	// The XGM-shim bug INCREASES total moles (sink gets the trace, source keeps it).
+	TEST_ASSERT(abs(final_total_plasma - initial_total_plasma) < 0.01, \
+		"scrub_gas violated plasma conservation: started [initial_total_plasma], ended [final_total_plasma] — source.gas -= g is hitting the XGM compat shim (empty list) instead of mutating the real gases dict.")
+	TEST_ASSERT(abs(final_total_n2o - initial_total_n2o) < 0.01, \
+		"scrub_gas violated N2O conservation: started [initial_total_n2o], ended [final_total_n2o] — same shim bug.")
+
+
+// =====================================================================
+// Pipe split / merge mid-round (catches stale parent pipeline references)
+// =====================================================================
+
+/// Build a 3-pipe straight run A-B-C, destroy B, verify A and C now belong
+/// to separate (or no) pipelines. Then build a replacement bridging pipe
+/// at B's old location, verify A and C re-merge into a single pipeline.
+/// Exercises the lazy-rebuild path in pipe.Destroy → all-members-parent=null
+/// → next return_air rebuilds.
+/datum/unit_test/dq_pipe_split_then_merge_rebuilds_pipeline
+
+/datum/unit_test/dq_pipe_split_then_merge_rebuilds_pipeline/Run()
+	// Find three collinear floor tiles A-B-C.
+	var/turf/simulated/floor/A = null
+	var/turf/simulated/floor/B = null
+	var/turf/simulated/floor/C = null
+	for(var/turf/simulated/floor/candA in world)
+		if(!candA.air || candA.blocks_air)
+			continue
+		var/turf/simulated/floor/candB = get_step(candA, EAST)
+		var/turf/simulated/floor/candC = get_step(candB, EAST)
+		if(istype(candB) && istype(candC) && candB.air && candC.air && !candB.blocks_air && !candC.blocks_air)
+			A = candA
+			B = candB
+			C = candC
+			break
+	TEST_ASSERT_NOTNULL(A, "no 3-tile collinear floor strip for split/merge test")
+
+	// Construct three straight pipes E-W along the strip.
+	var/obj/machinery/atmospherics/pipe/simple/PA = new(A)
+	PA.dir = EAST|WEST
+	PA.initialize_directions = EAST|WEST
+	var/obj/machinery/atmospherics/pipe/simple/PB = new(B)
+	PB.dir = EAST|WEST
+	PB.initialize_directions = EAST|WEST
+	var/obj/machinery/atmospherics/pipe/simple/PC = new(C)
+	PC.dir = EAST|WEST
+	PC.initialize_directions = EAST|WEST
+
+	PA.atmos_init()
+	PB.atmos_init()
+	PC.atmos_init()
+	PA.build_network()
+
+	// Sanity: all three share one pipeline.
+	TEST_ASSERT(PA.parent && PA.parent == PB.parent && PB.parent == PC.parent, \
+		"3-pipe straight run didn't form one pipeline: PA=[PA.parent] PB=[PB.parent] PC=[PC.parent]")
+	var/datum/pipeline/initial_pipeline = PA.parent
+
+	// Kill the middle pipe. /datum/pipeline.Destroy nulls every member's
+	// parent. PA and PC should be orphaned, ready to lazy-rebuild.
+	qdel(PB)
+	TEST_ASSERT_NULL(PA.parent, "PA.parent not nulled after destroying middle pipe — pipeline didn't tear down properly")
+	TEST_ASSERT_NULL(PC.parent, "PC.parent not nulled after destroying middle pipe")
+
+	// Trigger lazy rebuild via return_air().
+	PA.return_air()
+	PC.return_air()
+	TEST_ASSERT_NOTNULL(PA.parent, "PA didn't lazy-rebuild a pipeline after split")
+	TEST_ASSERT_NOTNULL(PC.parent, "PC didn't lazy-rebuild a pipeline after split")
+	TEST_ASSERT(PA.parent != PC.parent, \
+		"PA and PC ended up in the SAME pipeline after middle pipe destroyed — split didn't isolate them")
+	TEST_ASSERT(PA.parent != initial_pipeline, "PA's rebuilt pipeline is the old (destroyed) one — stale reference")
+
+	// Insert a fresh bridging pipe at B's slot.
+	var/obj/machinery/atmospherics/pipe/simple/PB2 = new(B)
+	PB2.dir = EAST|WEST
+	PB2.initialize_directions = EAST|WEST
+	PB2.atmos_init()
+	// on_construction would normally fire build_network with new_attachment=TRUE
+	// on every neighbor. Simulate that to merge them back.
+	PA.build_network(TRUE)
+	PC.build_network(TRUE)
+	PB2.build_network(TRUE)
+
+	TEST_ASSERT_NOTNULL(PA.parent, "PA.parent null after merge")
+	TEST_ASSERT_NOTNULL(PC.parent, "PC.parent null after merge")
+	TEST_ASSERT_NOTNULL(PB2.parent, "PB2.parent null after merge")
+	TEST_ASSERT(PA.parent == PB2.parent && PB2.parent == PC.parent, \
+		"3 pipes didn't re-merge into one pipeline after bridging: PA=[PA.parent] PB2=[PB2.parent] PC=[PC.parent]")
+
+	qdel(PA)
+	qdel(PB2)
+	qdel(PC)
 
 
 // =====================================================================

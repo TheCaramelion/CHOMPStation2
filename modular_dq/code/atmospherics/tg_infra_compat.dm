@@ -43,8 +43,8 @@ GLOBAL_LIST_INIT(contrast_colors, list("#ff0000", "#00ff00", "#0000ff", "#ffff00
 
 
 // === /tg/-specific vars on /obj/machinery and /obj/item ===
+// DQEdit — atmos_processing removed alongside SSair.atmos_machinery.
 /obj/machinery
-	var/atmos_processing = FALSE
 	var/rebuilding = FALSE
 
 /obj/item
@@ -230,14 +230,18 @@ GLOBAL_LIST_INIT(diagonals_multiz, list(NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWE
 /turf/proc/zAirOut(direction, turf/source)
 	return TRUE
 
+// atmos_expose / should_atmos_process — base /turf no-ops are FALSE/return;
+// real impls on /turf/simulated live in LINDA_turf_tile.dm. The full call
+// chain runs through /turf/open/temperature_expose.
 /turf/proc/atmos_expose(datum/gas_mixture/air, temperature)
 	return
 
 /turf/proc/should_atmos_process(datum/gas_mixture/air, exposed_temperature)
 	return FALSE
 
-/turf/proc/check_atmos_process(datum/gas_mixture/air, exposed_temperature)
-	return FALSE
+// DQEdit — /turf/proc/check_atmos_process removed; was a no-op that swallowed
+// the temperature_expose handoff. Caller in LINDA_turf_tile.dm now calls
+// should_atmos_process + atmos_expose directly.
 
 /turf/proc/return_analyzable_air()
 	return return_air()
@@ -269,11 +273,9 @@ GLOBAL_LIST_INIT(diagonals_multiz, list(NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWE
 		ChangeTurf(/turf/space, preserve_outdoors = TRUE)
 
 
-// === LINDA reaction-output stubs (CHOMP doesn't have these /tg/ types) ===
-/datum/component/wet_floor
-	var/highest_strength = 0
-
-#define TURF_WET_PERMAFROST 1
+// DQEdit — /datum/component/wet_floor + TURF_WET_PERMAFROST removed alongside
+// the matching branch in gasmixtures/reactions.dm. CHOMP keeps wetness on
+// /turf/simulated.wet directly; no component-based tracking.
 
 /turf/proc/water_vapor_gas_act()
 	if(istype(src, /turf/space) || istype(src, /turf/simulated/open))
@@ -319,23 +321,40 @@ GLOBAL_LIST_INIT(diagonals_multiz, list(NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWE
 		H.hallucination = max(H.hallucination, (hallucination_amount || 10))
 	return
 
-/proc/do_foam(amount, location, type)
+// DQEdit — /tg/'s vendored reactions reference foam types in this tree
+// (halon-combustion resin is the live caller; gasmixtures/reactions.dm:897).
+// Declared as thin marker types so type paths resolve at compile; do_foam
+// ignores the foam_type arg and always spawns CHOMP's /obj/effect/effect/foam.
+/datum/effect_system/fluid_spread/foam
+/datum/effect_system/fluid_spread/foam/metal/resin/halon
+
+// /tg/'s vendored reactions call do_foam with named args
+// (amount, holder, location, foam_type). The fork doesn't implement the
+// /tg/ foam tree, so foam_type is ignored — every call spawns CHOMP's
+// /obj/effect/effect/foam. holder is accepted to match the call shape.
+/proc/do_foam(amount, holder, location, foam_type)
 	if(!location || !amount)
 		return
 	for(var/i in 1 to min(amount, 10))
 		new /obj/effect/effect/foam(get_turf(location))
 	return
 
+// DQEdit — /obj/item/stack/sheet doesn't exist on this fork (CHOMP uses
+// /obj/item/stack/material for sheets). Declare /obj/item/stack/sheet as a
+// thin shell parent so /tg/-shaped paths like /obj/item/stack/sheet/hot_ice
+// resolve, and give hot_ice a real (not "stub") item so the freon-cooling
+// reaction (gasmixtures/reactions.dm:427) produces a usable stackable sheet.
+/obj/item/stack/sheet
+	gender = NEUTER
+	max_amount = 50
+	w_class = ITEMSIZE_NORMAL
+
 /obj/item/stack/sheet/hot_ice
-	name = "hot ice (stub)"
+	name = "hot ice"
+	desc = "Frozen oxygen and plasma. Cold to the touch."
+	singular_name = "hot ice sheet"
+	icon = 'icons/obj/stacks.dmi'
+	icon_state = "sheet-metal"  // placeholder; no dedicated hot_ice sprite on this fork
 
-/datum/effect_system/fluid_spread/foam/metal/resin/halon
-
-/datum/effect_system/fluid_spread/foam
-
-// /atom hook for per-tick atmos processing (LINDA iteration).
-/atom/proc/process_atmos(seconds_per_tick)
-	return
-
-/atom/proc/process_exposure(datum/gas_mixture/air, exposed_temperature)
-	return
+// DQEdit — /atom/proc/process_atmos removed alongside SSair.atmos_machinery.
+// DQEdit — /atom/proc/process_exposure removed alongside SSair.atom_process.

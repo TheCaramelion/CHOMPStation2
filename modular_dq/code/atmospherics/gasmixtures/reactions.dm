@@ -111,9 +111,12 @@
 		if(-INFINITY to WATER_VAPOR_DEPOSITION_POINT)
 			if(location?.freeze_turf())
 				consumed = MOLES_GAS_VISIBLE
-			var/datum/component/wet_floor/wet_floor = location?.GetComponent(/datum/component/wet_floor)
-			if(wet_floor && wet_floor.highest_strength == TURF_WET_PERMAFROST)
-				. |= VOLATILE_REACTION
+			// DQEdit — /tg/'s /datum/component/wet_floor + TURF_WET_PERMAFROST
+			// flagged this reaction as VOLATILE so its overlay refresh could be
+			// skipped on permafrosted turfs. CHOMP has no wet_floor component
+			// (its wetness lives directly on /turf/simulated.wet). The flag was
+			// a perf optimisation, not a behavioural requirement, so the missing
+			// branch only costs a redundant overlay tick. Branch removed.
 		if(WATER_VAPOR_DEPOSITION_POINT to WATER_VAPOR_CONDENSATION_POINT)
 			if(!isgroundlessturf(location) && !isnoslipturf(location))
 				location.water_vapor_gas_act()

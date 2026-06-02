@@ -27,13 +27,15 @@
 // SSair's `fire()` uses these to checkpoint where it was when MC tick budget runs
 // out, so it resumes from the same subtask on the next fire().
 #define SSAIR_PIPENETS 1
-#define SSAIR_ATMOSMACHINERY 2
+// DQEdit — SSAIR_ATMOSMACHINERY (2) deleted with the atmos_machinery process
+// queue; devices run via SSmachines. Don't reuse value 2 — leaving the gap
+// keeps the fire() switch identifiers stable if a future merge re-introduces it.
 #define SSAIR_ACTIVETURFS 3
 #define SSAIR_HOTSPOTS 4
 #define SSAIR_EXCITEDGROUPS 5
 #define SSAIR_HIGHPRESSURE 6
 #define SSAIR_SUPERCONDUCTIVITY 7
-#define SSAIR_PROCESS_ATOMS 8
+// DQEdit — SSAIR_PROCESS_ATOMS (8) deleted alongside atom_process / process_exposure.
 
 // Pipeline rebuild helper subtasks.
 #define SSAIR_REBUILD_PIPELINE 1
@@ -53,8 +55,8 @@
 #define Z_LEVEL_UP UP
 #define Z_LEVEL_DOWN DOWN
 
-// /tg/'s wet-floor severity levels. Reactions reference this so define early.
-#define TURF_WET_PERMAFROST 1
+// DQEdit — TURF_WET_PERMAFROST removed; the only reference was the deleted
+// VOLATILE_REACTION branch in gasmixtures/reactions.dm (water_vapor reaction).
 
 // /tg/'s LINDA plane defines — alias to CHOMP's nearest equivalents.
 // Defined early so vendored atmos files (gas_types.dm, LINDA_fire.dm) see them.

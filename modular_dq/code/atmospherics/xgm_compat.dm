@@ -458,9 +458,11 @@ GLOBAL_DATUM_INIT(gas_data, /datum/xgm_gas_data, new())
 	for(var/datum/gas/g as anything in gases)
 		gases[g][MOLES] *= num_val
 
-// /obj/fire — ZAS-era fire effect. LINDA uses /obj/effect/hotspot.
-// Stub the path so CHOMP code that references /obj/fire (closet contents,
-// fusion core field, fire alarm) compiles. At runtime fire is /obj/effect/hotspot.
+// /obj/fire — ZAS-era fire effect. LINDA uses /obj/effect/hotspot at runtime;
+// CHOMP code that still references the legacy /obj/fire path (closet contents,
+// fusion core field, fire alarm spawn lists) resolves through this lightweight
+// declaration. It's an explicit placeholder until the legacy references are
+// migrated to /obj/effect/hotspot.
 /obj/fire
 	name = "fire (deprecated)"
 	icon = 'icons/effects/fire.dmi'
@@ -504,17 +506,20 @@ GLOBAL_DATUM_INIT(gas_data, /datum/xgm_gas_data, new())
 /atom/var/contaminated = 0
 GLOBAL_VAR_INIT(contamination_overlay, null)
 
-// GLOB.vsc.plc.CONTAMINATION_LOSS + airflow_delay — old config-loaded constants
-// CHOMP reagent + life-tick code reads.
-/datum/contamination_settings_stub
+// GLOB.vsc.plc.CONTAMINATION_LOSS + airflow_delay — config constants ZAS used
+// to read from .txt. carbon/human/life.dm and door.dm still reference them, so
+// the holders need to exist; their values stay at 0 (contamination-driven
+// phoron damage and airflow-knockback are inert until/unless someone restores
+// the tuning surface — currently they live at the auxmos crate level instead).
+/datum/contamination_settings
 	var/CONTAMINATION_LOSS = 0
 
-/datum/vsc_stub
-	var/datum/contamination_settings_stub/plc = new
+/datum/vsc_settings
+	var/datum/contamination_settings/plc
 	var/airflow_delay = 0
-/datum/vsc_stub/New()
+/datum/vsc_settings/New()
 	plc = new()
-GLOBAL_DATUM_INIT(vsc, /datum/vsc_stub, new())
+GLOBAL_DATUM_INIT(vsc, /datum/vsc_settings, new())
 
 
 // =====================================================================

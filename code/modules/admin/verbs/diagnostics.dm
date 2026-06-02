@@ -32,7 +32,6 @@ ADMIN_VERB(air_report, R_DEBUG, "Show Air Report", "Displays the current atmos s
 <BR>
 <B>Pipenets</B><BR>
 	Networks: [length(SSair.networks)]<BR>
-	Atmos machinery: [length(SSair.atmos_machinery)]<BR>
 "}
 
 	var/datum/browser/popup = new(user, "airreport", "Airreport")

@@ -116,9 +116,14 @@ ADMIN_VERB(atmos_toggle_debug, R_DEBUG, "Toggle Debug Messages", "Allows to togg
 	for (var/g in filtering)
 		if (LINDA_GAS_AMT(source, g) < MINIMUM_MOLES_TO_FILTER)
 			//ChompEDIT Start - scrub the remainding trace
-			if (LINDA_GAS_AMT(source, g) > 0.0)
-				sink.adjust_gas(g, LINDA_GAS_AMT(source, g), update=0)
-				source.gas -= g
+			// DQEdit — under LINDA, `source.gas` is an empty compat stub; the
+			// original `source.gas -= g` was a no-op so the trace stayed in
+			// source AND got added to sink (gas-conservation bug). Pull the
+			// moles out via adjust_gas so the real `gases[]` dict updates.
+			var/trace = LINDA_GAS_AMT(source, g)
+			if (trace > 0.0)
+				sink.adjust_gas(g, trace, update=0)
+				source.adjust_gas(g, -trace, update=0)
 			//ChompEDIT End
 			continue
 
