@@ -1614,7 +1614,6 @@ GLOBAL_LIST_EMPTY(dq_atmos_test_walled_turfs)
 /datum/unit_test/dq_c_airblock_returns_bitfield/Run()
 	var/turf/simulated/floor/A = null
 	var/turf/simulated/wall/W = null
-	var/turf/simulated/floor/B = null
 	for(var/turf/simulated/floor/cand in world)
 		if(!cand.air || cand.blocks_air)
 			continue
@@ -1623,12 +1622,6 @@ GLOBAL_LIST_EMPTY(dq_atmos_test_walled_turfs)
 			if(istype(n1, /turf/simulated/wall))
 				W = n1
 				A = cand
-				// Try to find a floor on the far side too.
-				var/turf/n2 = get_step(n1, direction)
-				if(istype(n2, /turf/simulated/floor))
-					var/turf/simulated/floor/n2f = n2
-					if(n2f.air && !n2f.blocks_air)
-						B = n2f
 				break
 		if(A)
 			break
@@ -2350,6 +2343,208 @@ GLOBAL_LIST_EMPTY(dq_atmos_test_walled_turfs)
 	qdel(PA)
 	qdel(PB2)
 	qdel(PC)
+
+
+// =====================================================================
+// Phase F coverage smoke tests — every machinery class that was missing
+// a process() exercise gets one here. Each just verifies (a) the machine
+// constructs without runtime, (b) one tick of process() doesn't crash,
+// and (c) the headline observable behaviour fires (gas moves, valve
+// state propagates, etc). Construct-only assertions belong elsewhere.
+// =====================================================================
+
+/// Portable canister-style pump: load it with pressurized N2, drop it on a
+/// floor with low ambient, run process() once, verify ambient gained moles.
+/datum/unit_test/dq_portable_pump_pushes_to_turf
+
+/datum/unit_test/dq_portable_pump_pushes_to_turf/Run()
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for portable pump test")
+
+	// Drain ambient so the pump's effect shows up clearly.
+	var/datum/gas_mixture/turf_air = T.return_air()
+	for(var/datum/gas/g as anything in turf_air.gases)
+		turf_air.gases[g][MOLES] = 0
+	turf_air.set_temperature(T20C)
+
+	var/obj/machinery/portable_atmospherics/powered/pump/P = new(T)
+	TEST_ASSERT_NOTNULL(P, "portable pump construction failed")
+	TEST_ASSERT_NOTNULL(P.air_contents, "portable pump has no internal tank")
+
+	P.air_contents.adjust_gas(/datum/gas/nitrogen, 200)
+	P.air_contents.set_temperature(T20C)
+	P.on = TRUE
+	P.direction_out = TRUE
+	P.target_pressure = 5 * ONE_ATMOSPHERE
+	// Make sure the power gate doesn't short-circuit the test.
+	if(P.cell)
+		P.cell.charge = P.cell.maxcharge
+
+	var/before = turf_air.get_moles(/datum/gas/nitrogen)
+	P.process()
+	var/after = turf_air.get_moles(/datum/gas/nitrogen)
+	TEST_ASSERT(after > before, \
+		"portable pump didn't push N2 to floor: [before] → [after]")
+
+	qdel(P)
+
+
+/// Portable scrubber: drop one on a phoron-laden tile, enable scrubbing,
+/// run process(), verify the turf lost phoron and the scrubber's internal
+/// tank gained some.
+/datum/unit_test/dq_portable_scrubber_pulls_target_gas
+
+/datum/unit_test/dq_portable_scrubber_pulls_target_gas/Run()
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for portable scrubber test")
+
+	var/datum/gas_mixture/turf_air = T.return_air()
+	for(var/datum/gas/g as anything in turf_air.gases)
+		turf_air.gases[g][MOLES] = 0
+	turf_air.adjust_gas(/datum/gas/plasma, 50)
+	turf_air.set_temperature(T20C)
+
+	var/obj/machinery/portable_atmospherics/powered/scrubber/S = new(T)
+	TEST_ASSERT_NOTNULL(S, "portable scrubber construction failed")
+	TEST_ASSERT_NOTNULL(S.air_contents, "portable scrubber has no internal tank")
+
+	S.on = TRUE
+	if(S.cell)
+		S.cell.charge = S.cell.maxcharge
+
+	var/floor_plasma_before = turf_air.get_moles(/datum/gas/plasma)
+	var/tank_plasma_before = S.air_contents.get_moles(/datum/gas/plasma)
+	S.process()
+	var/floor_plasma_after = turf_air.get_moles(/datum/gas/plasma)
+	var/tank_plasma_after = S.air_contents.get_moles(/datum/gas/plasma)
+
+	TEST_ASSERT(floor_plasma_after < floor_plasma_before, \
+		"portable scrubber didn't remove phoron from floor: [floor_plasma_before] → [floor_plasma_after]")
+	TEST_ASSERT(tank_plasma_after > tank_plasma_before, \
+		"portable scrubber didn't capture phoron in its tank: [tank_plasma_before] → [tank_plasma_after]")
+
+	qdel(S)
+
+
+/// Manual valve open/close: build two pipes joined by a valve, verify gas
+/// flow is gated by the valve.open state. Closed → no transfer; open →
+/// reconcile_air pools across both pipelines.
+/datum/unit_test/dq_valve_open_close_gates_pipenet_flow
+
+/datum/unit_test/dq_valve_open_close_gates_pipenet_flow/Run()
+	// Find three collinear tiles A-V-B.
+	var/turf/simulated/floor/A = null
+	var/turf/simulated/floor/V = null
+	var/turf/simulated/floor/B = null
+	for(var/turf/simulated/floor/candA in world)
+		if(!candA.air || candA.blocks_air)
+			continue
+		var/turf/simulated/floor/candV = get_step(candA, EAST)
+		var/turf/simulated/floor/candB = get_step(candV, EAST)
+		if(istype(candV) && istype(candB) && candV.air && candB.air && !candV.blocks_air && !candB.blocks_air)
+			A = candA
+			V = candV
+			B = candB
+			break
+	TEST_ASSERT_NOTNULL(A, "no 3-tile collinear strip for valve test")
+
+	var/obj/machinery/atmospherics/pipe/simple/PA = new(A)
+	PA.dir = EAST|WEST
+	PA.initialize_directions = EAST|WEST
+	var/obj/machinery/atmospherics/valve/VL = new(V)
+	VL.dir = EAST
+	VL.initialize_directions = EAST|WEST
+	VL.open = FALSE
+	var/obj/machinery/atmospherics/pipe/simple/PB = new(B)
+	PB.dir = EAST|WEST
+	PB.initialize_directions = EAST|WEST
+
+	PA.atmos_init()
+	VL.atmos_init()
+	PB.atmos_init()
+	PA.build_network()
+	PB.build_network()
+	VL.build_network()
+
+	// Closed: PA and PB sit in separate pipelines.
+	TEST_ASSERT_NOTNULL(PA.parent, "PA pipeline null after build")
+	TEST_ASSERT_NOTNULL(PB.parent, "PB pipeline null after build")
+	TEST_ASSERT(PA.parent != PB.parent, \
+		"closed valve didn't separate pipelines — PA and PB share parent [PA.parent]")
+
+	// Open the valve and rebuild — they should merge.
+	VL.open = TRUE
+	VL.update_icon()
+	// Force a network rebuild now that the gate is open.
+	PA.build_network(TRUE)
+	PB.build_network(TRUE)
+	VL.build_network(TRUE)
+
+	// After opening, the valve's two network slots should both reference
+	// the same pipenet, and PA/PB pipelines should land in it together.
+	TEST_ASSERT_NOTNULL(VL.network_node1, "valve network_node1 null after open")
+	TEST_ASSERT(VL.network_node1 == VL.network_node2, \
+		"valve open but network_node1 / network_node2 still distinct")
+	var/same_net = (PA.parent.network && PA.parent.network == PB.parent.network)
+	TEST_ASSERT(same_net, \
+		"open valve didn't bridge PA and PB into one pipenet (PA.net=[PA.parent.network], PB.net=[PB.parent.network])")
+
+	qdel(PA)
+	qdel(VL)
+	qdel(PB)
+
+
+/// Passive gate (one-way pressure regulator): seed air1 with high pressure,
+/// air2 empty, set REGULATE_NONE so it free-flows, unlock, run process(),
+/// verify gas moved from air1 to air2.
+/datum/unit_test/dq_passive_gate_one_way_flow
+
+/datum/unit_test/dq_passive_gate_one_way_flow/Run()
+	var/turf/simulated/floor/T = null
+	for(var/turf/simulated/floor/cand in world)
+		if(cand.air && !cand.blocks_air)
+			T = cand
+			break
+	TEST_ASSERT_NOTNULL(T, "no floor for passive gate test")
+
+	var/obj/machinery/atmospherics/binary/passive_gate/G = new(T)
+	TEST_ASSERT_NOTNULL(G, "passive_gate construction failed")
+	TEST_ASSERT_NOTNULL(G.air1, "passive_gate has no air1")
+	TEST_ASSERT_NOTNULL(G.air2, "passive_gate has no air2")
+
+	// Pressurize air1 well above air2.
+	G.air1.adjust_gas(/datum/gas/oxygen, 500)
+	G.air1.set_temperature(T20C)
+	G.air2.set_temperature(T20C)
+	G.unlocked = TRUE
+	G.regulate_mode = 0  // REGULATE_NONE — free flow
+
+	var/air1_before = G.air1.total_moles()
+	var/air2_before = G.air2.total_moles()
+	G.process()
+	var/air1_after = G.air1.total_moles()
+	var/air2_after = G.air2.total_moles()
+
+	TEST_ASSERT(air1_after < air1_before, \
+		"passive_gate didn't drain air1: [air1_before] → [air1_after]")
+	TEST_ASSERT(air2_after > air2_before, \
+		"passive_gate didn't fill air2: [air2_before] → [air2_after]")
+	// Conservation across the gate (we removed `* group_multiplier` from the
+	// flow math — guard against off-by-multiplier regressions).
+	var/total_before = air1_before + air2_before
+	var/total_after = air1_after + air2_after
+	TEST_ASSERT(abs(total_after - total_before) < 1, \
+		"passive_gate violated mole conservation: [total_before] → [total_after]")
+
+	qdel(G)
 
 
 // =====================================================================

@@ -309,7 +309,7 @@
 	else if(breath.temperature <= cold_discomfort_level)
 		get_environment_discomfort(src,"cold")
 
-	breath.update_values()
+	// DQEdit — breath.update_values() removed; no-op under LINDA.
 	..()
 
 /obj/item/organ/internal/brain/alraune

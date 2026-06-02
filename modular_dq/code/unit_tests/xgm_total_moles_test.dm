@@ -5,6 +5,9 @@
 // in both atmos engines. See modular_dq/code/__defines/atmospherics.dm.
 //
 // Run with: bin/test.cmd (or whatever invokes dm.exe with -DUNIT_TESTS).
+//
+// DQEdit — fork is LINDA-only; the historical #ifdef USE_LINDA_ATMOS branch
+// has been collapsed.
 
 /datum/unit_test/xgm_total_moles_helper
 
@@ -18,23 +21,12 @@
 	TEST_ASSERT_EQUAL(xgm_total_moles(empty_mix), 0, "empty mixture has 0 total moles")
 
 	// 3. Helper returns the actual molar sum after adding gas.
-	#ifdef USE_LINDA_ATMOS
-	// LINDA path — adjust_moles takes /datum/gas type path; we keep the test
-	// engine-agnostic by going through the LINDA_GAS_ADJUST macro which
-	// delegates to adjust_gas(id_str, delta) via the compat shim.
-	LINDA_GAS_ADJUST(empty_mix, "oxygen", 5)
-	#else
-	// XGM path — adjust_gas with the GAS_O2 string constant.
-	empty_mix.adjust_gas(GAS_O2, 5)
-	empty_mix.update_values()
-	#endif
+	// Use the GAS_O2 / GAS_N2 #defines (resolve to LINDA's "o2" / "n2"
+	// strings) so the xgm_compat shim can look the gas type up — passing
+	// raw "oxygen" / "nitrogen" misses because /datum/gas/oxygen.id is "o2".
+	LINDA_GAS_ADJUST(empty_mix, GAS_O2, 5)
 	TEST_ASSERT_EQUAL(xgm_total_moles(empty_mix), 5, "after adding 5 moles, total should be 5")
 
 	// 4. Sum is additive across multiple gases.
-	#ifdef USE_LINDA_ATMOS
-	LINDA_GAS_ADJUST(empty_mix, "nitrogen", 3)
-	#else
-	empty_mix.adjust_gas(GAS_N2, 3)
-	empty_mix.update_values()
-	#endif
+	LINDA_GAS_ADJUST(empty_mix, GAS_N2, 3)
 	TEST_ASSERT_EQUAL(xgm_total_moles(empty_mix), 8, "5 + 3 = 8 total moles")

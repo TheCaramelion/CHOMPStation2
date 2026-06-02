@@ -364,14 +364,15 @@
 		P.info = simulation_results
 
 /obj/machinery/bomb_tester/proc/format_gas_for_results(datum/gas_mixture/G)
-	G.update_values() //Just in case
+	// DQEdit — G.update_values() removed; no-op under LINDA.
 	var/results = ""
 	var/pressure = G.return_pressure()
 
 	results += "Pressure: [round(pressure,0.1)] kPa"
 	if(G.total_moles())
 		results += "<br>Temperature: [round(G.temperature-T0C)]&deg;C"
-		for(var/mix in G.gas)
+		// DQEdit — was iterating XGM `G.gas`; under LINDA use gas_ids().
+		for(var/mix in G.gas_ids())
 			results += "<br>[GLOB.gas_data.name[mix]]: [round((LINDA_GAS_AMT(G, mix) / G.total_moles()) * 100)]%"
 
 	return results

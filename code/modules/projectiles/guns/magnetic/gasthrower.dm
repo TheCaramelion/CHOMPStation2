@@ -29,7 +29,7 @@
 
 	var/obj/item/tank/Tank = loaded
 
-	Tank.air_contents.update_values()	// Safety
+	// DQEdit — Tank.air_contents.update_values() removed; no-op under LINDA.
 
 	var/turf/T = get_turf(src)
 

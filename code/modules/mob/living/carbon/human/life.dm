@@ -823,7 +823,7 @@
 		else
 			clear_alert("temp")
 
-	breath.update_values()
+	// DQEdit — breath.update_values() removed; no-op under LINDA.
 	return 1
 
 /mob/living/carbon/human/proc/play_inhale(mob/living/M, exhale)
@@ -1171,26 +1171,11 @@
 		if(bloodstr)
 			bloodstr.metabolize()
 
-		if(!isSynthetic())
-
-			var/total_phoronloss = 0
-			for(var/obj/item/I in src)
-				if(I.contaminated)
-					if(check_belly(I)) continue
-					if(src.species && src.species.get_bodytype() != "Vox" && src.species.get_bodytype() != "Shadekin")
-						// This is hacky, I'm so sorry.
-						if(I != l_hand && I != r_hand)	//If the item isn't in your hands, you're probably wearing it. Full damage for you.
-							total_phoronloss += GLOB.vsc.plc.CONTAMINATION_LOSS
-						else if(I == l_hand)	//If the item is in your hands, but you're wearing protection, you might be alright.
-							var/l_hand_blocked = 0
-							l_hand_blocked = 1-(100-getarmor(BP_L_HAND, "bio"))/100	//This should get a number between 0 and 1
-							total_phoronloss += GLOB.vsc.plc.CONTAMINATION_LOSS * l_hand_blocked
-						else if(I == r_hand)	//If the item is in your hands, but you're wearing protection, you might be alright.
-							var/r_hand_blocked = 0
-							r_hand_blocked = 1-(100-getarmor(BP_R_HAND, "bio"))/100	//This should get a number between 0 and 1
-							total_phoronloss += GLOB.vsc.plc.CONTAMINATION_LOSS * r_hand_blocked
-			if(total_phoronloss)
-				adjustToxLoss(total_phoronloss)
+		// DQEdit — ZAS-era phoron-contamination damage path removed. It read
+		// `I.contaminated` (which has no setter under LINDA) and
+		// `GLOB.vsc.plc.CONTAMINATION_LOSS` (config holder that's also gone).
+		// Whole branch was inert; restore properly if/when contamination
+		// machinery is rebuilt on the LINDA gas model.
 
 	if(SEND_SIGNAL(src, COMSIG_CHECK_FOR_GODMODE) & COMSIG_GODMODE_CANCEL)
 		return 0	// Cancelled by a component

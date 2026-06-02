@@ -90,10 +90,8 @@
 		adjust_gas(L[i], L[i + 1])
 		i += 2
 
-// XGM: update_values() — recompute totals after mutating .gas[].
-// LINDA auto-archives; total_moles is recomputed on read. No-op intentionally.
-/datum/gas_mixture/proc/update_values()
-	return
+// DQEdit — update_values() removed. Every CHOMP caller has been migrated
+// to drop the no-op call (LINDA auto-archives on read).
 
 // XGM: remove_volume(removed_volume) — remove a fraction by volume.
 // LINDA's remove(amount) takes moles. Equivalent: removed_volume / volume.
@@ -434,20 +432,23 @@ GLOBAL_DATUM_INIT(gas_data, /datum/xgm_gas_data, new())
 // 7. Legacy decls + vars
 // =====================================================================
 
-// XGM had `group_multiplier` on every mixture; LINDA doesn't use it. Stay
-// declared so CHOMP code that reads `mix.group_multiplier` resolves to 1.
-/datum/gas_mixture/var/group_multiplier = 1
+// DQEdit — group_multiplier removed. Every CHOMP read was rewritten to
+// drop the `* group_multiplier` (the value was always 1, so dropping it is
+// behaviour-preserving). XGM-era multi-tile zone scalar isn't needed under
+// LINDA, where every turf has its own gas_mixture.
 
-// XGM `.gas[]` was the string-keyed gas dict. Kept declared as an empty list
-// so legacy reads compile to 0; iteration sites use gas_ids() instead.
-/datum/gas_mixture/var/list/gas = list()
+// DQEdit — /datum/gas_mixture.gas (XGM empty-list stub) removed. Every
+// legacy read site has been migrated to gas_ids() / LINDA_GAS_AMT() /
+// .gases[type][MOLES]. Confirmed via grep before deletion. If a stale
+// reader resurfaces, it should fail compile rather than silently read 0.
 
 // pipeline_expansion: CHOMP pipe subtypes (pipe_base.dm:60+) override this to
 // enumerate network neighbors. Base no-op is the canonical declaration.
 /obj/machinery/atmospherics/proc/pipeline_expansion(datum/pipeline/net)
 	return list()
 
-/datum/pipeline/var/building = FALSE
+// DQEdit — /datum/pipeline.building was a ZAS-era rebuild sentinel; zero
+// callers under LINDA, removed.
 
 // CHOMP datum_pipeline.dm calls multiply() during gas rebalancing. LINDA's
 // gas_mixture has multiply as a byondapi binding; this is the DM fallback
@@ -499,27 +500,13 @@ GLOBAL_DATUM_INIT(gas_data, /datum/xgm_gas_data, new())
 	var/burn_product = null
 	var/burn_product_energy = 0
 
-// XGM contamination tracking. CHOMP machinery sets this on items that touch
-// phoron / foreign goo so washers and modkit-eligibility checks can read it.
-// Real var; no central setter wired yet (ZAS contamination machinery wasn't
-// ported), so it stays 0 unless code SETs it.
-/atom/var/contaminated = 0
-GLOBAL_VAR_INIT(contamination_overlay, null)
-
-// GLOB.vsc.plc.CONTAMINATION_LOSS + airflow_delay — config constants ZAS used
-// to read from .txt. carbon/human/life.dm and door.dm still reference them, so
-// the holders need to exist; their values stay at 0 (contamination-driven
-// phoron damage and airflow-knockback are inert until/unless someone restores
-// the tuning surface — currently they live at the auxmos crate level instead).
-/datum/contamination_settings
-	var/CONTAMINATION_LOSS = 0
-
-/datum/vsc_settings
-	var/datum/contamination_settings/plc
-	var/airflow_delay = 0
-/datum/vsc_settings/New()
-	plc = new()
-GLOBAL_DATUM_INIT(vsc, /datum/vsc_settings, new())
+// DQEdit — XGM contamination machinery + GLOB.vsc config holders fully
+// removed. /atom.contaminated had no setter under LINDA (ZAS contamination
+// pipeline was never ported); the only readers (carbon/human/life.dm phoron
+// damage branch, custom_items_vr.dm modkit check) have been deleted alongside
+// it. door.dm's airflow_delay read was already a commented-out line.
+// Restore the holders + a setter pipeline if/when phoron contamination
+// gameplay is rebuilt on the LINDA model.
 
 
 // =====================================================================

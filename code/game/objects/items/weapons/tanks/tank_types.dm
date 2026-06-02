@@ -46,7 +46,7 @@
 
 	air_contents.adjust_gas(GAS_O2, ((3*ONE_ATMOSPHERE)*70/(R_IDEAL_GAS_EQUATION*T20C) * O2STANDARD) - LINDA_GAS_AMT(air_contents, GAS_O2))
 	air_contents.adjust_gas(GAS_N2O, ((3*ONE_ATMOSPHERE)*70/(R_IDEAL_GAS_EQUATION*T20C) * N2STANDARD) - LINDA_GAS_AMT(air_contents, GAS_N2O))
-	air_contents.update_values()
+	// DQEdit — update_values() removed; no-op under LINDA.
 
 /*
  * Air
