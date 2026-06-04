@@ -47,7 +47,7 @@
 		return FALSE // No client to ask
 	if(!candidate.MayRespawn())
 		return FALSE // They can't respawn for whatever reason.
-	if(be_special_flag && !(candidate.client.prefs.read_preference(/datum/preference/numeric/human/be_special) & be_special_flag) )
+	if(be_special_flag && !(candidate.client.prefs.be_special & be_special_flag) )
 		return FALSE // They don't want to see the prompt.
 	for(var/ban in check_bans)
 		if(jobban_isbanned(candidate, ban))
@@ -80,9 +80,7 @@
 	switch(response)
 		if("Never for this round")
 			if(be_special_flag)
-				// DQEdit — migrated to /datum/preference/numeric/human/be_special
-				var/_cur = D.client.prefs.read_preference(/datum/preference/numeric/human/be_special)
-				D.client.prefs.update_preference_by_type(/datum/preference/numeric/human/be_special, _cur ^ be_special_flag)
+				D.client.prefs.be_special ^= be_special_flag
 				to_chat(D, span_notice("You will not be prompted to join similar roles to [role_name] for the rest of this round. Note: If you save your character now, it will save this permanently."))
 			else
 				to_chat(D, span_warning("This type of ghost-joinable role doesn't have a role type flag associated with it, so I can't prevent future requests, sorry. Bug a dev!"))

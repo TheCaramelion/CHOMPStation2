@@ -69,10 +69,6 @@
 			SEND_SIGNAL(src,COMSIG_HANDLE_ALLERGENS, chem_effects[CE_ALLERGEN])
 
 			handle_medical_side_effects()
-			dq_check_ischemic_damage()      // DQEdit — sustained oxyloss damages liver/kidneys/heart
-			dq_check_emergent_conditions()  // DQEdit — spawn/clear damage-emergent conditions based on organ state
-			dq_check_metric_conditions()    // DQEdit — spawn/clear metric-driven conditions (radiation, toxloss, temp, cloneloss)
-			dq_check_chem_conditions()      // DQEdit — spawn/clear chem side effects and drug interactions
 
 			handle_heartbeat()
 			handle_nif()
@@ -823,7 +819,6 @@
 		else
 			clear_alert("temp")
 
-	// DQEdit — breath.update_values() removed; no-op under LINDA.
 	return 1
 
 /mob/living/carbon/human/proc/play_inhale(mob/living/M, exhale)
@@ -862,10 +857,6 @@
 	//Moved pressure calculations here for use in skip-processing check.
 	var/pressure = environment.return_pressure()
 	var/adjusted_pressure = calculate_affecting_pressure(pressure)
-
-	// DQEdit — phoron contamination is offline under LINDA (no contamination
-	// flags/limits on GLOB.gas_data, the env.gas dict shape changed, and
-	// pl_effects is a no-op). Loop disabled until LINDA contamination is wired.
 
 	if(istype(loc, /turf/space)) //No FBPs overheating on space turfs inside mechs or people.
 		//Don't bother if the temperature drop is less than 0.1 anyways. Hopefully BYOND is smart enough to turn this constant expression into a constant
@@ -1527,48 +1518,6 @@
 		else
 			clear_fullscreen("fear")
 
-		if(healths)
-			if(chem_effects[CE_PAINKILLER] > 100)
-				healths.icon_state = "health_numb"
-			else
-				// Generate a by-limb health display.
-				var/mutable_appearance/healths_ma = new(healths)
-				healths_ma.icon_state = "blank"
-				healths_ma.overlays = null
-				healths_ma.plane = PLANE_PLAYER_HUD
-
-				var/no_damage = 1
-				var/trauma_val = 0 // Used in calculating softcrit/hardcrit indicators.
-				if(!(species.flags & NO_PAIN))
-					trauma_val = max(traumatic_shock,halloss)/getMaxHealth()
-				var/limb_trauma_val = trauma_val*0.3
-				// Collect and apply the images all at once to avoid appearance churn.
-				var/list/health_images = list()
-				for(var/obj/item/organ/external/E in organs)
-					if(no_damage && (E.brute_dam || E.burn_dam))
-						no_damage = 0
-					health_images += E.get_damage_hud_image(limb_trauma_val)
-
-				// Apply a fire overlay if we're burning.
-				if(on_fire || get_hallucination_component()?.get_hud_state() == HUD_HALLUCINATION_ONFIRE)
-					health_images += image('icons/mob/OnFire.dmi',"[get_fire_icon_state()]")
-
-				// Show a general pain/crit indicator if needed.
-				if(get_hallucination_component()?.get_hud_state() == HUD_HALLUCINATION_CRIT)
-					trauma_val = 2
-				if(trauma_val)
-					if(!(species.flags & NO_PAIN))
-						if(trauma_val > 0.7)
-							health_images += image('icons/mob/screen1_health.dmi',"softcrit")
-						if(trauma_val >= 1)
-							health_images += image('icons/mob/screen1_health.dmi',"hardcrit")
-				else if(no_damage)
-					health_images += image('icons/mob/screen1_health.dmi',"fullhealth")
-
-				healths_ma.add_overlay(health_images)
-				healths.appearance = healths_ma
-
-
 		var/fat_alert = /atom/movable/screen/alert/fat
 		var/hungry_alert = /atom/movable/screen/alert/hungry
 		var/starving_alert = /atom/movable/screen/alert/starving
@@ -1626,7 +1575,6 @@
 
 		if(!surrounding_belly() && !previewing_belly) //VOREStation Add - Belly fullscreens safety
 			clear_fullscreen("belly")
-			belly_overlay_tgui?.hide() // DQEdit — hide TGUI belly overlay
 
 		if(CONFIG_GET(flag/welder_vision))
 			var/found_welder
@@ -1678,7 +1626,7 @@
 	var/no_damage = 1
 	var/trauma_val = 0 // Used in calculating softcrit/hardcrit indicators.
 	if(!(species.flags & NO_PAIN))
-		trauma_val = max(traumatic_shock,halloss)/species.total_health
+		trauma_val = max(traumatic_shock,halloss)/getMaxHealth()
 	var/limb_trauma_val = trauma_val*0.3
 	// Collect and apply the images all at once to avoid appearance churn.
 	var/list/health_images = list()

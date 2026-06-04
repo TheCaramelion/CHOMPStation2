@@ -81,7 +81,7 @@
 	if (cap <= 0)
 		return
 	set_temperature((temperature * cap + joules) / cap)
-
+/*
 // XGM: adjust_multi(g1, n1, g2, n2, ...) — variadic adjustment helper.
 /datum/gas_mixture/proc/adjust_multi(...)
 	var/list/L = args
@@ -89,7 +89,7 @@
 	while(i < length(L))
 		adjust_gas(L[i], L[i + 1])
 		i += 2
-
+*/
 // DQEdit — update_values() removed. Every CHOMP caller has been migrated
 // to drop the no-op call (LINDA auto-archives on read).
 
@@ -137,7 +137,7 @@
 // XGM_GAS_FUSION_FUEL) live on /datum/decl/xgm_gas subtypes (code/defines/
 // gases.dm). GLOB.gas_data.flags[gas_id_string] gives the bitmask, populated
 // by /datum/xgm_gas_data/New() below.
-
+/*
 /datum/gas_mixture/proc/get_by_flag(flag)
 	if(!gases || !flag)
 		return 0
@@ -146,7 +146,7 @@
 		var/gas_id = initial(g.id)
 		if(GLOB.gas_data.flags[gas_id] & flag)
 			. += gases[g][MOLES]
-
+*/
 // XGM: remove moles of flag-matching gases up to `amount` total, proportionally.
 // Returns a /datum/gas_mixture containing only the removed moles.
 /datum/gas_mixture/proc/remove_by_flag(flag, amount)
@@ -449,7 +449,7 @@ GLOBAL_DATUM_INIT(gas_data, /datum/xgm_gas_data, new())
 
 // DQEdit — /datum/pipeline.building was a ZAS-era rebuild sentinel; zero
 // callers under LINDA, removed.
-
+/*
 // CHOMP datum_pipeline.dm calls multiply() during gas rebalancing. LINDA's
 // gas_mixture has multiply as a byondapi binding; this is the DM fallback
 // when running without verdigris.
@@ -458,7 +458,7 @@ GLOBAL_DATUM_INIT(gas_data, /datum/xgm_gas_data, new())
 		return
 	for(var/datum/gas/g as anything in gases)
 		gases[g][MOLES] *= num_val
-
+*/
 // /obj/fire — ZAS-era fire effect. LINDA uses /obj/effect/hotspot at runtime;
 // CHOMP code that still references the legacy /obj/fire path (closet contents,
 // fusion core field, fire alarm spawn lists) resolves through this lightweight

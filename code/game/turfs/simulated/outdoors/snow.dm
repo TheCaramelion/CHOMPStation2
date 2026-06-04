@@ -10,7 +10,7 @@
 /turf/simulated/floor/outdoors/snow/Entered(atom/A)
 	if(isliving(A))
 		var/mob/living/L = A
-		if(dq_get_hovering(L) || L.flying) // Flying things shouldn't make footprints.
+		if(L.hovering || L.flying) // Flying things shouldn't make footprints.
 			if(L.flying)
 				L.adjust_nutrition(-0.5)
 			return ..()

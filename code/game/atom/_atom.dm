@@ -8,14 +8,16 @@
 	layer = TURF_LAYER //This was here when I got here. Why though?
 	var/level = 2
 	var/flags = NONE
-	// DQEdit — was_bloodied, blood_color, fluorescent moved to /datum/component/forensics_state
+	var/was_bloodied
+	var/blood_color
 	var/pass_flags = 0
 	var/throwpass = 0
 	var/germ_level = GERM_LEVEL_AMBIENT // The higher the germ level, the more germ on the atom.
 	var/simulated = TRUE //filter for actions - used by lighting overlays
-	// DQEdit — atom_say_verb removed (no subtype ever overrode it; inlined to "says" in atom_say)
+	var/atom_say_verb = "says"
 	var/bubble_icon = "normal" ///what icon the atom uses for speechbubbles
 	var/datum/forensics_crime/forensic_data
+	var/fluorescent // Shows up under a UV light.
 
 	var/last_bumped = 0
 
@@ -39,7 +41,14 @@
 	// Track if we are already had initialize() called to prevent double-initialization.
 	//var/initialized = FALSE // using the atom flags
 
-	// DQEdit — chat_color, chat_color_name, chat_color_darkened moved to GLOB sparse maps in atom_var_components.dm
+	/// Last name used to calculate a color for the chatmessage overlays
+	var/chat_color_name
+	/// Last color calculated for the the chatmessage overlays
+	var/chat_color
+	/// A luminescence-shifted value of the last color calculated for chatmessage overlays
+	var/chat_color_darkened
+	/// The chat color var, without alpha.
+	var/chat_color_hover
 	//! Colors
 	/**
 	 * used to store the different colors on an atom
@@ -47,9 +56,9 @@
 	 * its inherent color, the colored paint applied on it, special color effect etc...
 	 */
 	var/list/atom_colours
-	// DQEdit — update_on_z moved to GLOB.update_on_z_by_atom (sparse map).
-	// Saves the var entry from every /atom subtype's init table.
-	// Use SET_UPDATE_ON_Z / GET_UPDATE_ON_Z macros (see observer_listener helpers).
+	/// Lazylist of all images to update when we change z levels
+	/// You will need to manage adding/removing from this yourself, but I'll do the updating for you
+	var/list/image/update_on_z
 
 	/// Radiation insulation types
 	var/rad_insulation = RAD_NO_INSULATION
@@ -207,7 +216,7 @@
 			f_name = "some "
 		else
 			f_name = "a "
-		if(dq_get_blood_color(src) != SYNTH_BLOOD_COLOUR)
+		if(blood_color != SYNTH_BLOOD_COLOUR)
 			f_name += "[span_danger("blood-stained")] [name][infix]!"
 		else
 			f_name += "oil-stained [name][infix]."
@@ -315,15 +324,15 @@
 	if(flags & NOBLOODY)
 		return 0
 
-	dq_set_was_bloodied(src, TRUE)
-	if(!dq_get_blood_color(src))
-		dq_set_blood_color(src, SYNTH_BLOOD_COLOUR)
+	was_bloodied = TRUE
+	if(!blood_color)
+		blood_color = SYNTH_BLOOD_COLOUR
 	if(istype(M))
 		if (!istype(M.dna, /datum/dna))
 			M.dna = new /datum/dna(null)
 			M.dna.real_name = M.real_name
 		M.check_dna()
-		dq_set_blood_color(src, M.species.get_blood_colour(M))
+		blood_color = M.species.get_blood_colour(M)
 	. = 1
 	return 1
 
@@ -462,8 +471,7 @@
 		return
 	var/list/speech_bubble_hearers = list()
 	for(var/mob/M in get_mobs_in_view(7, src))
-		// DQEdit — was [atom_say_verb], inlined since no subtype ever overrode it
-		M.show_message(span_npc_say(span_name("[src]") + " says, \"[message]\""), 2, null, 1)
+		M.show_message(span_npc_say(span_name("[src]") + " [atom_say_verb], \"[message]\""), 2, null, 1)
 		if(M.client)
 			speech_bubble_hearers += M.client
 
@@ -645,9 +653,9 @@ GLOBAL_LIST_EMPTY(icon_dimensions)
 		remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
 
 	forensic_data?.wash(clean_types)
-	dq_set_blood_color(src, null)
+	blood_color = null
 	germ_level = 0
-	dq_set_fluorescent(src, 0)
+	fluorescent = 0
 
 /// Sets the wire datum of an atom
 /atom/proc/set_wires(datum/wires/new_wires)

@@ -228,11 +228,10 @@ SUBSYSTEM_DEF(job)
 			job_debug_message("FOC is_job_whitelisted failed, Player: [player]")
 			continue
 		//VOREStation Code End
-		if(flag && !(player.client.prefs.read_preference(/datum/preference/numeric/human/be_special) & flag))
+		if(flag && !(player.client.prefs.be_special & flag))
 			job_debug_message("FOC flag failed, Player: [player], Flag: [flag], ")
 			continue
-		// DQEdit — was: GetJobDepartment(job, level) & job.flag — bucket bitfields gone.
-		if(player.client.prefs.job_at_level(job.title, level))
+		if(player.client.prefs.GetJobDepartment(job, level) & job.flag)
 			job_debug_message("FOC pass, Player: [player], Level:[level]")
 			candidates += player
 	return candidates
@@ -420,8 +419,7 @@ SUBSYSTEM_DEF(job)
 				//VOREStation Add End
 
 				// If the player wants that job on this level, then try give it to him.
-				// DQEdit — was: GetJobDepartment(job, level) & job.flag.
-				if(player.client.prefs.job_at_level(job.title, level))
+				if(player.client.prefs.GetJobDepartment(job, level) & job.flag)
 
 					// If the job isn't filled
 					if((job.current_positions < job.spawn_positions) || job.spawn_positions == -1)
@@ -493,7 +491,7 @@ SUBSYSTEM_DEF(job)
 		var/list/custom_equip_slots = list()
 		var/list/custom_equip_leftovers = list()
 		if(human_mob?.client?.prefs && !(job.mob_type & JOB_SILICON))
-			var/list/active_gear_list = human_mob.client.prefs.get_loadout_for_job(rank) // DQEdit — per-job loadout (was: gear_list[gear_slot])
+			var/list/active_gear_list = LAZYACCESS(human_mob.client.prefs.gear_list, "[human_mob.client.prefs.gear_slot]")
 			for(var/thing in active_gear_list)
 				var/datum/gear/gaar_thing = GLOB.gear_datums[thing]
 				if(!gaar_thing) //Not a real gear datum (maybe removed, as this is loaded from their savefile)
@@ -524,20 +522,14 @@ SUBSYSTEM_DEF(job)
 					gear_implant.implant_loadout(human_mob)
 					continue
 
-				// DQEdit — items with no body slot (the new "Other / Junk" bucket in the
-				// loadout editor) used to be silently dropped here. Route them into the
-				// deferred backpack-spawn pile so they end up where the player expects.
-				if(!gaar_thing.slot)
-					spawn_in_storage += thing
-					continue
-
 				// Try desperately (and sorta poorly) to equip the item. Now with increased desperation!
 				if(gaar_thing.slot && !(gaar_thing.slot in custom_equip_slots))
 					var/metadata = active_gear_list[gaar_thing.display_name]
 					//if(G.slot == slot_wear_mask || G.slot == slot_wear_suit || G.slot == slot_head)
 					//	custom_equip_leftovers += thing
 					//else
-					// DQEdit — no_jacket pref deleted; this gate is dead code now.
+					if(gaar_thing.slot == slot_wear_suit && human_mob.client?.prefs?.no_jacket)
+						continue
 //					if(gaar_thing.slot == slot_shoes && human_mob.client?.prefs?.shoe_hater)	//RS ADD //CHOMPEdit - Disable
 //						continue //CHOMPEdit - Disable
 					if(human_mob.equip_to_slot_or_del(gaar_thing.spawn_item(human_mob, metadata), gaar_thing.slot))
@@ -566,13 +558,14 @@ SUBSYSTEM_DEF(job)
 		// If some custom items could not be equipped before, try again now.
 		for(var/thing in custom_equip_leftovers)
 			var/datum/gear/gear_thing = GLOB.gear_datums[thing]
-			// DQEdit — no_jacket pref deleted; this gate is dead code now.
+			if(gear_thing.slot == slot_wear_suit && human_mob.client?.prefs?.no_jacket)
+				continue
 //			if(gear_thing.slot == slot_shoes && human_mob.client?.prefs?.shoe_hater) //CHOMPEdit - Disable
 //				continue //CHOMPEdit - Disable
 			if(gear_thing.slot in custom_equip_slots)
 				spawn_in_storage += thing
 			else
-				var/list/active_gear_list = human_mob.client.prefs.get_loadout_for_job(rank) // DQEdit — per-job loadout (was: gear_list[gear_slot])
+				var/list/active_gear_list = LAZYACCESS(human_mob.client.prefs.gear_list, "[human_mob.client.prefs.gear_slot]")
 				var/metadata = active_gear_list[gear_thing.display_name]
 				if(human_mob.equip_to_slot_or_del(gear_thing.spawn_item(human_mob, metadata), gear_thing.slot))
 					to_chat(human_mob, span_notice("Equipping you with \the [thing]!"))
@@ -627,7 +620,7 @@ SUBSYSTEM_DEF(job)
 				storage_bag = worn_bag
 				break
 
-			var/list/active_gear_list = human_mob.client.prefs.get_loadout_for_job(rank) // DQEdit — per-job loadout (was: gear_list[gear_slot])
+			var/list/active_gear_list = LAZYACCESS(human_mob.client.prefs.gear_list, "[human_mob.client.prefs.gear_slot]")
 			if(!isnull(storage_bag))
 				for(var/thing in spawn_in_storage)
 					to_chat(human_mob, span_notice("Placing \the [thing] in your [storage_bag.name]!"))
@@ -725,17 +718,13 @@ SUBSYSTEM_DEF(job)
 			if(!job.player_has_enough_playtime(player.client))
 				level6++
 				continue
-			// DQEdit — was: GetJobDepartment(...) & job.flag for each level.
-			var/_priority = player.client.prefs.get_job_priority(job.title)
-			switch(_priority)
-				if("high")
-					level1++
-				if("med")
-					level2++
-				if("low")
-					level3++
-				else
-					level4++ //not selected
+			if(player.client.prefs.GetJobDepartment(job, 1) & job.flag)
+				level1++
+			else if(player.client.prefs.GetJobDepartment(job, 2) & job.flag)
+				level2++
+			else if(player.client.prefs.GetJobDepartment(job, 3) & job.flag)
+				level3++
+			else level4++ //not selected
 
 		tmp_str += "HIGH=[level1]|MEDIUM=[level2]|LOW=[level3]|NEVER=[level4]|BANNED=[level5]|YOUNG=[level6]|-"
 		feedback_add_details("job_preferences",tmp_str)

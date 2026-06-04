@@ -225,9 +225,8 @@
 		if(get_turf(R))
 			for(var/turf/T in R.can_broadcast_to())
 				for (var/atom/movable/hearing in T)
-					var/list/hearing_listeners = dq_get_recursive_listeners(hearing)
-					if (hearing_listeners)
-						. |= hearing_listeners
+					if (hearing.recursive_listeners)
+						. |= hearing.recursive_listeners
 
 	for (var/mob/M as anything in .)
 		if (!istype(M) || !M.client)
@@ -455,7 +454,7 @@
 	var/i = 0
 	while(candidates.len <= 0 && i < 5)
 		for(var/mob/observer/dead/G in GLOB.player_list)
-			if(G.client.prefs.read_preference(/datum/preference/numeric/human/be_special) & BE_ALIEN) // DQEdit — migrated
+			if(G.client.prefs.be_special & BE_ALIEN)
 				if(((G.client.inactivity/10)/60) <= ALIEN_SELECT_AFK_BUFFER + i) // the most active players are more likely to become an alien
 					if(!(G.mind && G.mind.current && G.mind.current.stat != DEAD))
 						candidates += G.key
@@ -583,10 +582,6 @@
 * Gets the highest and lowest pressures from the tiles in GLOB.cardinal directions
 * around us, then checks the difference.
 */
-// DQEdit — was gated on T.zone (ZAS). Under LINDA, return_air() returning a
-// non-null mixture is the equivalent "this turf has air to sample" signal.
-// Walls (blocks_air=1) have air=null and we treat them as "no pressure" so the
-// open/closed boundary still shows as a non-zero differential.
 /proc/getOPressureDifferential(turf/loc)
 	var/minp=16777216;
 	var/maxp=0;

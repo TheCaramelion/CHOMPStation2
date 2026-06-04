@@ -835,14 +835,13 @@ SUBSYSTEM_DEF(internal_wiki)
 	var/obj/item/stack/stack_path = M.stack_type
 	SSinternal_wiki.add_icon(data, initial(stack_path.icon), initial(stack_path.icon_state), initial(M.icon_colour))
 	// Get internal data
-	// DQEdit — weight renamed to density; radioactivity is a component lookup.
 	data["integrity"] = M.integrity
 	data["hardness"] = M.hardness
-	data["weight"] = M.density
+	data["weight"] = M.weight
 	data["stack_size"] = initial(stack_path.max_amount) ? initial(stack_path.max_amount) : 0
 	var/supply_value = M.supply_conversion_value ? M.supply_conversion_value : 0
 	data["supply_points"] = supply_value
-	var/value = supply_value * SSsupply.points_per_money
+	var/value = supply_value * SSsupply.money_per_points
 	value = FLOOR(value * 100, 1) / 100 // Truncate decimals
 	data["market_price"] = value
 
@@ -850,7 +849,7 @@ SUBSYSTEM_DEF(internal_wiki)
 	data["conductive"] = M.conductive
 	data["protectiveness"] = M.protectiveness
 	data["explosion_resistance"] = M.explosion_resistance
-	data["radioactivity"] = dq_material_radioactivity(M)
+	data["radioactivity"] = M.radioactivity
 	data["reflectivity"] = M.reflectivity
 	data["melting_point"] = M.melting_point
 	data["ignition_point"] = M.ignition_point
@@ -1133,7 +1132,7 @@ SUBSYSTEM_DEF(internal_wiki)
 	data["industrial_use"] = R.industrial_use
 	data["supply_points"] = R.supply_conversion_value ? R.supply_conversion_value : 0
 	data["cooling_mod"] = R.coolant_modifier
-	var/value = R.supply_conversion_value * REAGENTS_PER_SHEET * SSsupply.points_per_money
+	var/value = R.supply_conversion_value * REAGENTS_PER_SHEET * SSsupply.money_per_points
 	value = FLOOR(value * 100,1) / 100 // Truncate decimals
 	data["market_price"] = value
 	data["sintering"] = SSinternal_wiki.assemble_sintering(GLOB.reagent_sheets[R.id])
@@ -1244,7 +1243,7 @@ SUBSYSTEM_DEF(internal_wiki)
 	var/list/recipe_data = list()
 	var/value = recipe["Price"] ? recipe["Price"] : 0
 	recipe_data["supply_points"] = value
-	value *= SSsupply.points_per_money // convert to cash
+	value *= SSsupply.money_per_points // convert to cash
 	value = FLOOR(value * 100,1) / 100 // Truncate decimals
 	recipe_data["market_price"] = value
 	recipe_data["appliance"] = recipe["Appliance"]

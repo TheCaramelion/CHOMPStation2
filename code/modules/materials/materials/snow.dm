@@ -1,14 +1,14 @@
 /datum/material/snow
 	name = MAT_SNOW
 	stack_type = /obj/item/stack/material/snow
-	material_class = MATCLASS_CERAMIC
+
 	flags = MATERIAL_BRITTLE
 	icon_base = "solid"
 	icon_reinf = "reinf_over"
 	icon_colour = "#FFFFFF"
 	integrity = 1
 	hardness = 1
-	density = 1
+	weight = 1
 	protectiveness = 0 // 0%
 	melting_point = T0C+1
 	destruction_desc = "crumples"
@@ -28,7 +28,7 @@
 
 /datum/material/snowbrick //only slightly stronger than snow, used to make igloos mostly
 	name = MAT_SNOWBRICK
-	material_class = MATCLASS_CERAMIC
+
 	flags = MATERIAL_BRITTLE
 	stack_type = /obj/item/stack/material/snowbrick
 	icon_base = "stone"
@@ -36,7 +36,7 @@
 	icon_reinf = "reinf_stone"
 	icon_colour = "#D8FDFF"
 	integrity = 50
-	density = 2
+	weight = 2
 	hardness = 2
 	protectiveness = 0 // 0%
 	melting_point = T0C+1

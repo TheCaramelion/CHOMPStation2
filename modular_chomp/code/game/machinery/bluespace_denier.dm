@@ -72,6 +72,7 @@
 	..(severity)
 
 /obj/machinery/bluespace_denier/HasProximity(turf/T, datum/weakref/WF, oldloc)
+	SIGNAL_HANDLER
 	if(isnull(WF))
 		return
 

@@ -90,10 +90,10 @@
 		var/mob/M = loc
 		var/turf/T = M.loc
 		if(istype(T, /turf))
-			if(!dq_get_moved_recently(M) && M.last_move)
-				dq_set_moved_recently(M, TRUE)
+			if(!M.moved_recently && M.last_move)
+				M.moved_recently = TRUE
 				step(M, M.last_move)
-				addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(dq_set_moved_recently), M, FALSE), 5 SECONDS, TIMER_DELETE_ME)
+				addtimer(VARSET_CALLBACK(M, moved_recently, FALSE), 5 SECONDS, TIMER_DELETE_ME)
 		to_chat(M, span_danger("You feel a sharp shock!"))
 		var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
 		s.set_up(3, 1, M)

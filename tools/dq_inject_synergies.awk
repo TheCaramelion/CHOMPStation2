@@ -1,4 +1,4 @@
-# Injects `dq_apply_material_synergies(src) // DQAdd` at the end of every
+# Injects `` at the end of every
 # /obj/machinery/X/RefreshParts() override. If the function ends with a
 # trailing `return` (possibly with a value), the injection happens
 # immediately before that return. Otherwise it's appended as the last
@@ -56,13 +56,13 @@ function flush(    i, last, line, inserted) {
     inserted = 0
     for (i = 0; i < idx; i++) {
         if (i == last && buf[i] ~ /^[ \t]+return([ \t]+|[ \t]*$)/) {
-            print "\tdq_apply_material_synergies(src) // DQAdd"
+            print "\t"
             inserted = 1
         }
         print buf[i]
     }
     if (!inserted) {
         # Append at the end of the function body.
-        print "\tdq_apply_material_synergies(src) // DQAdd"
+        print "\t"
     }
 }

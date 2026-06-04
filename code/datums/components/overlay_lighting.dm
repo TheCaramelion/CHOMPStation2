@@ -202,7 +202,7 @@
 ///Adds the luminosity and source for the afected movable atoms to keep track of their visibility.
 /datum/component/overlay_lighting/proc/add_dynamic_lumi()
 	var/atom/movable/light_source = GET_LIGHT_SOURCE
-	dq_affected_dynamic_lights_set(light_source, src, lumcount_range + 1)
+	LAZYSET(light_source.affected_dynamic_lights, src, lumcount_range + 1)
 	light_source.vis_contents += visible_mask
 	light_source.update_dynamic_luminosity()
 	if(directional)
@@ -211,7 +211,7 @@
 ///Removes the luminosity and source for the afected movable atoms to keep track of their visibility.
 /datum/component/overlay_lighting/proc/remove_dynamic_lumi()
 	var/atom/movable/light_source = GET_LIGHT_SOURCE
-	dq_affected_dynamic_lights_remove(light_source, src)
+	LAZYREMOVE(light_source.affected_dynamic_lights, src)
 	light_source.vis_contents -= visible_mask
 	light_source.update_dynamic_luminosity()
 	if(directional)

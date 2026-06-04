@@ -173,7 +173,6 @@
 			SK.respite_activating = FALSE
 			belly.owner.handle_belly_update()
 			H.clear_fullscreen("belly")
-			H.belly_overlay_tgui?.hide() // DQEdit — hide TGUI belly overlay
 			if(H.hud_used)
 				if(!H.hud_used.hud_shown)
 					H.toggle_hud_vis()

@@ -289,73 +289,73 @@
 /obj/item/clothing/suit/storage/hooded/teshari/standard/black_orange
 	name = "black and orange hooded cloak"
 	icon_state = "tesh_hcloak_bo"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "black_orange"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/black_orange
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/black_grey
 	name = "black and grey hooded cloak"
 	icon_state = "tesh_hcloak_bg"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "black_grey"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/black_grey
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/black_midgrey
 	name = "black and medium grey hooded cloak"
 	icon_state = "tesh_hcloak_bmg"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "black_midgrey"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/black_midgrey
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/black_lightgrey
 	name = "black and light grey hooded cloak"
 	icon_state = "tesh_hcloak_blg"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "black_lightgrey"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/black_lightgrey
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/black_white
 	name = "black and white hooded cloak"
 	icon_state = "tesh_hcloak_bw"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "black_white"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/black_white
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/black_red
 	name = "black and red hooded cloak"
 	icon_state = "tesh_hcloak_br"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "black_red"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/black_red
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/black
 	name = "black hooded cloak"
 	icon_state = "tesh_hcloak_bn"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "black"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/black
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/black_yellow
 	name = "black and yellow hooded cloak"
 	icon_state = "tesh_hcloak_by"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "black_yellow"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/black_yellow
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/black_green
 	name = "black and green hooded cloak"
 	icon_state = "tesh_hcloak_bgr"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "black_green"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/black_green
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/black_blue
 	name = "black and blue hooded cloak"
 	icon_state = "tesh_hcloak_bbl"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "black_blue"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/black_blue
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/black_purple
 	name = "black and purple hooded cloak"
 	icon_state = "tesh_hcloak_bp"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "black_purple"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/black_purple
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/black_pink
 	name = "black and pink hooded cloak"
 	icon_state = "tesh_hcloak_bpi"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "black_pink"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/black_pink
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/black_brown
 	name = "black and brown hooded cloak"
 	icon_state = "tesh_hcloak_bbr"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "black_brown"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/black_brown
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/orange_grey
 	name = "orange and grey hooded cloak"
 	icon_state = "tesh_hcloak_og"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "orange_grey"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/orange_grey
+
 ///obj/item/clothing/suit/storage/hooded/teshari/standard/rainbow
 //	name = "rainbow hooded cloak"
 //	icon_state = "tesh_hcloak_rainbow"
@@ -364,54 +364,154 @@
 /obj/item/clothing/suit/storage/hooded/teshari/standard/lightgrey_grey
 	name = "light grey and grey hooded cloak"
 	icon_state = "tesh_hcloak_lgg"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "lightgrey_grey"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/lightgrey_grey
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/white_grey
 	name = "white and grey hooded cloak"
 	icon_state = "tesh_hcloak_wg"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "white_grey"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/white_grey
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/red_grey
 	name = "red and grey hooded cloak"
 	icon_state = "tesh_hcloak_rg"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "red_grey"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/red_grey
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/orange
 	name = "orange hooded cloak"
 	icon_state = "tesh_hcloak_on"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "orange"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/orange
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/yellow_grey
 	name = "yellow and grey hooded cloak"
 	icon_state = "tesh_hcloak_yg"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "yellow_grey"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/yellow_grey
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/green_grey
 	name = "green and grey hooded cloak"
 	icon_state = "tesh_hcloak_gg"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "green_grey"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/green_grey
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/blue_grey
 	name = "blue and grey hooded cloak"
 	icon_state = "tesh_hcloak_blug"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "blue_grey"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/blue_grey
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/purple_grey
 	name = "purple and grey hooded cloak"
 	icon_state = "tesh_hcloak_pg"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "purple_grey"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/purple_grey
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/pink_grey
 	name = "pink and grey hooded cloak"
 	icon_state = "tesh_hcloak_pig"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "pink_grey"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/pink_grey
+
 /obj/item/clothing/suit/storage/hooded/teshari/standard/brown_grey
 	name = "brown and grey hooded cloak"
 	icon_state = "tesh_hcloak_brg"
-	hoodtype = /obj/item/clothing/head/tesh_hood/standard
-	variant = "brown_grey"
+	hoodtype = /obj/item/clothing/head/tesh_hood/standard/brown_grey
+
 //The actual hoods
+/obj/item/clothing/head/tesh_hood/standard/black_orange
+	name = "black and orange cloak hood"
+	icon_state = "tesh_hood_bo"
+
+/obj/item/clothing/head/tesh_hood/standard/black_grey
+	name = "black and grey cloak hood"
+	icon_state = "tesh_hood_bg"
+
+/obj/item/clothing/head/tesh_hood/standard/black_midgrey
+	name = "black and medium grey cloak hood"
+	icon_state = "tesh_hood_bmg"
+
+/obj/item/clothing/head/tesh_hood/standard/black_lightgrey
+	name = "black and light grey cloak hood"
+	icon_state = "tesh_hood_blg"
+
+/obj/item/clothing/head/tesh_hood/standard/black_white
+	name = "black and white cloak hood"
+	icon_state = "tesh_hood_bw"
+
+/obj/item/clothing/head/tesh_hood/standard/black_red
+	name = "black and red cloak hood"
+	icon_state = "tesh_hood_br"
+
+/obj/item/clothing/head/tesh_hood/standard/black
+	name = "black cloak hood"
+	icon_state = "tesh_hood_bn"
+
+/obj/item/clothing/head/tesh_hood/standard/black_yellow
+	name = "black and yellow cloak hood"
+	icon_state = "tesh_hood_by"
+
+/obj/item/clothing/head/tesh_hood/standard/black_green
+	name = "black and green cloak hood"
+	icon_state = "tesh_hood_bgr"
+
+/obj/item/clothing/head/tesh_hood/standard/black_blue
+	name = "black and blue cloak hood"
+	icon_state = "tesh_hood_bbl"
+
+/obj/item/clothing/head/tesh_hood/standard/black_purple
+	name = "black and purple cloak hood"
+	icon_state = "tesh_hood_bp"
+
+/obj/item/clothing/head/tesh_hood/standard/black_pink
+	name = "black and pink cloak hood"
+	icon_state = "tesh_hood_bpi"
+
+/obj/item/clothing/head/tesh_hood/standard/black_brown
+	name = "black and brown cloak hood"
+	icon_state = "tesh_hood_bbr"
+
+/obj/item/clothing/head/tesh_hood/standard/orange_grey
+	name = "orange and grey cloak hood"
+	icon_state = "tesh_hood_og"
+
+/obj/item/clothing/head/tesh_hood/standard/rainbow
+	name = "rainbow cloak hood"
+	icon_state = "tesh_hood_rainbow"
+
+/obj/item/clothing/head/tesh_hood/standard/lightgrey_grey
+	name = "light grey and grey cloak hood"
+	icon_state = "tesh_hood_lgg"
+
+/obj/item/clothing/head/tesh_hood/standard/white_grey
+	name = "white and grey cloak hood"
+	icon_state = "tesh_hood_wg"
+
+/obj/item/clothing/head/tesh_hood/standard/red_grey
+	name = "red and grey cloak hood"
+	icon_state = "tesh_hood_rg"
+
+/obj/item/clothing/head/tesh_hood/standard/orange
+	name = "orange cloak hood"
+	icon_state = "tesh_hood_on"
+
+/obj/item/clothing/head/tesh_hood/standard/yellow_grey
+	name = "yellow and grey cloak hood"
+	icon_state = "tesh_hood_yg"
+
+/obj/item/clothing/head/tesh_hood/standard/green_grey
+	name = "green and grey cloak hood"
+	icon_state = "tesh_hood_gg"
+
+/obj/item/clothing/head/tesh_hood/standard/blue_grey
+	name = "blue and grey cloak hood"
+	icon_state = "tesh_hood_blug"
+
+/obj/item/clothing/head/tesh_hood/standard/purple_grey
+	name = "purple and grey cloak hood"
+	icon_state = "tesh_hood_pg"
+
+/obj/item/clothing/head/tesh_hood/standard/pink_grey
+	name = "pink and grey cloak hood"
+	icon_state = "tesh_hood_pig"
+
+/obj/item/clothing/head/tesh_hood/standard/brown_grey
+	name = "brown and grey cloak hood"
+	icon_state = "tesh_hood_brg"
+
 //Belted cloaks
 /obj/item/clothing/suit/storage/teshari/beltcloak
 	name = "belted cloak"
@@ -420,6 +520,106 @@
 	icon_state = "tesh_beltcloak_bo"
 	species_restricted = list(SPECIES_TESHARI)
 	body_parts_covered = UPPER_TORSO|ARMS
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_orange
+	name = "black belted cloak (orange)"
+	icon_state = "tesh_beltcloak_bo"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_grey
+	name = "black belted cloak"
+	icon_state = "tesh_beltcloak_bg"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_midgrey
+	name = "black belted cloak (medium grey)"
+	icon_state = "tesh_beltcloak_bmg"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_lightgrey
+	name = "black belted cloak (light grey)"
+	icon_state = "tesh_beltcloak_blg"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_white
+	name = "black belted cloak (white)"
+	icon_state = "tesh_beltcloak_bw"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_red
+	name = "black belted cloak (red)"
+	icon_state = "tesh_beltcloak_br"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black
+	name = "black simple belted cloak"
+	icon_state = "tesh_beltcloak_bn"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_yellow
+	name = "black belted cloak (yellow)"
+	icon_state = "tesh_beltcloak_by"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_green
+	name = "black belted cloak (green)"
+	icon_state = "tesh_beltcloak_bgr"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_blue
+	name = "black belted cloak (blue)"
+	icon_state = "tesh_beltcloak_bbl"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_purple
+	name = "black belted cloak (purple)"
+	icon_state = "tesh_beltcloak_bp"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_pink
+	name = "black belted cloak (pink)"
+	icon_state = "tesh_beltcloak_bpi"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/black_brown
+	name = "black belted cloak (brown)"
+	icon_state = "tesh_beltcloak_bbr"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/orange_grey
+	name = "orange belted cloak"
+	icon_state = "tesh_beltcloak_og"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/rainbow
+	name = "rainbow belted cloak"
+	icon_state = "tesh_beltcloak_rainbow"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/lightgrey_grey
+	name = "light grey belted cloak"
+	icon_state = "tesh_beltcloak_lgg"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/white_grey
+	name = "white belted cloak"
+	icon_state = "tesh_beltcloak_wg"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/red_grey
+	name = "red belted cloak"
+	icon_state = "tesh_beltcloak_rg"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/orange
+	name = "orange simple belted cloak"
+	icon_state = "tesh_beltcloak_on"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/yellow_grey
+	name = "yellow belted cloak"
+	icon_state = "tesh_beltcloak_yg"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/green_grey
+	name = "green belted cloak"
+	icon_state = "tesh_beltcloak_gg"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/blue_grey
+	name = "blue belted cloak"
+	icon_state = "tesh_beltcloak_blug"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/purple_grey
+	name = "purple belted cloak"
+	icon_state = "tesh_beltcloak_pg"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/pink_grey
+	name = "pink belted cloak"
+	icon_state = "tesh_beltcloak_pig"
+
+/obj/item/clothing/suit/storage/teshari/beltcloak/standard/brown_grey
+	name = "brown belted cloak"
+	icon_state = "tesh_beltcloak_brg"
 
 //Belted job cloaks
 /obj/item/clothing/suit/storage/teshari/beltcloak/jobs/cargo

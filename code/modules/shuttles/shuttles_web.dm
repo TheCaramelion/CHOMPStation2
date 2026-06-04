@@ -322,8 +322,8 @@
 		if("toggle_cloaking")
 			if(!WS.can_cloak)
 				return
-			dq_set_cloaked(WS, !dq_get_cloaked(WS))
-			if(dq_get_cloaked(WS))
+			WS.cloaked = !WS.cloaked
+			if(WS.cloaked)
 				to_chat(ui.user, span_danger("Ship stealth systems have been activated. The station will not be warned of our arrival."))
 			else
 				to_chat(ui.user, span_danger("Ship stealth systems have been deactivated. The station will be warned of our arrival."))

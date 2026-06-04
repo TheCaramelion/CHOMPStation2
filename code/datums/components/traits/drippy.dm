@@ -60,7 +60,7 @@
 	B.desc = "It's thick and gooey. Perhaps it's the chef's cooking?"
 	B.dryname = "dried something"
 	B.drydesc = "It's dry and crusty. The janitor isn't doing their job."
-	dq_set_fluorescent(B, 0)
+	B.fluorescent  = 0
 	B.invisibility = INVISIBILITY_NONE
 
 /datum/component/drippy/proc/create_color()

@@ -78,8 +78,6 @@
 
 	//set macro to normal incase it was overriden (like cyborg currently does)
 	client.set_hotkeys_macro("macro", "hotkeymode")
-	// DQEdit — force hotkey mode regardless of player pref; non-hotkey is disabled in this fork.
-	winset(client, null, "mainwindow.macro=hotkeymode;hotkey_toggle.is-checked=true;mapwindow.map.focus=true")
 
 	if(!client.tooltips)
 		client.tooltips = new(client)
@@ -88,8 +86,8 @@
 	if(isturf(T))
 		update_client_z(T.z)
 
-	if(dq_get_cloaked(src) && dq_get_cloaked_selfimage(src))
-		client.images += dq_get_cloaked_selfimage(src)
+	if(cloaked && cloaked_selfimage)
+		client.images += cloaked_selfimage
 
 	if(client)
 		for(var/datum/action/A as anything in persistent_client.player_actions)

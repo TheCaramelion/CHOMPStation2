@@ -1,7 +1,7 @@
 /datum/material/flesh
 	name = MAT_FLESH
 	display_name = "chunk of " + MAT_FLESH
-	material_class = MATCLASS_ORGANIC
+
 	icon_colour = "#dd90aa"
 	sheet_singular_name = "meat"
 	sheet_plural_name = "meats"
@@ -9,7 +9,7 @@
 	melting_point = 6000
 	explosion_resistance = 200
 	hardness = 500
-	density = 500
+	weight = 500
 	wiki_flag = WIKI_SPOILER
 	supply_conversion_value = 0
 
@@ -20,14 +20,14 @@
 	sheet_singular_name = "fluff"
 	sheet_plural_name = "fluffs"
 	hardness = 60
-	density = 20 //Strong as iron.
+	weight = 20 //Strong as iron.
 	wiki_flag = WIKI_SPOILER
 	supply_conversion_value = 0
 
 /datum/material/darkglass
 	name = MAT_DARKGLASS
 	display_name = MAT_DARKGLASS
-	material_class = MATCLASS_CERAMIC
+
 	icon_base = MAT_DARKGLASS
 	table_icon_base = MAT_DARKGLASS
 	icon_colour = "#FFFFFF"

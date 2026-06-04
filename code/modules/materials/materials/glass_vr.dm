@@ -4,7 +4,7 @@
 	stack_type = /obj/item/stack/material/glass/titanium
 	integrity = 150
 	hardness = 50
-	density = 50
+	weight = 50
 	flags = MATERIAL_BRITTLE
 	icon_colour = "#A7A3A6"
 	window_options = list("One Direction" = 1, "Full Window" = 4)
@@ -20,7 +20,7 @@
 	stack_type = /obj/item/stack/material/glass/plastitanium
 	integrity = 200
 	hardness = 60
-	density = 80
+	weight = 80
 	flags = MATERIAL_BRITTLE
 	icon_colour = "#676366"
 	window_options = list("One Direction" = 1, "Full Window" = 4)

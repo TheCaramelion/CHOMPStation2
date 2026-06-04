@@ -347,7 +347,10 @@ GLOBAL_LIST_INIT(selectable_footstep, list(
 	"Light Claw" = FOOTSTEP_MOB_TESHARI,
 	"Slither" = FOOTSTEP_MOB_SLITHER,
 	"Mech" = FOOTSTEP_MOB_MECHY,
-	"Heavy" = FOOTSTEP_MOB_HEAVY_ALT
+	"Heavy" = FOOTSTEP_MOB_HEAVY,
+	"Heavy Alt" = FOOTSTEP_MOB_HEAVY_ALT,
+	"Slime" = FOOTSTEP_MOB_SLIME,
+
 ))
 
 // Put any artifact effects that are duplicates, unique, or otherwise unwated in here! This prevents them from spawning via RNG.
@@ -1607,12 +1610,8 @@ GLOBAL_LIST_INIT(global_ammo_types, list(
 	/obj/item/ammo_casing/a545              = "5.45mm"
 	))
 
-//Rad collectors in the world (kept for fusion engine compatibility; under the
-//LINDA migration the collectors are stub-only — see modular_dq/code/
-//atmospherics/deleted_engine_stubs.dm).
+//Rad collectors in the world
 GLOBAL_LIST_EMPTY(rad_collectors)
-// algae/ten stack stub — used by hydroponics; algae generator was deleted with
-// ZAS but the stack subtype is still referenced.
 
 //NIF
 GLOBAL_LIST_INIT(nif_look_messages, list(

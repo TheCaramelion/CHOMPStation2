@@ -785,14 +785,14 @@ I think I covered everything.
 		return
 	status_flags |= LEAPING
 	flying  = 1		//So we can thunk into things
-	dq_set_hovering(src, 1)	// So we don't hurt ourselves running off cliffs
+	hovering = 1	// So we don't hurt ourselves running off cliffs
 	visible_message(span_danger("\The [src] charges at \the [A]!"))
 	throw_at(A, 7, 2)
 	playsound(src, charge_sound, 75, 1)
 	if(status_flags & LEAPING)
 		status_flags &= ~LEAPING
 	flying = 0
-	dq_set_hovering(src, 0)
+	hovering = 0
 
 	var/mob/living/target = null
 	if(explicit)	//Allows specific targetting

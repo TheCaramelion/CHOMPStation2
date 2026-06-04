@@ -384,17 +384,6 @@
 	user.setMoveCooldown(shoot_time) //no moving while shooting either
 
 	next_fire_time = world.time + shoot_time
-	// DQEdit Start — gunfire as noise inside the quarry. Loud sources
-	// alert nearby hostile mobs and bump layer danger. emit_noise is a
-	// no-op outside a quarry z, so non-mine play is unaffected.
-	if(SSquarry)
-		var/turf/origin = get_turf(user)
-		if(origin && SSquarry.layer_at_z(origin.z))
-			var/loudness = istype(src, /obj/item/gun/energy) \
-				? QUARRY_NOISE_WEAPON_LASER \
-				: QUARRY_NOISE_WEAPON_BALLISTIC
-			SSquarry.emit_noise(origin, loudness, src)
-	// DQEdit End
 	handle_gunfire(target, user, clickparams, pointblank, reflex, 1, FALSE)
 
 /obj/item/gun/proc/handle_gunfire(atom/target, mob/living/user, clickparams, pointblank=0, reflex=0, ticker, recursive = FALSE)

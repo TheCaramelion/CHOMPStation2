@@ -238,4 +238,3 @@
 /// Returns: null. Updates turf air infos, whether the turf is closed, is space or a regular turf, or even a planet turf is decided here.
 /turf/proc/update_air_ref(flag)
 	return call_ext(VERDIGRIS, "byond:hook_register_turf_ffi")(src, flag)
-

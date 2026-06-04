@@ -72,7 +72,6 @@
 			color = material.icon_colour
 		if(material.products_need_process())
 			START_PROCESSING(SSobj, src)
-		material.dq_apply_material_behaviors(src) // DQEdit — apply component-driven behaviors (lights, etc.).
 		update_force()
 
 /obj/item/material/Destroy()

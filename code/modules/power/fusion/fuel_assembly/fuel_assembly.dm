@@ -50,15 +50,12 @@
 		desc = "A fuel rod for a fusion reactor. This one is made from [material.use_name]."
 		fuel_colour = material.icon_colour
 		fuel_type = material.use_name
-		// DQEdit — radioactivity / luminescence moved to components on /datum/material.
-		var/mat_rad = dq_material_radioactivity(material)
-		var/mat_lum = dq_material_luminescence(material)
-		if(mat_rad)
-			radioactivity = mat_rad
+		if(material.radioactivity)
+			radioactivity = material.radioactivity
 			desc += " It is warm to the touch."
 			START_PROCESSING(SSobj, src)
-		if(mat_lum)
-			set_light(mat_lum, mat_lum, material.icon_colour)
+		if(material.luminescence)
+			set_light(material.luminescence, material.luminescence, material.icon_colour)
 	else
 		name = "[fuel_type] fuel rod assembly"
 		desc = "A fuel rod for a fusion reactor. This one is made from [fuel_type]."

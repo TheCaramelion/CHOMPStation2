@@ -38,8 +38,8 @@
 	add_verb(src,/mob/proc/enter_soulcatcher)
 
 	if(!length(voice_sounds_list))
-		if(client.prefs.read_preference(/datum/preference/text/human/voice_sound))
-			var/prefsound = client.prefs.read_preference(/datum/preference/text/human/voice_sound)
+		if(client.prefs.voice_sound)
+			var/prefsound = client.prefs.voice_sound
 			voice_sounds_list = get_talk_sound(prefsound)
 		else
 			voice_sounds_list = DEFAULT_TALK_SOUNDS

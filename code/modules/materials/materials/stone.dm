@@ -1,13 +1,13 @@
 /datum/material/stone
 	name = MAT_SANDSTONE
 	stack_type = /obj/item/stack/material/sandstone
-	material_class = MATCLASS_CERAMIC
+
 	icon_base = "stone"
 	table_icon_base = "stone"
 	icon_reinf = "reinf_stone"
 	icon_colour = "#D9C179"
 	shard_type = SHARD_STONE_PIECE
-	density = 22
+	weight = 22
 	hardness = 55
 	protectiveness = 5 // 20%
 	conductive = 0
@@ -24,7 +24,7 @@
 /datum/material/stone/marble
 	name = MAT_MARBLE
 	icon_colour = "#AAAAAA"
-	density = 26
+	weight = 26
 	hardness = 30 //VOREStation Edit - Please.
 	integrity = 201 //hack to stop kitchen benches being flippable, todo: refactor into weight system
 	stack_type = /obj/item/stack/material/marble
@@ -40,7 +40,7 @@
 /datum/material/stone/flint
 	name = MAT_FLINT
 	icon_colour = "#9e9c99"
-	density = 20
+	weight = 20
 	hardness = 30
 	integrity = 100
 	stack_type = /obj/item/stack/material/flint
@@ -61,7 +61,7 @@
 	integrity = 150
 	melting_point = 1550
 	protectiveness = 10
-	density = 27
+	weight = 27
 	hardness = 60
 	var/image/texture
 	supply_conversion_value = 0.1

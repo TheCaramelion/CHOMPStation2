@@ -1,12 +1,12 @@
 /datum/material/wisp
 	name = MAT_WISP
-	material_class = MATCLASS_ORGANIC // DQEdit — class assignment
+	 // DQEdit — class assignment
 	icon_colour = "#F13C00"
 	stack_type = /obj/item/stack/material/wisp
 	icon_base = "solid"
 	icon_reinf = "reinf_mesh"
 	integrity = 30
-	density = 10
+	weight = 10
 	ignition_point = T0C+600
 	melting_point = T0C+800
 	protectiveness = 5
@@ -28,13 +28,13 @@
 
 /datum/material/frostscale
 	name = MAT_FROSCALE
-	material_class = MATCLASS_ORGANIC // DQEdit — class assignment
+	 // DQEdit — class assignment
 	icon_colour = "#0000CC"
 	stack_type = /obj/item/stack/material/frostscale
 	icon_base = "solid"
 	icon_reinf = "reinf_mesh"
 	integrity = 250
-	density = 50
+	weight = 50
 	ignition_point = T0C+20
 	melting_point = T0C+40
 	protectiveness = 30
@@ -56,13 +56,13 @@
 
 /datum/material/crystalscale
 	name = MAT_CRYSCALE
-	material_class = MATCLASS_ORGANIC // DQEdit — class assignment
+	 // DQEdit — class assignment
 	icon_colour = "#006633"
 	stack_type = /obj/item/stack/material/crystalscale
 	icon_base = "solid"
 	icon_reinf = "reinf_mesh"
 	integrity = 250
-	density = 10
+	weight = 10
 	radiation_resistance = 25 //less then lead because it's lighter then lead.
 	protectiveness = 30
 	conductive = 0
@@ -83,13 +83,13 @@
 
 /datum/material/dreamscale
 	name = MAT_DREAMSCALE
-	material_class = MATCLASS_ORGANIC // DQEdit — class assignment
+	 // DQEdit — class assignment
 	icon_colour = "#006633"
 	stack_type = /obj/item/stack/material/dreamscale
 	icon_base = "solid"
 	icon_reinf = "reinf_mesh"
 	integrity = 200
-	density = 30
+	weight = 30
 	ignition_point = T0C+200
 	melting_point = T0C+400
 	protectiveness = 60
@@ -108,13 +108,13 @@
 
 /datum/material/shellchitin
 	name = MAT_SHELLCHITIN
-	material_class = MATCLASS_ORGANIC // DQEdit — class assignment
+	 // DQEdit — class assignment
 	icon_colour = "#006633"
 	stack_type = /obj/item/stack/material/dreamscale
 	icon_base = "solid"
 	icon_reinf = "reinf_mesh"
 	integrity = 250
-	density = 70
+	weight = 70
 	ignition_point = T0C+300
 	melting_point = T0C+600
 	protectiveness = 50

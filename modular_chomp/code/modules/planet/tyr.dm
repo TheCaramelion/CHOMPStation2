@@ -226,7 +226,7 @@ GLOBAL_DATUM(planet_tyr, /datum/planet/sif)
 /turf/simulated/tyracid/Entered(atom/movable/AM, atom/oldloc)
 	if(isliving(AM))
 		var/mob/living/L = AM
-		if(dq_get_hovering(L) || L.flying || L.throwing || L.is_incorporeal())
+		if(L.hovering || L.flying || L.throwing || L.is_incorporeal())
 			return 0
 		acidlevel *= 1 - L.get_water_protection()
 		if(acidlevel > 0)

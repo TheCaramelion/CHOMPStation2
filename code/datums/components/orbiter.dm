@@ -55,14 +55,13 @@
 
 /datum/component/orbiter/proc/begin_orbit(atom/movable/orbiter, radius, clockwise, rotation_speed, rotation_segments, pre_rotation)
 	SEND_SIGNAL(parent, COMSIG_ATOM_ORBIT_BEGIN, orbiter, radius, clockwise, rotation_speed, rotation_segments, pre_rotation)
-	var/datum/component/orbiter/existing = dq_get_orbiting(orbiter)
-	if(existing)
-		if(existing == src)
-			existing.end_orbit(orbiter, TRUE)
+	if(orbiter.orbiting)
+		if(orbiter.orbiting == src)
+			orbiter.orbiting.end_orbit(orbiter, TRUE)
 		else
-			existing.end_orbit(orbiter)
+			orbiter.orbiting.end_orbit(orbiter)
 	orbiters[orbiter] = TRUE
-	dq_set_orbiting(orbiter, src)
+	orbiter.orbiting = src
 	RegisterSignal(orbiter, COMSIG_MOVABLE_MOVED, PROC_REF(orbiter_move_react))
 
 	var/matrix/initial_transform = matrix(orbiter.transform)
@@ -96,7 +95,7 @@
 		orbiter.transform = orbiters[orbiter]
 	orbiters -= orbiter
 	orbiter.stop_orbit(src)
-	dq_set_orbiting(orbiter, null)
+	orbiter.orbiting = null
 	if(!refreshing && !length(orbiters) && !QDELING(src))
 		qdel(src)
 
@@ -154,17 +153,19 @@
 /atom/
 	var/datum/component/orbiter/orbiters
 
-// DQEdit — orbiting and orbit_target moved to /datum/component/movable_state.
+/atom/movable
+	var/datum/component/orbiter/orbiting
+	var/atom/orbit_target
 
 /atom/movable/proc/orbit(atom/A, radius = 10, clockwise = FALSE, rotation_speed = 20, rotation_segments = 36, pre_rotation = TRUE)
 	if(!istype(A) || !get_turf(A) || A == src)
 		return
 
-	dq_set_orbit_target(src, A)
+	orbit_target = A
 	return A.AddComponent(/datum/component/orbiter, src, radius, clockwise, rotation_speed, rotation_segments, pre_rotation)
 
 /atom/movable/proc/stop_orbit(datum/component/orbiter/orbits)
-	dq_set_orbit_target(src, null)
+	orbit_target = null
 	return // We're just a simple hook
 
 /atom/proc/transfer_observers_to(atom/target)

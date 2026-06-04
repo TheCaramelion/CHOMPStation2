@@ -305,7 +305,7 @@
 	. = ..()
 	var/obj/item/tank/phoron/T = locate() in src
 	if(T)
-		T.air_contents.remove(T.air_contents.total_moles)
+		T.air_contents.remove(T.air_contents.total_moles())
 
 /area/submap/debrisfield/misc_debris //for random bits of debris that should use dynamic lights
 	requires_power = 1

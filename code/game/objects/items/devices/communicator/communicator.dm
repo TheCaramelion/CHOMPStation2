@@ -265,7 +265,7 @@
 			continue
 		src.known_devices |= comm
 	for(var/mob/observer/dead/O in GLOB.dead_mob_list)
-		if(!O.client || !O.client.prefs.read_preference(/datum/preference/toggle/human/communicator_visibility)) // DQEdit — migrated pref
+		if(!O.client || O.client.prefs.communicator_visibility == 0)
 			continue
 		src.known_devices |= O
 

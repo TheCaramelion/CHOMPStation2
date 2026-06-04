@@ -7,7 +7,7 @@
 	if(!istype(T))
 		log_mapping("[src] failed to find destination turf.")
 		return
-	if(dq_get_hovering(A))//Flying people dont fall
+	if(A.hovering)//Flying people dont fall
 		return
 	if(isobserver(A))
 		A.forceMove(T) // Harmlessly move ghosts.

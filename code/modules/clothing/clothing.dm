@@ -769,8 +769,6 @@
 	. = ..()
 	if(holding)
 		add_overlay("[icon_state]_knife")
-	// DQEdit — .contaminated + GLOB.contamination_overlay branch removed;
-	// see /obj/item/wash for the matching cleanup.
 	if(gurgled) //VOREStation Edit Start
 		wash(CLEAN_ALL)
 		gurgle_contaminate() //VOREStation Edit End
@@ -780,7 +778,7 @@
 
 /obj/item/clothing/shoes/wash()
 	. = ..()
-	dq_set_blood_color(src, null)
+	blood_color = null
 	track_blood = 0
 	update_icon()
 

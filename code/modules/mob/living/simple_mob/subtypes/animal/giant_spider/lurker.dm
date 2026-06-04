@@ -54,18 +54,18 @@
 	var/last_uncloak = 0			// world.time
 
 /mob/living/simple_mob/animal/giant_spider/lurker/cloak()
-	if(dq_get_cloaked(src))
+	if(cloaked)
 		return
 	animate(src, alpha = cloaked_alpha, time = 1 SECOND)
-	dq_set_cloaked(src, TRUE)
+	cloaked = TRUE
 
 
 /mob/living/simple_mob/animal/giant_spider/lurker/uncloak()
-	last_uncloak = world.time // This is assigned even if it isn't dq_get_cloaked(src) already, to 'reset' the timer if the spider is continously getting attacked.
-	if(!dq_get_cloaked(src))
+	last_uncloak = world.time // This is assigned even if it isn't cloaked already, to 'reset' the timer if the spider is continously getting attacked.
+	if(!cloaked)
 		return
 	animate(src, alpha = initial(alpha), time = 1 SECOND)
-	dq_set_cloaked(src, FALSE)
+	cloaked = FALSE
 
 // Check if cloaking if possible.
 /mob/living/simple_mob/animal/giant_spider/lurker/proc/can_cloak()
@@ -82,24 +82,24 @@
 
 
 /mob/living/simple_mob/animal/giant_spider/lurker/is_cloaked()
-	return dq_get_cloaked(src)
+	return cloaked
 
 
 // Cloaks the spider automatically, if possible.
 /mob/living/simple_mob/animal/giant_spider/lurker/handle_special()
-	if(!dq_get_cloaked(src) && can_cloak())
+	if(!cloaked && can_cloak())
 		cloak()
 
 
-// Applies bonus base damage if dq_get_cloaked(src).
+// Applies bonus base damage if cloaked.
 /mob/living/simple_mob/animal/giant_spider/lurker/apply_bonus_melee_damage(atom/A, damage_amount)
-	if(dq_get_cloaked(src))
+	if(cloaked)
 		return damage_amount + cloaked_bonus_damage
 	return ..()
 
 // Applies stun, then uncloaks.
 /mob/living/simple_mob/animal/giant_spider/lurker/apply_melee_effects(atom/A)
-	if(dq_get_cloaked(src))
+	if(cloaked)
 		if(isliving(A))
 			var/mob/living/L = A
 			L.add_modifier(/datum/modifier/entangled, 2 SECONDS) //L.Weaken(cloaked_weaken_amount)
@@ -113,6 +113,6 @@
 	. = ..()
 	break_cloak()
 
-/mob/living/simple_mob/animal/giant_spider/lurker/hit_with_weapon(obj/item/O, mob/living/user, effective_force, hit_zone)
+/mob/living/simple_mob/animal/giant_spider/lurker/hit_with_weapon(obj/item/O, mob/living/user, effective_force, hit_zone, hide_attack_message)
 	. = ..()
 	break_cloak()

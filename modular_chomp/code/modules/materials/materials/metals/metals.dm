@@ -48,7 +48,7 @@
 	hardness = 75
 	protectiveness = 40
 	reflectivity = 0.4
-	density = 5
+	weight = 5
 
 /datum/material/osmium //Adjusted hardness, reflective, and protection
 	hardness = 65

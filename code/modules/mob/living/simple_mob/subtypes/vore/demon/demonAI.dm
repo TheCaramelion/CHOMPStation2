@@ -107,18 +107,18 @@
 		return ..()
 
 /mob/living/simple_mob/vore/demonAI/cloak()
-	if(dq_get_cloaked(src))
+	if(cloaked)
 		return
 	animate(src, alpha = cloaked_alpha, time = 1 SECOND)
-	dq_set_cloaked(src, TRUE)
+	cloaked = TRUE
 
 
 /mob/living/simple_mob/vore/demonAI/uncloak()
-	last_uncloak = world.time // This is assigned even if it isn't dq_get_cloaked(src) already, to 'reset' the timer if the spider is continously getting attacked.
-	if(!dq_get_cloaked(src))
+	last_uncloak = world.time // This is assigned even if it isn't cloaked already, to 'reset' the timer if the spider is continously getting attacked.
+	if(!cloaked)
 		return
 	animate(src, alpha = initial(alpha), time = 1 SECOND)
-	dq_set_cloaked(src, FALSE)
+	cloaked = FALSE
 
 // Check if cloaking if possible.
 /mob/living/simple_mob/vore/demonAI/proc/can_cloak()
@@ -134,16 +134,16 @@
 	uncloak()
 
 /mob/living/simple_mob/vore/demonAI/is_cloaked()
-	return dq_get_cloaked(src)
+	return cloaked
 
 // Cloaks the spider automatically, if possible.
 /mob/living/simple_mob/vore/demonAI/handle_special()
-	if(!dq_get_cloaked(src) && can_cloak())
+	if(!cloaked && can_cloak())
 		cloak()
 
-// Applies bonus base damage if dq_get_cloaked(src).
+// Applies bonus base damage if cloaked.
 /mob/living/simple_mob/vore/demonAI/apply_bonus_melee_damage(atom/A, damage_amount)
-	if(dq_get_cloaked(src))
+	if(cloaked)
 		playsound(src.loc, 'sound/effects/blobattack.ogg', 50, 1)
 		uncloak()
 		return damage_amount + cloaked_bonus_damage
@@ -154,7 +154,7 @@
 	. = ..()
 	break_cloak()
 
-/mob/living/simple_mob/vore/demonAI/hit_with_weapon(obj/item/O, mob/living/user, effective_force, hit_zone)
+/mob/living/simple_mob/vore/demonAI/hit_with_weapon(obj/item/O, mob/living/user, effective_force, hit_zone, hide_attack_message)
 	. = ..()
 	break_cloak()
 
@@ -196,6 +196,6 @@
 
 /mob/living/simple_mob/vore/demonAI/gibspam/apply_bonus_melee_damage(atom/A, damage_amount)
 	var/turf/T = get_turf(src)
-	if(dq_get_cloaked(src))
+	if(cloaked)
 		new /obj/effect/gibspawner/generic(T)
 	return ..()

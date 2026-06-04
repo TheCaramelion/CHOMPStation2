@@ -359,12 +359,6 @@
 			organ.replaced(owner,src)
 		owner.refresh_modular_limb_verbs()
 
-	// DQEdit — re-anchor any medical conditions that rode along with
-	// the severed limb. They were unhooked from `owner` on removed();
-	// hook them back up so symptoms, vital effects, and organ damage
-	// resume firing on the patient.
-	dq_reseat_owner(target)
-
 	if(parent_organ)
 		parent = owner.organs_by_name[src.parent_organ]
 		if(parent)
@@ -706,16 +700,14 @@ This function completely restores a damaged organ to perfect condition.
 /obj/item/organ/external/proc/createwound(type = CUT, damage)
 	if(damage == 0) return
 
-	// DQEdit — every damage path that affects this organ funnels through
-	// createwound (take_damage, surgery failures, custom event damage,
-	// reaction damage). One hook here covers them all. See
-	// modular_dq/code/modules/medical/cascades.dm.
-	if(owner)
-		dq_check_damage_cascades(type, damage)
-
-	// DQEdit — vanilla /datum/wound/internal_bleeding is disabled. The
-	// internal_hemorrhage cascading condition replaces it as the
-	// gameplay surface for internal bleeding.
+	//moved this before the open_wound check so that having many small wounds for example doesn't somehow protect you from taking internal damage (because of the return)
+	//Possibly trigger an internal wound, too.
+	var/local_damage = brute_dam + burn_dam + damage
+	if((damage > 15) && (type != BURN) && (local_damage > 30) && prob(damage) && (robotic < ORGAN_ROBOT) && !(data.get_species_flags() & NO_BLOOD))
+		var/datum/wound/internal_bleeding/I = new (min(damage - 15, 15))
+		wounds += I
+		owner.custom_pain("Something ruptures inside of your [name]. You get the feeling you'll need more than just a bandage to fix it.", 15, TRUE)
+		to_chat(owner, span_bolddanger(span_massive("OH GOD! Something just tore in your [name]!"))) //Let's make this CLEAR that an artery was severed. This was vague enough that most players didn't realize they had IB.
 
 //Burn damage can cause fluid loss due to blistering and cook-off
 
@@ -782,11 +774,6 @@ This function completely restores a damaged organ to perfect condition.
 		last_dam = brute_dam + burn_dam
 	if(germ_level)
 		return 1
-	// DQEdit — any active condition on the organ needs processing.
-	// Conditions don't show up as damage or germs, so without this
-	// the organ would stop ticking after the wound heals.
-	if(LAZYLEN(medical_issues))
-		return 1
 	return 0
 
 /obj/item/organ/external/process()
@@ -805,16 +792,6 @@ This function completely restores a damaged organ to perfect condition.
 
 		//Infections
 		update_germs()
-
-		// DQEdit Start — tick cascading medical conditions. The external
-		// /process() override never calls /obj/item/organ/process() when
-		// the organ has an owner, so medical_issues handle_effects()
-		// would otherwise be skipped entirely for attached external
-		// limbs. Conditions are the load-bearing surface of the DQ
-		// medical system; without this hook they never advance.
-		for(var/datum/medical_issue/I in medical_issues)
-			I.handle_effects()
-		// DQEdit End
 	else
 		..()
 
@@ -1435,17 +1412,6 @@ Note that amputating the affected organ does in fact remove the infection from t
 		return
 	var/is_robotic = robotic >= ORGAN_ROBOT
 	var/mob/living/carbon/human/victim = owner
-
-	// DQEdit — conditions stay attached to the limb so reattach surgery
-	// brings them back with the limb (necrosis, fractures, severed
-	// tendons). We do unhook them from `owner` so the now-detached
-	// patient stops processing them and their effects (slowdown,
-	// emotes, vital_effects) drop off until the limb is reattached.
-	// dq_reseat_owner() in the modular_dq lifecycle file handles the
-	// reverse on reattach.
-	if(medical_issues)
-		for(var/datum/medical_issue/condition/C in medical_issues)
-			C.owner = null
 
 	..()
 

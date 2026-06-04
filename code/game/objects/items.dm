@@ -9,9 +9,9 @@
 	var/image/blood_overlay = null //this saves our blood splatter overlay, which will be processed not to go over the edges of the sprite
 	var/randpixel = 6
 	var/abstract = 0
-	// DQEdit — r_speed removed (dead, 0 refs)
+	var/r_speed = 1.0
 	var/health = null
-	// DQEdit — burn_point removed (dead, 0 refs)
+	var/burn_point = null
 	var/burning = null
 	var/hitsound = "swing_hit"
 	var/usesound = null // Like hitsound, but for when used properly and not to kill someone.
@@ -784,9 +784,9 @@ GLOBAL_LIST_INIT(slot_flags_enumeration, list(
 	return ITEM_INTERACT_SUCCESS
 
 /obj/item/reveal_blood()
-	if(dq_get_was_bloodied(src) && !dq_get_fluorescent(src))
-		dq_set_fluorescent(src, 1)
-		dq_set_blood_color(src, COLOR_LUMINOL)
+	if(was_bloodied && !fluorescent)
+		fluorescent = 1
+		blood_color = COLOR_LUMINOL
 		blood_overlay.color = COLOR_LUMINOL
 		update_icon()
 
@@ -804,7 +804,7 @@ GLOBAL_LIST_INIT(slot_flags_enumeration, list(
 		overlays.Remove(blood_overlay)
 
 	//Make the blood_overlay have the proper color then apply it.
-	blood_overlay.color = dq_get_blood_color(src)
+	blood_overlay.color = blood_color
 	add_overlay(blood_overlay)
 	if(istype(M))
 		add_blooddna(M.dna,M)
@@ -875,7 +875,7 @@ GLOBAL_LIST_EMPTY(blood_overlays_by_type)
 		can_zoom = FALSE
 
 	if(!zoom && can_zoom)
-		M.AddComponent(/datum/component/remote_view/item_zoom, focused_on = M, vconfig_path = /datum/remote_view_config/zoomed_item, our_item = src, viewsize = viewsize, tileoffset = tileoffset, show_visible_messages = TRUE)
+		M.AddComponent(/datum/component/remote_view, focused_on = M, vconfig_path = /datum/remote_view_config/zoomed_item, managing_item = src, viewsize = viewsize, tileoffset = tileoffset, show_visible_messages = TRUE)
 		return
 	SEND_SIGNAL(src,COMSIG_REMOTE_VIEW_CLEAR)
 

@@ -987,7 +987,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		to_chat(src,span_warning("You cannot alert pAI cards when you are banned from playing as a pAI."))
 		return
 
-	if(!(src.client.prefs?.read_preference(/datum/preference/numeric/human/be_special) & BE_PAI)) // DQEdit — migrated
+	if(!(src.client.prefs?.be_special & BE_PAI))
 		to_chat(src,span_warning("You have 'Be pAI' disabled in your character prefs."))
 		return
 

@@ -717,8 +717,6 @@
 	return ..()
 
 // This is about 0.896m^3 of atmosphere
-// DQEdit — was XGM (total_moles var, gas list). Under LINDA, set initial moles
-// via adjust_gas() in New(); total_moles is computed on demand.
 /datum/gas_mixture/belly_air
 	volume = 2500
 	temperature = 293.150
@@ -734,7 +732,7 @@
 
 /datum/gas_mixture/belly_air/vox/New()
 	. = ..()
-	adjust_gas(GAS_N2, 100) // CHOMPEdit
+	adjust_gas(GAS_PHORON, 100)
 
 /datum/gas_mixture/belly_air/zaddat
 	volume = 2500
@@ -1622,7 +1620,6 @@
 		absorbed = FALSE
 		muffled = FALSE
 		clear_fullscreen("belly")
-		belly_overlay_tgui?.hide() // DQEdit — hide TGUI belly overlay
 		clear_fullscreen(ATOM_BELLY_FULLSCREEN)
 		stop_sound_channel(CHANNEL_PREYLOOP)
 

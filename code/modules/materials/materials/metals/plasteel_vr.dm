@@ -1,7 +1,7 @@
 /datum/material/plastitanium
 	name = MAT_PLASTITANIUM
 	stack_type = /obj/item/stack/material/plastitanium
-	material_class = MATCLASS_METAL
+
 	integrity = 600
 	melting_point = 9000
 	icon_base = "solid"
@@ -9,7 +9,7 @@
 	icon_colour = "#585658"
 	explosion_resistance = 35
 	hardness = 90
-	density = 40
+	weight = 40
 	protectiveness = 30
 	conductivity = 7
 	supply_conversion_value = 8

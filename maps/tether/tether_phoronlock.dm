@@ -109,7 +109,7 @@
 				removed.add_thermal_energy(min(heating_power,heat_transfer))
 				env.merge(removed)
 
-		var/transfer_moles = min(1, volume_rate/env.volume)*env.total_moles
+		var/transfer_moles = min(1, volume_rate/env.volume)*env.total_moles()
 		for(var/i=1 to 3)	//Scrubs 4 times as fast
 			scrub_gas(src, scrubbing_gas, env, air_contents, transfer_moles, active_power_usage)
 

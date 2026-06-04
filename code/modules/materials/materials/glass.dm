@@ -1,7 +1,7 @@
 /datum/material/glass
 	name = MAT_GLASS
 	stack_type = /obj/item/stack/material/glass
-	material_class = MATCLASS_CERAMIC
+
 	flags = MATERIAL_BRITTLE
 	icon_colour = "#00E1FF"
 	opacity = 0.3
@@ -9,7 +9,7 @@
 	shard_type = SHARD_SHARD
 	tableslam_noise = 'sound/effects/Glasshit.ogg'
 	hardness = 30
-	density = 15
+	weight = 15
 	protectiveness = 0 // 0%
 	conductive = 0
 	conductivity = 1 // Glass shards don't conduct.
@@ -106,7 +106,7 @@
 	shard_type = SHARD_SHARD
 	tableslam_noise = 'sound/effects/Glasshit.ogg'
 	hardness = 40
-	density = 30
+	weight = 30
 	composite_material = list(MAT_STEEL = SHEET_MATERIAL_AMOUNT / 2, MAT_GLASS = SHEET_MATERIAL_AMOUNT)
 	window_options = list("One Direction" = 1, "Full Window" = 4, "Windoor" = 2)
 	created_window = /obj/structure/window/reinforced
@@ -137,7 +137,7 @@
 	created_window = /obj/structure/window/phoronreinforced
 	created_fulltile_window = /obj/structure/window/phoronreinforced/full
 	hardness = 40
-	density = 30
+	weight = 30
 	composite_material = list(MAT_STEEL = SHEET_MATERIAL_AMOUNT / 2, MAT_PGLASS = SHEET_MATERIAL_AMOUNT)
 	rod_product = null
 	flags = MATERIAL_UNMELTABLE

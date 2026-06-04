@@ -274,7 +274,7 @@
 	var/last_transfer_log = 0				// Prevent server message spam!
 	var/next_transfer_log = 0				// Prevent server message spam!
 	var/entrance_log_count = 0				// Entrance count before spawm
-	flags = NOREACT							// We dont want bellies to start bubling nonstop due to people mixing when transfering and making different reagents
+	flags = NOREACT|REMOTEVIEW_ON_ENTER		// We dont want bellies to start bubling nonstop due to people mixing when transfering and making different reagents
 
 //For serialization, keep this updated, required for bellies to save correctly.
 /obj/belly/vars_to_save()
@@ -538,7 +538,7 @@
 		if(S)
 			playsound(owner.loc, S, sound_volume * (reagents.total_volume / 100), FALSE, frequency = noise_freq, preference = /datum/preference/toggle/digestion_noises)
 			cycle_sloshed = TRUE
-	dq_set_belly_cycles(thing, 0) //reset cycle count
+	thing.belly_cycles = 0 //reset cycle count
 	if(istype(thing, /mob/observer)) //Ports CHOMPStation PR#3072
 		if(desc) //Ports CHOMPStation PR#4772
 			//Allow ghosts see where they are if they're still getting squished along inside.
@@ -644,7 +644,6 @@
 		for(var/mob/living/L in endfx)
 			if(L.surrounding_belly()) continue
 			L.clear_fullscreen("belly")
-			L.belly_overlay_tgui?.hide() // DQEdit — hide TGUI belly overlay
 			if(L.hud_used)
 				if(!L.hud_used.hud_shown)
 					L.toggle_hud_vis()
@@ -1112,7 +1111,7 @@
 /obj/belly/proc/transfer_contents(atom/movable/content, obj/belly/target, silent = FALSE)
 	if(!(content in src) || !istype(target))
 		return
-	dq_set_belly_cycles(content, 0)
+	content.belly_cycles = 0
 	var/old_entrance_logs = target.entrance_logs
 	if(silent)
 		target.entrance_logs = FALSE
@@ -1173,7 +1172,7 @@
 			if(isitem(prey) && autotransfer_filter(prey, autotransfer_whitelist_items, autotransfer_blacklist_items))
 				dest_belly = pick(transfer_locations["primary"])
 	if(!dest_belly) // Didn't transfer, so wait before retrying
-		dq_set_belly_cycles(prey, 0)
+		prey.belly_cycles = 0
 		return FALSE
 	if(ismob(prey))
 		var/autotransfer_owner_message

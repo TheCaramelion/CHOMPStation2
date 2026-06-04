@@ -20,8 +20,8 @@
 	if(ishuman(src))
 		var/mob/living/carbon/human/H = src
 
-		if(dq_get_cloaked(changeling))
-			dq_set_cloaked(changeling, FALSE)
+		if(changeling.cloaked)
+			changeling.cloaked = FALSE
 			return TRUE
 		if(H.has_modifier_of_type(/datum/modifier/changeling_camouflage)) //If they double-clicked the button while invis.
 			to_chat(H, span_warning("We are already camouflaged!"))
@@ -35,7 +35,7 @@
 		changeling.chem_charges -= 10
 
 		to_chat(H, span_notice("We vanish from sight, and will remain hidden, so long as we move carefully."))
-		dq_set_cloaked(changeling, TRUE)
+		changeling.cloaked = TRUE
 		if(changeling.recursive_enhancement)
 			to_chat(src, span_notice("We may move at our normal speed while hidden."))
 			H.add_modifier(/datum/modifier/changeling_camouflage/recursive, 0)
@@ -73,7 +73,7 @@
 	holder.visible_message(span_warning("[holder] suddenly fades in, seemingly from nowhere!"),
 	span_notice("We revert our camouflage, revealing ourselves."))
 	holder.set_m_intent(I_RUN)
-	dq_set_cloaked(comp, FALSE)
+	comp.cloaked = FALSE
 	comp.chem_recharge_rate = old_regen_rate
 	comp = null
 	owner = null
@@ -81,12 +81,12 @@
 /datum/modifier/changeling_camouflage/tick()
 	if(holder.m_intent != I_WALK && must_walk) // Moving too fast uncloaks you.
 		expire(silent = TRUE)
-	if(!dq_get_cloaked(comp))
+	if(!comp.cloaked)
 		expire(silent = TRUE)
-	if(holder.stat) // Dead or unconscious lings can't stay dq_get_cloaked(src).
+	if(holder.stat) // Dead or unconscious lings can't stay cloaked.
 		expire(silent = TRUE)
-	if(holder.incapacitated(INCAPACITATION_DISABLED)) // Stunned lings also can't stay dq_get_cloaked(src).
+	if(holder.incapacitated(INCAPACITATION_DISABLED)) // Stunned lings also can't stay cloaked.
 		expire(silent = TRUE)
-	if(comp.chem_recharge_rate != 0) //Without this, there is an exploit that can be done, if one buys engorged chem sacks while dq_get_cloaked(src).
+	if(comp.chem_recharge_rate != 0) //Without this, there is an exploit that can be done, if one buys engorged chem sacks while cloaked.
 		old_regen_rate += comp.chem_recharge_rate
 		comp.chem_recharge_rate = 0

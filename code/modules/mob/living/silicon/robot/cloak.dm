@@ -38,7 +38,7 @@
 		var/mob/living/silicon/robot/R = src.loc
 		//MATH: CELLRATE = 0.002 CYBORG_POWER_USAGE_MULTIPLIER = 2 and power_use = amount * CYBORG_POWER_USAGE_MULTIPLIER...
 		//So 250W = 1 charge. Syndi battery has 25000 charge.
-		//Let's make it so that 20 charge is used per 2 seconds if we are 100% dq_get_cloaked(src). We subtract 100 since that's the idle power used for a module being selected.
+		//Let's make it so that 20 charge is used per 2 seconds if we are 100% cloaked. We subtract 100 since that's the idle power used for a module being selected.
 		if(!R.cell_use_power((cloak_strength * 5000) - 100))
 			active = FALSE
 			update_cloak(R) //Update the cloak strength on the robot.
@@ -99,7 +99,7 @@
 	on_expired_text = span_notice("You become fully visible once more.")
 	var/visibility
 	///How many times we have been hit in a short succession.
-	var/times_hit = 0 //How many times we have been hit while dq_get_cloaked(src).
+	var/times_hit = 0 //How many times we have been hit while cloaked.
 	///How many hits it can sustain before the cloak drops
 	var/cloak_durability = 3
 	///When we were last hit.
@@ -141,11 +141,11 @@
 	if(holder.stat == DEAD)
 		expire(silent = TRUE)
 	else if(times_hit && (world.time - last_hit_time) > hit_dissipation) //If we have been hit, but the time has passed, reset the hit counter.
-		if(!dq_get_cloaked(src))
+		if(!cloaked)
 			to_chat(holder, span_warning("Your cloak whirrs back to life!"))
 		reset_cloak()
 
-	if(dq_get_cloaked(src) && !times_hit) //The !times_hit is here so it doesn't interfere with the animation.
+	if(cloaked && !times_hit) //The !times_hit is here so it doesn't interfere with the animation.
 		animate(holder, alpha = visibility, time = 1 SECOND)
 
 /datum/modifier/robot_cloak/proc/damage_inflicted(mob/living/source, damage)
@@ -181,10 +181,10 @@
 
 /datum/modifier/robot_cloak/proc/drop_cloak()
 	holder.alpha = initial(holder.alpha)
-	dq_set_cloaked(src, FALSE)
+	cloaked = FALSE
 	evasion = 0
 
 /datum/modifier/robot_cloak/proc/reset_cloak()
 	times_hit = 0
-	dq_set_cloaked(src, TRUE)
+	cloaked = TRUE
 	evasion = modified_evasion

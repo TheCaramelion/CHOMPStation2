@@ -819,9 +819,9 @@ ADMIN_VERB_AND_CONTEXT_MENU(player_effects, R_FUN, "Player Effects", "Modify a p
 				L.AdjustSleeping(-100)
 
 		if("cloaking")
-			if(dq_get_cloaked(target))
+			if(target.cloaked)
 				target.uncloak()
-			else if(!dq_get_cloaked(target))
+			else if(!target.cloaked)
 				target.cloak()
 
 		if("give_quest")

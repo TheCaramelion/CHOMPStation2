@@ -231,25 +231,37 @@ GLOBAL_LIST_INIT(preference_entries_by_key, init_preference_entries_by_key())
 	else if(issilicon(living))
 		apply_to_silicon(living, value)
 
-// DQEdit — apply_to_X defaults were CRASH() in TG-style, forcing every PREFERENCE_CHARACTER
-// pref to implement every mob-type apply hook. Our pipeline iterates ALL character prefs at
-// spawn / preview, so prefs that don't target a given mob type (PAI/NIF prefs on a human,
-// human prefs on a PAI) need a no-op default instead of a runtime.
+/// Apply this preference onto the given human.
+/// Must be overriden by subtypes.
+/// Called when the savefile_identifier == PREFERENCE_CHARACTER.
 /datum/preference/proc/apply_to_human(mob/living/carbon/human/target, value)
 	SHOULD_NOT_SLEEP(TRUE)
-	return
+	SHOULD_CALL_PARENT(FALSE)
+	CRASH("`apply_to_human()` was not implemented for [type]!")
 
+/// Apply this preference onto the given silicon.
+/// Must be overriden by subtypes.
+/// Called when the savefile_identifier == PREFERENCE_CHARACTER.
 /datum/preference/proc/apply_to_silicon(mob/living/silicon/target, value)
 	SHOULD_NOT_SLEEP(TRUE)
-	return
+	SHOULD_CALL_PARENT(FALSE)
+	CRASH("`apply_to_silicon()` was not implemented for [type]!")
 
+/// Apply this preference onto the given animal.
+/// Must be overriden by subtypes.
+/// Called when the savefile_identifier == PREFERENCE_CHARACTER.
 /datum/preference/proc/apply_to_animal(mob/living/simple_mob/target, value)
 	SHOULD_NOT_SLEEP(TRUE)
-	return
+	SHOULD_CALL_PARENT(FALSE)
+	CRASH("`apply_to_animal()` was not implemented for [type]!")
 
+/// Apply this preference onto the given living.
+/// Must be overriden by subtypes.
+/// Called when the savefile_identifier == PREFERENCE_CHARACTER.
 /datum/preference/proc/apply_to_living(mob/living/target, value)
 	SHOULD_NOT_SLEEP(TRUE)
-	return
+	SHOULD_CALL_PARENT(FALSE)
+	CRASH("`apply_to_living()` was not implemented for [type]!")
 
 /// Returns which savefile to use for a given savefile identifier
 /datum/preferences/proc/get_save_data_for_savefile_identifier(savefile_identifier)
@@ -288,36 +300,16 @@ GLOBAL_LIST_INIT(preference_entries_by_key, init_preference_entries_by_key())
 		CRASH("Preference type `[preference_type]` is invalid! [extra_info]")
 
 	if(preference_type in value_cache)
-		// DQEdit — read-Copy for list-typed prefs. The cache holds the canonical state;
-		// editors and constraints routinely call read_preference, mutate the returned
-		// list, then call update_preference_by_type with the same reference. Without a
-		// copy, the cache is mutated in place — every diff (`old_value != new_value`,
-		// the sanitize_preferences `sanitized != current` guard, constraint diff gates)
-		// compares two pointers to the same now-mutated list and silently no-ops.
-		// Per-read shallow Copy() is bounded by list size (gear_list / body_markings
-		// hold tens of entries) and runs only on the read path, not the hot apply path.
-		var/cached = value_cache[preference_type]
-		if(islist(cached))
-			var/list/L = cached
-			return L.Copy()
-		return cached
+		return value_cache[preference_type]
 
 	var/value = preference_entry.read(get_save_data_for_savefile_identifier(preference_entry.savefile_identifier), src)
 	if(isnull(value))
 		value = preference_entry.create_informed_default_value(src)
 		if(write_preference(preference_entry, value))
-			// Cache wasn't populated by write_preference(_by_type) in this path; return
-			// the freshly-defaulted value. Copy lists so the caller can mutate freely.
-			if(islist(value))
-				var/list/L = value
-				return L.Copy()
 			return value
 		else
 			CRASH("Couldn't write the default value for [preference_type] (received [value])")
 	value_cache[preference_type] = value
-	if(islist(value))
-		var/list/L = value
-		return L.Copy()
 	return value
 
 /// Read a /datum/preference type and return its value.
@@ -363,91 +355,35 @@ GLOBAL_LIST_INIT(preference_entries_by_key, init_preference_entries_by_key())
 	if(write_mode == WRITE_PREF_MANUAL)
 		return TRUE
 
-	// DQEdit — was a player_setup.save_character(save_data) call for character prefs; that
-	// chain is deleted. write_preference() already wrote into the in-memory savefile cache;
-	// the next savefile.save() (which queue_save / batch flush triggers) flushes to disk.
-	savefile.save()
+	if(preference_entry.savefile_identifier == PREFERENCE_CHARACTER && write_mode != WRITE_PREF_INSTANT)
+		var/save_data = get_save_data_for_savefile_identifier(preference_entry.savefile_identifier)
+		player_setup.save_character(save_data)
+	else
+		savefile.save()
 	return TRUE
 
-/// Apply a single preference change. The flow:
-///   1. validate the new value (reject if bad)
-///   2. write to the in-memory cache
-///   3. fan out any /datum/preference_constraint subtypes triggered by this key (they may
-///      recursively call update_preference; their writes coalesce into the same batch)
-///   4. apply the change to the client (for PLAYER prefs) or refresh the preview (for CHARACTER)
-///   5. flush to disk at batch exit (auto-save model)
-///
-/// Wrap multiple unrelated updates in begin_update_batch() / end_update_batch() (or use
-/// the update_many() helper) to coalesce their disk writes into a single flush.
+/// Will perform an update on the preference, but not write to the savefile.
+/// This will, for instance, update the character preference view.
+/// Performs sanity checks.
 /datum/preferences/proc/update_preference(datum/preference/preference, preference_value)
 	if(!preference.is_accessible(src))
 		return FALSE
 
 	var/new_value = preference.pref_deserialize(preference_value, src)
-	// DQEdit — validate(src, new_value) is the contextual gate. write() still re-checks
-	// is_valid structurally. This sequencing means a forged Topic that satisfies the
-	// shape but fails the entity-level rule (e.g. an unowned trait, a non-pickable gear
-	// for the wearer's species) is rejected before write() ever touches the cache.
-	if(!preference.validate(src, new_value))
-		return FALSE
 	var/success = preference.write(null, new_value)
 
 	if(!success)
 		return FALSE
 
-	// DQEdit Start — auto-save with transactional batching. Begin batch so the constraint
-	// cascade below is one flush. begin/end nest safely.
-	begin_update_batch()
-	// try/catch keeps batch_depth balanced even if any apply hook or constraint runtimes.
-	// Without it a single runtime mid-cascade strands save_batch_depth > 0 forever — no
-	// further save flush happens for this prefs datum until restart.
-	try
-		// old_value is the previous cache slot. read_preference returns a Copy() for list
-		// values, so the caller's mutated list (if any) is independent of the cache — the
-		// cache still holds the pre-mutation reference here, which is exactly what we want
-		// the constraints to see as old_value. No extra copy needed on this side.
-		var/old_value = value_cache[preference.type]
+	recently_updated_keys |= preference.type
+	value_cache[preference.type] = new_value
 
-		recently_updated_keys |= preference.type
-		value_cache[preference.type] = new_value
-		save_batch_dirty = TRUE
-
-		// Fan out constraints triggered by this key.
-		// DQEdit — guard against constraint cycles. If A's `affects` overlaps B's `triggers` and
-		// vice versa, the cascade would recurse forever. We refuse to recurse past a fixed depth
-		// and stack_trace so the buggy constraint pair is loud, not silent.
-		if(constraint_cascade_depth < PREF_CONSTRAINT_MAX_DEPTH)
-			var/list/constraints = LAZYACCESS(GLOB.preference_constraints_by_trigger, preference.savefile_key)
-			if(constraints)
-				constraint_cascade_depth += 1
-				for(var/datum/preference_constraint/constraint as anything in constraints)
-					constraint.apply(src, preference.savefile_key, old_value, new_value)
-				constraint_cascade_depth -= 1
-		else
-			stack_trace("preference constraint cascade exceeded depth [PREF_CONSTRAINT_MAX_DEPTH] starting from [preference.savefile_key]; likely a constraint cycle")
-
-		if(preference.savefile_identifier == PREFERENCE_PLAYER)
-			preference.apply_to_client_updated(client, read_preference(preference.type))
-		else
-			update_preview_icon()
-	catch(var/exception/e)
-		stack_trace("update_preference runtimed: [e.name] at [e.file]:[e.line] (key=[preference.savefile_key])")
-		// Reset the cascade depth so subsequent unrelated writes work; the batch counter
-		// is decremented by end_update_batch below regardless.
-		constraint_cascade_depth = 0
-
-	end_update_batch()
-	// DQEdit End
+	if(preference.savefile_identifier == PREFERENCE_PLAYER)
+		preference.apply_to_client_updated(client, read_preference(preference.type))
+	else
+		update_preview_icon()
 
 	return TRUE
-
-// DQAdd — atomic multi-pref update. Callers (e.g., editor handle_action procs, random
-// character button) wrap a series of update_preference calls in this so disk writes
-// coalesce. Pass a CALLBACK(src, PROC_REF(my_proc), arg1, arg2, ...).
-/datum/preferences/proc/update_many(datum/callback/cb)
-	begin_update_batch()
-	cb.Invoke()
-	end_update_batch()
 
 /datum/preferences/proc/update_preference_by_type(preference_type, preference_value)
 	var/datum/preference/preference_entry = GLOB.preference_entries[preference_type]
@@ -459,31 +395,10 @@ GLOBAL_LIST_INIT(preference_entries_by_key, init_preference_entries_by_key())
 /// Checks that a given value is valid.
 /// Must be overriden by subtypes.
 /// Any type can be passed through.
-/// Pure structural check: is `value` shaped correctly for this preference, in isolation?
-/// Stays context-free so it can be called from serialization paths (write(), savefile load)
-/// that have no /datum/preferences handle. Subtypes override to tighten the shape.
-///
-/// For rules that depend on the rest of the prefs state (species-gated allowances,
-/// cross-pref budgets, entity-declared whitelists), override validate() instead.
 /datum/preference/proc/is_valid(value)
 	SHOULD_NOT_SLEEP(TRUE)
 	SHOULD_CALL_PARENT(FALSE)
 	CRASH("`is_valid()` was not implemented for [type]!")
-
-// DQAdd Start — validate(prefs, value): the contextual gate for runtime writes.
-//
-// is_valid stays the structural check (used by write() / serialization round-trips).
-// validate is what update_preference calls: it runs is_valid first, then any per-instance
-// contextual checks that need to read other prefs or consult entity-declared rules.
-//
-// Subtypes that need contextual validation (e.g. /datum/preference/typed_list/traits)
-// override validate to walk the value and delegate per-entry checks to the entity's own
-// is_*_takeable_by(prefs) method. That keeps the "is this trait legal?" rule on the trait
-// itself rather than scattered across is_valid overrides on every list-shaped pref.
-/datum/preference/proc/validate(datum/preferences/preferences, value)
-	SHOULD_NOT_SLEEP(TRUE)
-	return is_valid(value)
-// DQAdd End
 
 /// Returns data to be sent to users in the menu
 /datum/preference/proc/compile_ui_data(mob/user, value)

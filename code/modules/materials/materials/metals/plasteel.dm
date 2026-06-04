@@ -1,7 +1,7 @@
 /datum/material/plasteel
 	name = MAT_PLASTEEL
 	stack_type = /obj/item/stack/material/plasteel
-	material_class = MATCLASS_METAL
+
 	integrity = 400
 	melting_point = 6000
 	icon_base = "solid"
@@ -9,7 +9,7 @@
 	icon_colour = "#777777"
 	explosion_resistance = 25
 	hardness = 80
-	density = 23
+	weight = 23
 	protectiveness = 20 // 50%
 	conductivity = 13 // For the purposes of balance.
 	supply_conversion_value = 6

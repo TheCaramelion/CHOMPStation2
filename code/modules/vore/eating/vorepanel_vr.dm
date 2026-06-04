@@ -550,7 +550,6 @@
 				B.vore_fx(host)
 			else
 				host.clear_fullscreen("belly")
-				host.belly_overlay_tgui?.hide() // DQEdit — hide TGUI belly overlay
 			if(!host.hud_used.hud_shown)
 				host.toggle_hud_vis()
 			unsaved_changes = TRUE

@@ -474,20 +474,19 @@ ADMIN_VERB(respawn_character, (R_ADMIN|R_REJUVINATE), "Spawn Character", "(Re)Sp
 		to_chat(src, "Something went wrong and spawning failed.")
 		return
 
-	// DQEdit — mind_scan / resleeve_scan migrated to /datum/preference.
 	// Respect admin spawn record choice. There's really not a nice way to do this without butchering copy_to() code for an admin proc
-	var/old_mind_scan = picked_client.prefs.read_preference(/datum/preference/toggle/human/mind_scan)
-	var/old_body_scan = picked_client.prefs.read_preference(/datum/preference/toggle/human/resleeve_scan)
+	var/old_mind_scan = picked_client.prefs.mind_scan
+	var/old_body_scan = picked_client.prefs.resleeve_scan
 	if(!records) // Make em false for the copy_to()
-		picked_client.prefs.update_preference_by_type(/datum/preference/toggle/human/mind_scan, FALSE)
-		picked_client.prefs.update_preference_by_type(/datum/preference/toggle/human/resleeve_scan, FALSE)
+		picked_client.prefs.mind_scan = FALSE
+		picked_client.prefs.resleeve_scan = FALSE
 
 	//Write the appearance and whatnot out to the character
 	picked_client.prefs.copy_to(new_character)
 
 	// Restore pref state
-	picked_client.prefs.update_preference_by_type(/datum/preference/toggle/human/mind_scan, old_mind_scan)
-	picked_client.prefs.update_preference_by_type(/datum/preference/toggle/human/resleeve_scan, old_body_scan)
+	picked_client.prefs.mind_scan = old_mind_scan
+	picked_client.prefs.resleeve_scan = old_body_scan
 
 	//Write the appearance and whatnot out to the character
 	if(new_character.dna)
@@ -511,7 +510,7 @@ ADMIN_VERB(respawn_character, (R_ADMIN|R_REJUVINATE), "Spawn Character", "(Re)Sp
 		new_character.mind.loaded_from_ckey = picked_ckey
 		new_character.mind.loaded_from_slot = picked_slot
 
-	for(var/lang in picked_client.prefs.read_preference(/datum/preference/alternate_languages)) // DQEdit — migrated language pref
+	for(var/lang in picked_client.prefs.alternate_languages)
 		var/datum/language/chosen_language = GLOB.all_languages[lang]
 		if(chosen_language)
 			if(is_lang_whitelisted(src,chosen_language) || (new_character.species && (chosen_language.name in new_character.species.secondary_langs)))

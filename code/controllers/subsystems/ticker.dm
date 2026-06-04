@@ -409,7 +409,7 @@ SUBSYSTEM_DEF(ticker)
 				//player.apply_traits() //VOREStation Removal
 		//VOREStation Addition Start
 		if(player.client)
-			if(player.client.prefs.read_preference(/datum/preference/toggle/human/auto_backup_implant)) // DQEdit — migrated pref
+			if(player.client.prefs.auto_backup_implant)
 				var/obj/item/implant/backup/imp = new(src)
 
 				if(imp.handle_implant(player,player.zone_sel.selecting))

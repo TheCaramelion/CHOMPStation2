@@ -3,7 +3,7 @@
 	name = MAT_SUPERMATTER
 	icon_colour = "#FFFF00"
 	stack_type = /obj/item/stack/material/supermatter
-	material_class = MATCLASS_CRYSTAL
+
 	shard_type = SHARD_SHARD
 	ignition_point = PHORON_MINIMUM_BURN_TEMPERATURE
 	icon_base = "stone"
@@ -15,14 +15,6 @@
 	is_fusion_fuel = 1
 	flags = MATERIAL_UNMELTABLE
 	supply_conversion_value = 30
-
-/datum/material/supermatter/New()
-	. = ..()
-	// DQEdit — was direct `radioactivity = 20` / `luminescence = 3`
-	// vars. Both now live on /datum/component/material_radioactive and
-	// /datum/component/material_luminescent.
-	AddComponent(/datum/component/material_radioactive, 20)
-	AddComponent(/datum/component/material_luminescent, 3)
 
 /datum/material/supermatter/generate_recipes()
 	recipes = list(

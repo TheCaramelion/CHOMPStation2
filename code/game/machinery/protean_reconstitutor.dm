@@ -56,7 +56,6 @@
 	paste_inefficiency = paste_rating
 	..()
 
-	dq_apply_material_synergies(src) // DQAdd
 /obj/machinery/protean_reconstitutor/update_icon()
 	cut_overlays()
 	if(stat & (NOPOWER|BROKEN) || !anchored)
@@ -261,17 +260,14 @@
 				P.languages.Cut()
 				P.languages = protean_brain.brainmob.languages.Copy()
 
-				// DQEdit Start — migrated language_custom_keys
-				var/list/_posi_lang_custom = posibrain_client.prefs.read_preference(/datum/preference/language_custom_keys)
-				for(var/key in _posi_lang_custom)
-					if(_posi_lang_custom[key])
-						var/datum/language/keylang = GLOB.all_languages[_posi_lang_custom[key]]
+				for(var/key in posibrain_client.prefs.language_custom_keys)
+					if(posibrain_client.prefs.language_custom_keys[key])
+						var/datum/language/keylang = GLOB.all_languages[posibrain_client.prefs.language_custom_keys[key]]
 						if(keylang)
 							P.language_keys[key] = keylang
-				// DQEdit End
 
-				if(posibrain_client.prefs.read_preference(/datum/preference/text/human/preferred_language))
-					var/datum/language/def_lang = GLOB.all_languages[posibrain_client.prefs.read_preference(/datum/preference/text/human/preferred_language)]
+				if(posibrain_client.prefs.preferred_language)
+					var/datum/language/def_lang = GLOB.all_languages[posibrain_client.prefs.preferred_language]
 					if(def_lang)
 						P.default_language = def_lang
 

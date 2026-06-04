@@ -546,6 +546,38 @@
 	qdel(mob_overlay) // we're gonna need to refresh these
 	update_clothing_icon()	//so our mob-overlays update
 
+/obj/item/clothing/accessory/gaiter/tan
+	name = "tan neck gaiter"
+	icon_state = "gaiter_tan"
+
+/obj/item/clothing/accessory/gaiter/gray
+	name = "gray neck gaiter"
+	icon_state = "gaiter_gray"
+
+/obj/item/clothing/accessory/gaiter/green
+	name = "green neck gaiter"
+	icon_state = "gaiter_green"
+
+/obj/item/clothing/accessory/gaiter/blue
+	name = "blue neck gaiter"
+	icon_state = "gaiter_blue"
+
+/obj/item/clothing/accessory/gaiter/purple
+	name = "purple neck gaiter"
+	icon_state = "gaiter_purple"
+
+/obj/item/clothing/accessory/gaiter/orange
+	name = "orange neck gaiter"
+	icon_state = "gaiter_orange"
+
+/obj/item/clothing/accessory/gaiter/charcoal
+	name = "charcoal neck gaiter"
+	icon_state = "gaiter_charcoal"
+
+/obj/item/clothing/accessory/gaiter/snow
+	name = "white neck gaiter"
+	icon_state = "gaiter_snow"
+
 /obj/item/clothing/accessory/gaiter/half //functions like a gaiter
 	name = "black half-mask"
 	icon_state = "half_mask"
@@ -598,6 +630,46 @@
 	desc = "A rugged all-weather poncho, perfectly coloured to match a popular line of neck gaiters. You could probably use it as a tent in a pinch!"
 	icon_state = "rangerponcho_red"
 	item_state = "rangerponcho_red"
+
+/obj/item/clothing/accessory/poncho/roles/ranger/tan
+	name = "tan ranger poncho"
+	icon_state = "rangerponcho_tan"
+	item_state = "rangerponcho_tan"
+
+/obj/item/clothing/accessory/poncho/roles/ranger/gray
+	name = "gray ranger poncho"
+	icon_state = "rangerponcho_gray"
+	item_state = "rangerponcho_gray"
+
+/obj/item/clothing/accessory/poncho/roles/ranger/green
+	name = "green ranger poncho"
+	icon_state = "rangerponcho_green"
+	item_state = "rangerponcho_green"
+
+/obj/item/clothing/accessory/poncho/roles/ranger/blue
+	name = "blue ranger poncho"
+	icon_state = "rangerponcho_blue"
+	item_state = "rangerponcho_blue"
+
+/obj/item/clothing/accessory/poncho/roles/ranger/purple
+	name = "purple ranger poncho"
+	icon_state = "rangerponcho_purple"
+	item_state = "rangerponcho_purple"
+
+/obj/item/clothing/accessory/poncho/roles/ranger/orange
+	name = "orange ranger poncho"
+	icon_state = "rangerponcho_orange"
+	item_state = "rangerponcho_orange"
+
+/obj/item/clothing/accessory/poncho/roles/ranger/charcoal
+	name = "charcoal ranger poncho"
+	icon_state = "rangerponcho_charcoal"
+	item_state = "rangerponcho_charcoal"
+
+/obj/item/clothing/accessory/poncho/roles/ranger/snow
+	name = "white ranger poncho"
+	icon_state = "rangerponcho_snow"
+	item_state = "rangerponcho_snow"
 
 // leg warmers
 

@@ -540,8 +540,8 @@ GLOBAL_LIST_EMPTY(damage_icon_parts) //see UpdateDamageIcon()
 	if(!species.has_glowing_eyes)
 		return
 
-	//Our glowy eyes should be hidden if some equipment hides them.
-	if(!should_have_organ(O_EYES) || (head && (head.flags_inv & BLOCKHAIR)) || (wear_mask && (wear_mask.flags_inv & BLOCKHAIR)))
+	//Our glowy eyes should be hidden if some equipment hides them. | Added Promethean/dispersed eyes species support for Glowing Eyes.
+	if((!should_have_organ(O_EYES) && !species.dispersed_eyes) || (head && (head.flags_inv & BLOCKHAIR)) || (wear_mask && (wear_mask.flags_inv & BLOCKHAIR)))
 		return
 
 	//Get the head, we'll need it later.
@@ -556,7 +556,9 @@ GLOBAL_LIST_EMPTY(damage_icon_parts) //see UpdateDamageIcon()
 
 	var/icon/eyes_icon = new/icon(head_organ.eye_icon_location, head_organ.eye_icon)
 	if(!findtext(head_organ.eye_icon, regex("-colored")))
-		if(eyes)
+		if(species.dispersed_eyes) // Set so all species who would lack eye organs due to dispersed eyes can still use Glowing Eyes.
+			eyes_icon.Blend(rgb(r_eyes, g_eyes, b_eyes))
+		else if(eyes)
 			eyes_icon.Blend(rgb(eyes.eye_colour[1], eyes.eye_colour[2], eyes.eye_colour[3]), ICON_ADD)
 		else
 			eyes_icon.Blend(rgb(128,0,0), ICON_ADD)
@@ -1483,10 +1485,7 @@ GLOBAL_LIST_EMPTY(damage_icon_parts) //see UpdateDamageIcon()
 		UpdateAppearance()
 		icon = Dummy.icon
 		if(flavourtext)
-			// DQEdit Start — migrated flavor_texts
-			var/list/_flavor_texts = client.prefs.read_preference(/datum/preference/flavor_texts)
-			flavor_texts = islist(_flavor_texts) ? _flavor_texts.Copy() : list()
-			// DQEdit End
+			flavor_texts = client.prefs.flavor_texts.Copy()
 		if(oocnotes)
 			ooc_notes = client.prefs.read_preference(/datum/preference/text/living/ooc_notes)
 			ooc_notes_likes = client.prefs.read_preference(/datum/preference/text/living/ooc_notes_likes)

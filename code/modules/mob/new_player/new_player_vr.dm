@@ -7,7 +7,7 @@
 		return TRUE
 
 	//No Flavor Text
-	if (CONFIG_GET(flag/require_flavor) && !(J.mob_type & JOB_SILICON) && (!LAZYACCESS(client?.prefs?.read_preference(/datum/preference/flavor_texts), "general") || length(LAZYACCESS(client.prefs.read_preference(/datum/preference/flavor_texts), "general")) < 30)) // DQEdit — migrated
+	if (CONFIG_GET(flag/require_flavor) && !(J.mob_type & JOB_SILICON) && (!client?.prefs?.flavor_texts["general"] || length(client.prefs.flavor_texts["general"]) < 30))
 		to_chat(src,span_warning("Please set your general flavor text to give a basic description of your character. Set it using the 'Set Flavor text' button on the 'General' tab in character setup, and choosing 'General' category."))
 		pass = FALSE
 
@@ -22,7 +22,7 @@
 		pass = FALSE
 
 	//Do they have their scale properly setup?
-	if(!client?.prefs?.read_preference(/datum/preference/numeric/human/size_multiplier)) // DQEdit — migrated
+	if(!client?.prefs?.size_multiplier)
 		pass = FALSE
 		to_chat(src,span_warning("You have not set your scale yet. Do this on the VORE tab in character setup."))
 
@@ -31,31 +31,20 @@
 		pass = FALSE
 		to_chat(src,span_warning("You are not allowed to spawn in as this species."))
 
-	//CHOMPEdit Begin - Check species job bans... (Only used for shadekin)
-	if(J.is_species_banned(client?.prefs?.read_preference(/datum/preference/choiced/species), client?.prefs?.read_preference(/datum/preference/organ_data)?[O_BRAIN]))
-		pass = FALSE
-		to_chat(src,span_warning("Your species is not permitted to take this role or job."))
-	//CHOMPEdit End
-
 	//Custom species checks
 	if (client?.prefs?.read_preference(/datum/preference/choiced/species) == SPECIES_CUSTOM)
 
 		//Didn't name it
-		if(!client?.prefs?.read_preference(/datum/preference/text/human/custom_species)) // DQEdit — migrated
+		if(!client?.prefs?.custom_species)
 			pass = FALSE
 			to_chat(src,span_warning("You have to name your custom species. Do this on the VORE tab in character setup."))
 
 	//Check traits/costs
-	// DQEdit Start — migrated traits prefs (typed_list base)
-	var/list/_pos_traits = client.prefs.read_preference(/datum/preference/typed_list/traits/pos_traits)
-	var/list/_neu_traits = client.prefs.read_preference(/datum/preference/typed_list/traits/neu_traits)
-	var/list/_neg_traits = client.prefs.read_preference(/datum/preference/typed_list/traits/neg_traits)
-	var/list/megalist = _pos_traits + _neu_traits + _neg_traits
-	var/points_left = client.prefs.read_preference(/datum/preference/numeric/human/starting_trait_points)
-	var/traits_left = client.prefs.read_preference(/datum/preference/numeric/human/max_traits)
-	// DQEdit End
-	var/pref_synth = client.prefs.read_preference(/datum/preference/toggle/human/dirty_synth) // DQEdit — migrated
-	var/pref_meat = client.prefs.read_preference(/datum/preference/toggle/human/gross_meatbag) // DQEdit — migrated
+	var/list/megalist = client.prefs.pos_traits + client.prefs.neu_traits + client.prefs.neg_traits
+	var/points_left = client.prefs.starting_trait_points
+	var/traits_left = client.prefs.max_traits
+	var/pref_synth = client.prefs.dirty_synth
+	var/pref_meat = client.prefs.gross_meatbag
 	for(var/datum/trait/T as anything in megalist)
 		var/cost = GLOB.traits_costs[T]
 
@@ -74,27 +63,6 @@
 		if((pref_synth && !(take_flags & SYNTHETICS)) || (pref_meat && !(take_flags & ORGANICS)))
 			pass = FALSE
 			to_chat(src, span_warning("Some of your traits are not usable by your character type (synthetic traits on organic, or vice versa)."))
-	//CHOMPadd start
-	if(J.camp_protection && round_duration_in_ds < CONFIG_GET(number/job_camp_time_limit))
-		if(SSjob.restricted_keys.len)
-			var/list/check = SSjob.restricted_keys[J.title]
-			if(client.ckey in check)
-				to_chat(src, span_danger("[J.title] is not presently selectable because you played as it last round. It will become available to you in [round((CONFIG_GET(number/job_camp_time_limit) - round_duration_in_ds) / 600)] minutes, if slots remain open."))
-				pass = FALSE
-	//CHOMPadd end
-
-	//CHOMP Addition Begin
-	// DQEdit — migrated neu_traits
-	if(_neu_traits)
-		for(var/T in _neu_traits)
-			var/datum/trait/instance = GLOB.all_traits[T]
-			if(client.prefs.read_preference(/datum/preference/choiced/species) in instance.banned_species)
-				pass = FALSE
-				to_chat(src,span_warning("One of your traits, [instance.name], is not available for your species! Please fix this conflict and then try again."))
-			else if(LAZYLEN(instance.allowed_species) && !(client.prefs.read_preference(/datum/preference/choiced/species) in instance.allowed_species)) //We use else if here, so as to prevent getting two errors for one trait.
-				pass = FALSE
-				to_chat(src,span_warning("One of your traits, [instance.name], is not available for your species! Please fix this conflict and then try again."))
-	//CHOMP Addition End
 
 	//Went into negatives
 	if(points_left < 0 || traits_left < 0)

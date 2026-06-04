@@ -33,9 +33,8 @@
 	return
 
 /obj/singularity/energy_ball/Destroy()
-	var/datum/component/orbiter/myorbit = dq_get_orbiting(src)
-	if(myorbit && istype(myorbit.parent, /obj/singularity/energy_ball))
-		var/obj/singularity/energy_ball/EB = myorbit.parent
+	if(orbiting && istype(orbiting.parent, /obj/singularity/energy_ball))
+		var/obj/singularity/energy_ball/EB = orbiting.parent
 		EB.orbiting_balls -= src
 
 	for(var/obj/singularity/energy_ball/EB as anything in orbiting_balls)
@@ -51,7 +50,7 @@
 
 /obj/singularity/energy_ball/process(wait = 20)
 	set waitfor = FALSE
-	if(!dq_get_orbiting(src))
+	if(!orbiting)
 		if (handle_energy())
 			return
 
@@ -144,9 +143,8 @@
 
 	. = ..()
 /obj/singularity/energy_ball/stop_orbit()
-	var/datum/component/orbiter/myorbit = dq_get_orbiting(src)
-	if (myorbit && istype(myorbit.parent, /obj/singularity/energy_ball))
-		var/obj/singularity/energy_ball/orbitingball = myorbit.parent
+	if (orbiting && istype(orbiting.parent, /obj/singularity/energy_ball))
+		var/obj/singularity/energy_ball/orbitingball = orbiting.parent
 		orbitingball.orbiting_balls -= src
 		orbitingball.dissipate_strength = orbitingball.orbiting_balls.len + 1
 	..()

@@ -84,12 +84,13 @@ GLOBAL_LIST_INIT(gaslist_cache, init_gaslist_cache())
 //PV = nRT
 
 ///joules per kelvin
+/*
 /datum/gas_mixture/proc/heat_capacity(data = MOLES)
 	var/list/cached_gases = gases
 	. = 0
 	for(var/_id, gas_data in cached_gases)
 		. += gas_data[data] * gas_data[GAS_META][META_GAS_SPECIFIC_HEAT]
-
+*/
 /// Same as above except vacuums return HEAT_CAPACITY_VACUUM
 /datum/gas_mixture/turf/heat_capacity(data = MOLES)
 	var/list/cached_gases = gases
@@ -100,6 +101,7 @@ GLOBAL_LIST_INIT(gaslist_cache, init_gaslist_cache())
 		. += HEAT_CAPACITY_VACUUM //we want vacuums in turfs to have the same heat capacity as space
 
 /// Calculate moles
+/*
 /datum/gas_mixture/proc/total_moles()
 	var/cached_gases = gases
 	TOTAL_MOLES(cached_gases, .)
@@ -128,17 +130,17 @@ GLOBAL_LIST_INIT(gaslist_cache, init_gaslist_cache())
 /// Calculate volume in liters
 /datum/gas_mixture/proc/return_volume()
 	return max(0, volume)
-
+*/
 /// Gets the gas visuals for everything in this mixture
 /datum/gas_mixture/proc/return_visuals(turf/z_context)
 	var/list/output
 	GAS_OVERLAYS(gases, output, z_context)
 	return output
-
+/*
 /// Calculate thermal energy in joules
 /datum/gas_mixture/proc/thermal_energy()
 	return THERMAL_ENERGY(src) //see code/__DEFINES/atmospherics.dm; use the define in performance critical areas
-
+*/
 ///Update archived versions of variables. Returns: 1 in all cases
 /datum/gas_mixture/proc/archive()
 	var/list/cached_gases = gases
@@ -148,7 +150,7 @@ GLOBAL_LIST_INIT(gaslist_cache, init_gaslist_cache())
 		cached_gases[id][ARCHIVE] = cached_gases[id][MOLES]
 
 	return TRUE
-
+/*
 ///Merges all air from giver into self. Deletes giver. Returns: 1 if we are mutable, 0 otherwise
 /datum/gas_mixture/proc/merge(datum/gas_mixture/giver)
 	if(!giver)
@@ -171,16 +173,16 @@ GLOBAL_LIST_INIT(gaslist_cache, init_gaslist_cache())
 
 	SEND_SIGNAL(src, COMSIG_GASMIX_MERGED)
 	return TRUE
-
+*/
 // Set the gas specie within the gas mix to a set amount, if there is none it will be created at the target temp
 /datum/gas_mixture/proc/set_gas(gas_specie, amount)
 	ASSERT_GAS(gas_specie, src)
 	gases[gas_specie][MOLES] = amount
 	garbage_collect()
-
+/*
 /datum/gas_mixture/proc/set_temperature(target_temp)
 	temperature = target_temp
-
+*/
 /// Add a specific amount of moles to specified gas or add a new gas to the mix
 /// amount is added so make it negative to remove
 /datum/gas_mixture/proc/adjust_gas(gas, amount)
@@ -331,7 +333,7 @@ GLOBAL_LIST_INIT(gaslist_cache, init_gaslist_cache())
 
 	return copy
 
-
+/*
 ///Copies variables from sample
 ///Returns: TRUE if we are mutable, FALSE otherwise
 /datum/gas_mixture/proc/copy_from(datum/gas_mixture/sample)
@@ -348,7 +350,7 @@ GLOBAL_LIST_INIT(gaslist_cache, init_gaslist_cache())
 		cached_gases[id][ARCHIVE] = 0
 
 	return TRUE
-
+*/
 ///Copies variables from sample, moles multiplicated by partial
 ///Returns: TRUE if we are mutable, FALSE otherwise
 /datum/gas_mixture/proc/copy_from_ratio(datum/gas_mixture/sample, partial = 1)
@@ -457,7 +459,7 @@ GLOBAL_LIST_INIT(gaslist_cache, init_gaslist_cache())
 		var/their_moles
 		TOTAL_MOLES(sharer_gases,their_moles)
 		return (temperature_archived*(our_moles + moved_moles) - sharer.temperature_archived*(their_moles - moved_moles)) * R_IDEAL_GAS_EQUATION / volume
-
+/*
 ///Performs temperature sharing calculations (via conduction) between two gas_mixtures assuming only 1 boundary length
 ///Returns: new temperature of the sharer
 /datum/gas_mixture/proc/temperature_share(datum/gas_mixture/sharer, conduction_coefficient, sharer_temperature, sharer_heat_capacity)
@@ -566,7 +568,7 @@ GLOBAL_LIST_INIT(gaslist_cache, init_gaslist_cache())
 	if(.) //If we changed the mix to any degree
 		garbage_collect()
 		SEND_SIGNAL(src, COMSIG_GASMIX_REACTED)
-
+*/
 
 /**
  * Returns the partial pressure of the gas in the breath based on BREATH_VOLUME
@@ -787,4 +789,3 @@ GLOBAL_LIST_INIT(gaslist_cache, init_gaslist_cache())
 
 	atmos_contents += temperature_str
 	return atmos_contents.Join(";")
-

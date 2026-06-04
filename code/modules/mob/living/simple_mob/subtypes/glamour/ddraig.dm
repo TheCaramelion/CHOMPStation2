@@ -310,7 +310,7 @@
 /datum/ai_holder/simple_mob/vore/ddraig/engage_target()
 	ai_log("engage_target() : Entering.", AI_LOG_DEBUG)
 
-	if(dq_get_cloaked(holder))
+	if(holder.cloaked)
 		set_stance(STANCE_FLEE)
 		return
 
@@ -475,7 +475,7 @@
 		to_chat(src, span_warning("You can't go invisible when weakened like this."))
 		return
 
-	if(!dq_get_cloaked(src))
+	if(!cloaked)
 		cloak()
 		to_chat(src, span_warning("Your skin shimmers and shifts around you, hiding you from the naked eye."))
 	else

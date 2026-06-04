@@ -116,9 +116,8 @@ GLOBAL_DATUM_INIT(outfits_decls_root, /datum/decl/hierarchy/outfit, new) // Rewu
 	if(uniform)
 		H.equip_to_slot_or_del(new uniform(H),slot_w_uniform)
 	if(suit)
-		// DQEdit — no_jacket pref deleted; always equip the default suit. Players who don't
-		// want it pick an alternate uniform via the regular loadout system.
-		H.equip_to_slot_or_del(new suit(H),slot_wear_suit)
+		if(!(H.client?.prefs?.no_jacket))
+			H.equip_to_slot_or_del(new suit(H),slot_wear_suit)
 	if(back)
 		H.equip_to_slot_or_del(new back(H),slot_back)
 	if(belt)
@@ -184,9 +183,8 @@ GLOBAL_DATUM_INIT(outfits_decls_root, /datum/decl/hierarchy/outfit, new) // Rewu
 		pda.ownjob = assignment
 		pda.ownrank = rank
 		pda.name = "PDA-[H.real_name] ([assignment])"
-		var/_ringtone = H.client?.prefs?.read_preference(/datum/preference/text/human/ringtone) // DQEdit — migrated pref
-		if(_ringtone)
-			pda.ttone = _ringtone
+		if(H.client?.prefs.ringtone) // if null we use the job default
+			pda.ttone = H.client.prefs.ringtone
 		return pda
 
 /datum/decl/hierarchy/outfit/dd_SortValue()

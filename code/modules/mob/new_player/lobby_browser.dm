@@ -147,9 +147,8 @@
 					observer.pai_card_ping()
 
 			return TRUE
-		// DQEdit — server news replaced with the player-facing wiki Guide.
-		if("open_guide")
-			quarry_guide_open(src)
+		if("shownews")
+			handle_server_news()
 			return TRUE
 		if("give_feedback")
 			if(!SSsqlite.can_submit_feedback(persistent_client.client))

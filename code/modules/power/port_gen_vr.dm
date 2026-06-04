@@ -156,7 +156,7 @@
 
 	power_gen = initial(power_gen) * part_level
 
-	dq_apply_material_synergies(src) // DQAdd
+
 /obj/machinery/power/rtg/examine(mob/user)
 	. = ..()
 	if(Adjacent(user, src) || isobserver(user))
@@ -191,7 +191,7 @@
 	can_buckle = FALSE
 
 /obj/machinery/power/rtg/fake_gen/RefreshParts()
-	dq_apply_material_synergies(src) // DQAdd
+
 	return
 /obj/machinery/power/rtg/fake_gen/attackby(obj/item/I, mob/user, params)
 	return
@@ -227,7 +227,7 @@
 	if(!cell)
 		power_gen = 0
 
-	dq_apply_material_synergies(src) // DQAdd
+
 /obj/machinery/power/rtg/abductor/proc/asplod()
 	if(going_kaboom)
 		return
@@ -396,7 +396,7 @@
 		n += SP.rating
 	part_mult = n
 
-	dq_apply_material_synergies(src) // DQAdd
+
 /obj/machinery/power/rtg/reg/attackby(obj/item/I, mob/user, params)
 	pixel_x = -32
 	if(default_deconstruction_screwdriver(user, I))

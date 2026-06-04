@@ -9,6 +9,7 @@
 	desc = "Exosuit"
 	description_info = "Alt click to strafe."
 	icon = 'icons/mecha/mecha.dmi'
+	flags = REMOTEVIEW_ON_ENTER
 	density = TRUE							//Dense. To raise the heat.
 	opacity = 1							//Opaque. Menacing.
 	anchored = TRUE						//No pulling around.
@@ -57,13 +58,9 @@
 	//inner atmos
 	var/use_internal_tank = 0
 	var/internal_tank_valve = ONE_ATMOSPHERE
-	// DQEdit — was ZAS portable canister; now a regular oxygen tank since the
-	// ZAS portable machinery was deleted.
-	var/obj/item/tank/internal_tank
+	var/obj/machinery/portable_atmospherics/canister/internal_tank
 	var/datum/gas_mixture/cabin_air
-	// DQEdit — connected_port was an /obj/machinery/atmospherics/portables_connector
-	// (ZAS). Untyped while LINDA portables_connector is wired in.
-	var/obj/connected_port = null
+	var/obj/machinery/atmospherics/portables_connector/connected_port = null
 
 	var/obj/item/radio/radio = null
 
@@ -240,6 +237,8 @@
 	src.mecha_log_message("[src.name] created.")
 	loc.Entered(src)
 	GLOB.mechas_list += src //global mech list
+
+	AddElement(/datum/element/sellable/mecha)
 
 /obj/mecha/drain_power(drain_check)
 
@@ -418,13 +417,10 @@
 		if(!hasInternalDamage(MECHA_INT_TEMP_CONTROL) && prob(5))
 			clearInternalDamage(MECHA_INT_FIRE)
 		if(internal_tank)
-			// DQEdit — internal_tank's pressure-check uses the mixture's own pressure,
-			// not the (deleted ZAS canister's) maximum_pressure var. Use TANK_LEAK_PRESSURE
-			// as the trip threshold instead, matching /tg/'s tank breach logic.
-			var/datum/gas_mixture/int_tank_air = internal_tank.return_air()
-			if(int_tank_air && int_tank_air.return_pressure() > TANK_LEAK_PRESSURE && !(hasInternalDamage(MECHA_INT_TANK_BREACH)))
+			if(internal_tank.return_pressure()>internal_tank.maximum_pressure && !(hasInternalDamage(MECHA_INT_TANK_BREACH)))
 				setInternalDamage(MECHA_INT_TANK_BREACH)
-			if(int_tank_air && int_tank_air.volume > 0) //heat the air_contents
+			var/datum/gas_mixture/int_tank_air = internal_tank.return_air()
+			if(int_tank_air && int_tank_air.volume>0) //heat the air_contents
 				int_tank_air.temperature = min(6000+T0C, int_tank_air.temperature+rand(10,15))
 		if(cabin_air && cabin_air.volume>0)
 			cabin_air.temperature = min(6000+T0C, cabin_air.temperature+rand(10,15))
@@ -461,10 +457,7 @@
 	src.verbs += verb_path
 
 /obj/mecha/proc/add_airtank()
-	// DQEdit — the ZAS portable canister type was deleted in the LINDA migration.
-	// Mech internal tank now uses /obj/item/tank/air (regular oxygen tank) which
-	// has return_air() and persists in the mech's contents.
-	internal_tank = new /obj/item/tank/air(src)
+	internal_tank = new /obj/machinery/portable_atmospherics/canister/air(src)
 	return internal_tank
 
 /obj/mecha/proc/add_cell(obj/item/cell/C=null)
@@ -481,11 +474,7 @@
 	cabin_air = new
 	cabin_air.temperature = T20C
 	cabin_air.volume = 200
-	// DQEdit — adjust_multi was XGM; LINDA's gas_mixture has adjust_gas per-call.
-	var/moles_o2 = O2STANDARD * cabin_air.volume / (R_IDEAL_GAS_EQUATION * cabin_air.temperature)
-	var/moles_n2 = N2STANDARD * cabin_air.volume / (R_IDEAL_GAS_EQUATION * cabin_air.temperature)
-	cabin_air.adjust_gas(GAS_O2, moles_o2)
-	cabin_air.adjust_gas(GAS_N2, moles_n2)
+	cabin_air.adjust_multi(GAS_O2, O2STANDARD*cabin_air.volume/(R_IDEAL_GAS_EQUATION*cabin_air.temperature), GAS_N2, N2STANDARD*cabin_air.volume/(R_IDEAL_GAS_EQUATION*cabin_air.temperature))
 	return cabin_air
 
 /obj/mecha/proc/add_radio()
@@ -1769,15 +1758,38 @@
 			. = t_air.temperature
 	return
 
-// DQEdit — connect/disconnect plumbed a mecha into a ZAS portables_connector +
-// pipe_network. Both types deleted in the LINDA migration. Stub returns 0 (not
-// connected) until the LINDA equivalent (vendored under modular_dq/code/atmospherics/
-// machinery/components/unary_devices/portables_connector.dm) is wired into the build.
-/obj/mecha/proc/connect(obj/new_port)
-	return 0
+/obj/mecha/proc/connect(obj/machinery/atmospherics/portables_connector/new_port)
+	//Make sure not already connected to something else
+	if(connected_port || !new_port || new_port.connected_device)
+		return 0
+
+	//Make sure are close enough for a valid connection
+	if(!(new_port.loc in locs))
+		return 0
+
+	//Perform the connection
+	connected_port = new_port
+	connected_port.connected_device = src
+
+	//Actually enforce the air sharing
+	var/datum/pipe_network/network = connected_port.return_network(src)
+	if(network && !(internal_tank.return_air() in network.gases))
+		network.gases += internal_tank.return_air()
+		network.update = 1
+	playsound(src, 'sound/mecha/gasconnected.ogg', 50, 1)
+	src.mecha_log_message("Connected to gas port.")
+	return 1
 
 /obj/mecha/proc/disconnect()
-	return 0
+	if(!connected_port)
+		return 0
+
+	var/datum/pipe_network/network = connected_port.return_network(src)
+	if(network)
+		network.gases -= internal_tank.return_air()
+
+	connected_port.connected_device = null
+	connected_port = null
 	playsound(src, 'sound/mecha/gasdisconnected.ogg', 50, 1)
 	src.mecha_log_message("Disconnected from gas port.")
 	return 1
@@ -1804,10 +1816,8 @@
 	if(!GC)
 		return
 
-	// DQEdit — portables_connector type deleted; loop is a no-op until LINDA
-	// portables_connector is wired in.
 	for(var/turf/T in locs)
-		var/obj/possible_port = null
+		var/obj/machinery/atmospherics/portables_connector/possible_port = locate(/obj/machinery/atmospherics/portables_connector) in T
 		if(possible_port)
 			if(connect(possible_port))
 				occupant_message(span_notice("\The [name] connects to the port."))
@@ -2020,8 +2030,8 @@
 		update_damage_alerts()
 		set_dir(dir_in)
 		playsound(src, 'sound/machines/door/windowdoor.ogg', 50, 1)
-		if(occupant.client && dq_get_cloaked_selfimage(src))
-			occupant.client.images += dq_get_cloaked_selfimage(src)
+		if(occupant.client && cloaked_selfimage)
+			occupant.client.images += cloaked_selfimage
 		play_entered_noise(occupant)
 		return 1
 	else
@@ -2096,8 +2106,8 @@
 	if(mob_container.forceMove(src.loc))//ejecting mob container
 		src.mecha_log_message("[mob_container] moved out.")
 		occupant << browse(null, "window=exosuit")
-		if(occupant.client && dq_get_cloaked_selfimage(src))
-			occupant.client.images -= dq_get_cloaked_selfimage(src)
+		if(occupant.client && cloaked_selfimage)
+			occupant.client.images -= cloaked_selfimage
 		if(istype(mob_container, /obj/item/mmi))
 			var/obj/item/mmi/mmi = mob_container
 			if(mmi.brainmob)
@@ -2238,11 +2248,8 @@
 /obj/mecha/proc/get_stats_part()
 	var/integrity = health/initial(health)*100
 	var/cell_charge = get_charge()
-	// DQEdit — internal_tank is now /obj/item/tank, no return_pressure/return_temperature
-	// procs on it; read through air_contents (a /datum/gas_mixture).
-	var/datum/gas_mixture/tank_air = internal_tank?.return_air()
-	var/tank_pressure = tank_air ? round(tank_air.return_pressure(), 0.01) : "None"
-	var/tank_temperature = tank_air ? tank_air.temperature : "Unknown"
+	var/tank_pressure = internal_tank ? round(internal_tank.return_pressure(),0.01) : "None"
+	var/tank_temperature = internal_tank ? internal_tank.return_temperature() : "Unknown"
 	var/cabin_pressure = round(return_pressure(),0.01)
 
 	var/obj/item/mecha_parts/component/hull/HC = internal_components[MECH_HULL]
@@ -2834,12 +2841,12 @@
 /////////////
 /obj/mecha/cloak()
 	. = ..()
-	if(occupant && occupant.client && dq_get_cloaked_selfimage(src))
-		occupant.client.images += dq_get_cloaked_selfimage(src)
+	if(occupant && occupant.client && cloaked_selfimage)
+		occupant.client.images += cloaked_selfimage
 
 /obj/mecha/uncloak()
-	if(occupant && occupant.client && dq_get_cloaked_selfimage(src))
-		occupant.client.images -= dq_get_cloaked_selfimage(src)
+	if(occupant && occupant.client && cloaked_selfimage)
+		occupant.client.images -= cloaked_selfimage
 	return ..()
 
 

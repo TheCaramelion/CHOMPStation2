@@ -722,12 +722,7 @@
 			M.Weaken(5)
 		if(dose >= 10 && M.paralysis < 40)
 			M.AdjustParalysis(1) //Messing with the core with a simple chemical probably isn't the best idea.
-	// DQEdit — base brain healing moved to dq_alkysine_brain_effect (see
-	// modular_dq/code/modules/medical/organ_decay/). Alkysine still works
-	// on mildly-damaged brains, but stops keeping up past the salvageable
-	// threshold (~60% organ damage), at which point ongoing decay
-	// outpaces the chem. The DQ proc is the single source of truth.
-	dq_alkysine_brain_effect(M, removed, chem_effective)
+	M.adjustBrainLoss(-8 * removed * chem_effective)
 	M.add_chemical_effect(CE_PAINKILLER, 10 * chem_effective * M.species.chem_strength_pain)
 
 /datum/reagent/imidazoline
@@ -1417,8 +1412,8 @@
 /datum/reagent/sterilizine/affect_touch(mob/living/carbon/M, alien, removed)
 	M.germ_level -= min(removed*20, M.germ_level)
 	for(var/obj/item/I in M.contents)
-		dq_set_was_bloodied(I, null)
-	dq_set_was_bloodied(M, null)
+		I.was_bloodied = null
+	M.was_bloodied = null
 	if(alien == IS_SLIME)
 		M.adjustFireLoss(removed)
 		M.adjustToxLoss(2 * removed)
@@ -1426,13 +1421,13 @@
 /datum/reagent/sterilizine/touch_obj(obj/O)
 	..()
 	O.germ_level -= min(volume*200, O.germ_level)
-	dq_set_was_bloodied(O, null)
+	O.was_bloodied = null
 
 /datum/reagent/sterilizine/touch_turf(turf/T)
 	..()
 	T.germ_level -= min(volume*200, T.germ_level)
 	for(var/obj/item/I in T.contents)
-		dq_set_was_bloodied(I, null)
+		I.was_bloodied = null
 	for(var/obj/effect/decal/cleanable/blood/B in T)
 		qdel(B)
 

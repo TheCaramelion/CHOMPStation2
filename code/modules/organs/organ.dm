@@ -57,15 +57,6 @@
 	if(trace_chemicals) trace_chemicals.Cut()
 	QDEL_NULL(data)
 
-	// DQEdit — clear medical_issues so conditions don't outlive their
-	// host organ with a dangling affectedorgan pointer. Without this an
-	// amputated arm with an active tendon_severed leaks the condition
-	// onto the floor with the limb.
-	if(medical_issues)
-		for(var/datum/medical_issue/I in medical_issues)
-			I.affectedorgan = null
-		QDEL_LIST(medical_issues)
-
 	return ..()
 
 /obj/item/organ/proc/update_health()
@@ -201,12 +192,6 @@
 		handle_antibiotics()
 		handle_rejection()
 		handle_germ_effects()
-		// DQEdit — bridge germ_level into the wound_infection condition.
-		// Once germs cross INFECTION_LEVEL_ONE we spawn the condition,
-		// which then handles symptoms / progression / chem cure on its
-		// own. germ_level continues to evolve underneath as the hidden
-		// physics; the condition is the player-facing surface.
-		dq_bridge_germ_to_condition()
 
 /obj/item/organ/examine(mob/user)
 	. = ..()
@@ -257,21 +242,27 @@
 
 	var/antibiotics = iscarbon(owner) ? owner.chem_effects[CE_ANTIBIOTIC] || 0 : 0
 
-	// DQEdit Start — the germ_level toxin-damage path is replaced by the
-	// wound_infection condition (modular_dq/code/modules/medical/...).
-	// We keep germ_level itself for surgery sanitation, antibiotic
-	// progression, and necrosis-by-germs (still ticks below), but the
-	// damage-doing side is now a condition that presents with symptoms,
-	// can cascade, and reacts to specific reagents.
-	//
-	// Original upstream behavior preserved for reference:
-	//   if((status & ORGAN_DEAD) && antibiotics < ANTIBIO_OD && germ_level >= INFECTION_LEVEL_TWO)
-	//       infection_damage = CLAMP(round((germ_level - INFECTION_LEVEL_TWO)/1000), 0.25, 1)
-	//   else if(germ_level > INFECTION_LEVEL_TWO && antibiotics < ANTIBIO_OD)
-	//       infection_damage = CLAMP(round((germ_level - INFECTION_LEVEL_TWO)/1000), 0, 0.1)
-	//   if(infection_damage)
-	//       owner.adjustToxLoss(infection_damage)
-	// DQEdit End
+	var/infection_damage = 0
+
+	/// Infection damage
+
+	//If the organ is dead, for the sake of organs that may have died due to non-infection, we'll only do damage if they have at least L2 infection (built up below)
+	//A dead organ is bad, so you start getting flooded with toxins faster.
+	if((status & ORGAN_DEAD) && antibiotics < ANTIBIO_OD && germ_level >= INFECTION_LEVEL_TWO)
+		infection_damage = CLAMP(round((germ_level - INFECTION_LEVEL_TWO)/1000), 0.25, 1) //Between 0.25 to 1 tox per tick.
+
+
+	//Ideally, we want them to either: A. Reach Medical or B. have their organ die. Dying to toxins is lame.
+	//With this math: Toxins goes up by 0.001 per 2 seconds, up to 0.1. This means 200 seconds to reach 0.1 toxins per tick (germ level is now 700).
+	//Limb death happens at germ level 1000. This means another 600 seconds to reach there if untreated.
+	//Your kidneys helps purge toxins if you have 10% or less of your maxhealth in toxins damage. This is RNG though. (See kidneys/handle_organ_proc_special)
+	//So you COULD get really lucky and keep healing your toxins away until your limb dies, or you could get unlucky die to toxins first.
+	//Nonetheless, this should give a much more reasonable window for treatment.
+	else if(germ_level > INFECTION_LEVEL_TWO && antibiotics < ANTIBIO_OD)
+		infection_damage = CLAMP(round((germ_level - INFECTION_LEVEL_TWO)/1000), 0, 0.1)
+
+	if(infection_damage)
+		owner.adjustToxLoss(infection_damage)
 
 	if (germ_level > 0 && germ_level < INFECTION_LEVEL_ONE/2 && prob(30))
 		adjust_germ_level(-antibiotics)
@@ -446,14 +437,6 @@
 				take_damage(rand(1,3))
 
 /obj/item/organ/proc/removed(mob/living/user)
-	// DQEdit — conditions stay attached to the organ so re-implantation
-	// brings them back. Unhook owner so the now-detached patient stops
-	// processing them. Re-anchoring happens in the implantation surgery
-	// step via dq_reseat_owner().
-	if(medical_issues)
-		for(var/datum/medical_issue/condition/C in medical_issues)
-			C.owner = null
-
 	if(owner)
 		owner.internal_organs_by_name[organ_tag] = null
 		owner.internal_organs_by_name -= organ_tag
@@ -513,11 +496,6 @@
 	target.internal_organs_by_name[organ_tag] = src
 
 	handle_organ_mod_special()
-
-	// DQEdit — re-anchor medical conditions that travelled with the
-	// extracted organ. See /obj/item/organ/external/replaced for the
-	// limb-level equivalent.
-	dq_reseat_owner(target)
 
 /obj/item/organ/proc/bitten(mob/user)
 

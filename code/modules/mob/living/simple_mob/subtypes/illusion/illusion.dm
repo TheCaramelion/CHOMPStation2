@@ -36,7 +36,7 @@
 	copying = thing_to_copy
 	density = thing_to_copy.density // So you can't bump into objects that aren't supposed to be dense.
 	catalogue_data = thing_to_copy.get_catalogue_data()
-	dq_set_catalogue_delay(src, thing_to_copy.get_catalogue_delay()) // DQEdit — copy DQ catalogue scan-delay so illusions don't reveal themselves via faster scan time
+	catalogue_delay = thing_to_copy.catalogue_delay
 	return TRUE
 
 // Because we can't perfectly duplicate some examine() output, we directly examine the AM it is copying.  It's messy but
@@ -84,7 +84,7 @@
 				M.visible_message(span_danger("\The [M] [response_harm] \the [src]"))
 				M.do_attack_animation(src)
 
-/mob/living/simple_mob/illusion/hit_with_weapon(obj/item/I, mob/living/user, effective_force, hit_zone)
+/mob/living/simple_mob/illusion/hit_with_weapon(obj/item/I, mob/living/user, effective_force, hit_zone, hide_attack_message)
 	if(realistic)
 		return ..()
 

@@ -29,48 +29,6 @@
 /// This preference is account specific.
 #define PREFERENCE_PLAYER "player"
 
-// DQAdd — Widget hints describing how a pref renders in the auto-generated UI.
-/// Auto-pick the widget based on the pref subtype.
-#define PREF_WIDGET_AUTO        "auto"
-/// Plain text input.
-#define PREF_WIDGET_TEXT        "text"
-/// Multi-line text editor.
-#define PREF_WIDGET_LONGTEXT    "longtext"
-/// Numeric input with optional min/max/step in widget_props.
-#define PREF_WIDGET_NUMBER      "number"
-/// Numeric slider (uses min/max/step from widget_props).
-#define PREF_WIDGET_SLIDER      "slider"
-/// Boolean toggle.
-#define PREF_WIDGET_BOOLEAN     "boolean"
-/// Single hex color with a picker.
-#define PREF_WIDGET_COLOR       "color"
-/// Single-pick from a dropdown.
-#define PREF_WIDGET_DROPDOWN    "dropdown"
-/// Single-pick from a thumbnail grid (icons + names).
-#define PREF_WIDGET_THUMBGRID   "thumbgrid"
-/// Render through a registered /datum/preference_editor by key.
-#define PREF_WIDGET_EDITOR      "editor"
-/// Server-managed; not rendered as an editable control.
-#define PREF_WIDGET_HIDDEN      "hidden"
-
-// DQAdd — Sentinel returned by /datum/preferences/proc/update_preference_v2() and
-// /datum/preference_editor.handle_action().
-#define PREF_UPDATE_ACCEPTED    1
-#define PREF_UPDATE_REJECTED    2
-#define PREF_UPDATE_UNCHANGED   3
-
-// DQAdd — Constraint cascade safety + transactional pref update helpers.
-#define PREF_CONSTRAINT_MAX_DEPTH 8
-#define PREF_TRANSACTION_BEGIN(prefs) prefs.begin_update_batch()
-#define PREF_TRANSACTION_END(prefs)   prefs.end_update_batch()
-
-// DQAdd — autohiss client.autohiss_mode levels. Used by both
-// /datum/preference/text/human/autohiss.apply_to_human() and the Login() hook on
-// /mob/living/carbon/human. Previously redefined locally in each file.
-#define AUTOHISS_OFF    0
-#define AUTOHISS_BASIC  1
-#define AUTOHISS_FULL   2
-
 // Values for /datum/preferences/current_tab
 /// Open the character preference window
 #define PREFERENCE_TAB_CHARACTER_PREFERENCES 0

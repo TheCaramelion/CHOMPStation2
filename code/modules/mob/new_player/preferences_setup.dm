@@ -186,54 +186,32 @@
 		mannequin.dna = new /datum/dna(null)
 	copy_to(mannequin, TRUE)
 
-	// DQEdit Start — equip_preview_mob bitfield replaced by two toggles. Keep the same
-	// boolean shape so the rest of this proc is untouched.
-	var/_preview_loadout = read_preference(/datum/preference/toggle/human/preview_loadout)
-	var/_preview_job     = read_preference(/datum/preference/toggle/human/preview_job)
-	if(!_preview_loadout && !_preview_job)
+	if(!equip_preview_mob)
 		return
-	// DQEdit End
 
-	// DQEdit — was 25 lines of department-switch logic duplicated with get_highest_job().
-	// Single call now; the visitor sentinel is the explicit prefer_visitor_role pref. For
-	// the preview the visitor case wants JOB_ALT_VISITOR rather than the get_highest_job
-	// fallback of JOB_ALT_ASSISTANT, so handle that special case here. Fall back to
-	// Intern for new players with no priorities so the preview shows the default kit.
-	//
-	// Loadout-key override: when the player is editing a per-job loadout (e.g. Captain),
-	// the preview should reflect THAT job's effective kit, not whatever their highest
-	// priority happens to be. Otherwise editing the Captain loadout previews as Intern
-	// and the Captain-only items don't show. Default loadout falls through to the
-	// normal highest-job resolution.
 	var/datum/job/previewJob
-	if(client && ispAI(client.mob))
-		previewJob = null  // pAI clients get no preview job equip.
-	else if(read_preference(/datum/preference/toggle/human/prefer_visitor_role))
+	// Determine what job is marked as 'High' priority, and dress them up as such.
+	if(read_preference(/datum/preference/numeric/human/job_civilian_low) & ASSISTANT)
 		previewJob = SSjob.get_job(JOB_ALT_VISITOR)
+	else if(client && ispAI(client.mob))
+		pass() //Don't do anything!
 	else
-		var/_loadout_key = read_preference(/datum/preference/text/human/gear_slot)
-		var/datum/job/loadout_target_job
-		if(istext(_loadout_key) && _loadout_key != "_default")
-			loadout_target_job = SSjob.get_job(_loadout_key)
-		previewJob = loadout_target_job || get_highest_job() || SSjob.get_job(JOB_INTERN)
+		for(var/datum/job/job in SSjob.occupations)
+			var/job_flag
+			switch(job.department_flag)
+				if(CIVILIAN)
+					job_flag = read_preference(/datum/preference/numeric/human/job_civilian_high)
+				if(MEDSCI)
+					job_flag = read_preference(/datum/preference/numeric/human/job_medsci_high)
+				if(ENGSEC)
+					job_flag = read_preference(/datum/preference/numeric/human/job_engsec_high)
+			if(job.flag == job_flag)
+				previewJob = job
+				break
 
-	// DQEdit Start — equip job FIRST, then loadout. Previously the order was loadout-then-job,
-	// but `mob_can_equip` rejects equipping into an occupied slot AND `equip_to_slot_or_del`
-	// silently qdels the rejected item, so a job whose outfit overlapped a loadout slot was
-	// trying to (correctly) refuse to equip — but in practice some items still bled through
-	// due to subtle equip ordering bugs. Equipping the job first and then the loadout means
-	// the loadout layer is unambiguously "on top" and the player's customisations always win.
-	if(_preview_job && previewJob)
-		mannequin.job = previewJob.title
-		var/list/alt_titles = read_preference(/datum/preference/player_alt_titles)
-		previewJob.equip_preview(mannequin, islist(alt_titles) ? alt_titles[previewJob.title] : null)
-
-	if(_preview_loadout && !(previewJob && _preview_job && (previewJob.type == /datum/job/ai || previewJob.type == /datum/job/cyborg)))
-		// DQEdit — migrated gear_list/gear_slot
+	if((equip_preview_mob & EQUIP_PREVIEW_LOADOUT) && !(previewJob && (equip_preview_mob & EQUIP_PREVIEW_JOB) && (previewJob.type == /datum/job/ai || previewJob.type == /datum/job/cyborg)))
 		var/list/equipped_slots = list()
-		// DQEdit — per-job loadout. Use the preview job's title to pick the right loadout
-		// list, falling back to "_default". Was: gear_list[gear_slot] (single shared list).
-		var/list/active_gear_list = get_loadout_for_job(previewJob ? previewJob.title : null)
+		var/list/active_gear_list = LAZYACCESS(gear_list, "[gear_slot]")
 		for(var/thing in active_gear_list)
 			var/datum/gear/G = GLOB.gear_datums[thing]
 			if(G)
@@ -254,51 +232,48 @@
 					continue
 
 				if(G.slot && !(G.slot in equipped_slots))
-					// Evict whatever the job equipped here so the loadout item takes priority.
-					// Skip eviction for slot_tie since it's the multi-allowed accessory slot.
-					if(G.slot != slot_tie)
-						var/obj/item/existing = mannequin.get_equipped_item(G.slot)
-						if(existing)
-							mannequin.drop_from_inventory(existing)
-							qdel(existing)
 					var/metadata = active_gear_list[G.display_name]
 					if(mannequin.equip_to_slot_or_del(G.spawn_item(mannequin, metadata), G.slot))
 						if(G.slot != slot_tie)
 							equipped_slots += G.slot
-	// DQEdit End
+
+	if((equip_preview_mob & EQUIP_PREVIEW_JOB) && previewJob)
+		mannequin.job = previewJob.title
+		var/list/alt_titles = read_preference(/datum/preference/player_alt_titles)
+		previewJob.equip_preview(mannequin, islist(alt_titles) ? alt_titles[previewJob.title] : null)
 
 /datum/preferences/proc/update_preview_icon()
-	// DQEdit — re-entry guard. apply_hooks may write prefs as a side effect; if they call
-	// update_preference_by_type that would invoke us again, infinite-recursing. The fix in
-	// the offending hook is to use write_preference_by_type, but the guard is cheap insurance.
-	if(updating_preview_icon)
-		return
-	updating_preview_icon = TRUE
-	// try/catch resets the guard even if any of the dress/transform/toggle calls runtimes.
-	// Without this a runtime mid-rebuild strands updating_preview_icon = TRUE for the rest
-	// of the session — every subsequent editor change silently no-ops because the guard
-	// blocks the rebuild it should have triggered.
-	try
-		var/mob/living/carbon/human/dummy/mannequin/mannequin = get_mannequin(client_ckey)
-		if(!mannequin.dna) // Special handling for preview icons before SSAtoms has initailized.
-			mannequin.dna = new /datum/dna(null)
-		mannequin.delete_inventory(TRUE)
-		dress_preview_mob(mannequin)
-		mannequin.update_transform()
-		// DQEdit — migrated animations_toggle
-		var/_animations_toggle = read_preference(/datum/preference/toggle/human/animations_toggle)
-		mannequin.toggle_tail(setting = _animations_toggle)
-		mannequin.toggle_wing(setting = _animations_toggle)
+	var/mob/living/carbon/human/dummy/mannequin/mannequin = get_mannequin(client_ckey)
+	if(!mannequin.dna) // Special handling for preview icons before SSAtoms has initailized.
+		mannequin.dna = new /datum/dna(null)
+	mannequin.delete_inventory(TRUE)
+	dress_preview_mob(mannequin)
+	mannequin.update_transform()
+	mannequin.toggle_tail(setting = animations_toggle)
+	mannequin.toggle_wing(setting = animations_toggle)
 
-		update_character_previews(mannequin)
-	catch(var/exception/e)
-		stack_trace("update_preview_icon runtimed: [e.name] at [e.file]:[e.line]")
-	updating_preview_icon = FALSE
+	update_character_previews(mannequin)
 
-// DQEdit — get_highest_job() moved to
-// modular_dq/code/modules/client/preferences/types/character/job_priorities.dm. It now
-// reads from /datum/preference/job_priorities (one sparse assoc) and respects
-// prefer_visitor_role, replacing the bucket-by-department_flag switch that lived here.
+/datum/preferences/proc/get_highest_job()
+	var/datum/job/highJob
+	// Determine what job is marked as 'High' priority, and dress them up as such.
+	if(read_preference(/datum/preference/numeric/human/job_civilian_low) & ASSISTANT)
+		highJob = SSjob.get_job(JOB_ALT_ASSISTANT)
+	else
+		for(var/datum/job/job in SSjob.occupations)
+			var/job_flag
+			switch(job.department_flag)
+				if(CIVILIAN)
+					job_flag = read_preference(/datum/preference/numeric/human/job_civilian_high)
+				if(MEDSCI)
+					job_flag = read_preference(/datum/preference/numeric/human/job_medsci_high)
+				if(ENGSEC)
+					job_flag = read_preference(/datum/preference/numeric/human/job_engsec_high)
+			if(job.flag == job_flag)
+				highJob = job
+				break
+
+	return highJob
 
 /datum/preferences/proc/get_valid_hairstyles(mob/user)
 	var/list/valid_hairstyles = list()
@@ -307,7 +282,7 @@
 		var/datum/sprite_accessory/S = GLOB.hair_styles_list[hairstyle]
 		if(S.name == DEVELOPER_WARNING_NAME)
 			continue
-		if(!(pref_species in S.species_allowed) && (!read_preference(/datum/preference/text/human/custom_base) || !(read_preference(/datum/preference/text/human/custom_base) in S.species_allowed))) // DQEdit — migrated
+		if(!(pref_species in S.species_allowed) && (!custom_base || !(custom_base in S.species_allowed)))
 			continue
 		if(!S.can_be_selected && (!client || !check_rights_for(client, R_HOLDER)))
 			continue
@@ -329,7 +304,7 @@
 			continue
 		if(bio_gender == FEMALE && S.gender == MALE)
 			continue
-		if(!(pref_species in S.species_allowed) && (!read_preference(/datum/preference/text/human/custom_base) || !(read_preference(/datum/preference/text/human/custom_base) in S.species_allowed))) // DQEdit — migrated
+		if(!(pref_species in S.species_allowed) && (!custom_base || !(custom_base in S.species_allowed)))
 			continue
 		if(!S.can_be_selected && (!client || !check_rights_for(client, R_HOLDER)))
 			continue

@@ -33,7 +33,7 @@
 			real_name = name
 			gender = p.read_preference(/datum/preference/choiced/gender/identifying)
 
-			for(var/language in p.read_preference(/datum/preference/alternate_languages)) // DQEdit — migrated
+			for(var/language in p.alternate_languages)
 				add_language(language)
 
 // Proc: Login()

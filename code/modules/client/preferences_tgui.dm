@@ -170,10 +170,15 @@
 			if(!IsGuestKey(ui.user.key))
 				open_copy_dialog(ui.user)
 			. = TRUE
-		// DQEdit — switch_category was for the deleted Bay PreferencesMenu sidebar. The new
-		// DQCharacterSetup window owns its own client-side category state via React useState
-		// and doesn't ping the server to switch tabs. Action removed; if anything still calls
-		// it, falls through to the no-op default.
+		// More specific stuff
+		if("switch_category")
+			var/new_category = params["category"]
+			for(var/datum/category_group/player_setup_category/PS in player_setup.categories)
+				if(PS.name == new_category)
+					player_setup.selected_category = PS
+					update_tgui_static_data(ui.user, ui)
+					break
+			. = TRUE
 		if("game_prefs")
 			ui.user.client.game_options()
 			. = TRUE
@@ -183,22 +188,6 @@
 			update_preview_icon()
 			COOLDOWN_START(src, ui_refresh_cooldown, 5 SECONDS)
 			CallAsync(src, PROC_REF(jiggle_map))
-			. = TRUE
-		// DQAdd — cycle through bgstate_choices. Wired from the Cycle Background button on
-		// the preview pane. Updates the bgstate pref which the preview HUD reads on refresh.
-		if("cycle_background")
-			var/datum/preference/text/human/bgstate/bg = GLOB.preference_entries[/datum/preference/text/human/bgstate]
-			if(!bg)
-				. = TRUE
-				return
-			var/list/choices = bg.bgstate_choices
-			if(!length(choices))
-				. = TRUE
-				return
-			var/current = read_preference(/datum/preference/text/human/bgstate) || choices[1]
-			var/idx = choices.Find(current)
-			idx = (idx % choices.len) + 1
-			update_preference_by_type(/datum/preference/text/human/bgstate, choices[idx])
 			. = TRUE
 
 /datum/preferences/proc/jiggle_map()

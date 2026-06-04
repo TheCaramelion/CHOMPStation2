@@ -20,7 +20,7 @@
 		to_chat(src, span_warning("You can't go invisible when weakened like this."))
 		return
 
-	if(!dq_get_cloaked(src))
+	if(!cloaked)
 		if(species.lleill_energy < energy_cost)
 			to_chat(src, span_warning("You do not have enough energy to do that! You currently have [species.lleill_energy] energy."))
 			return

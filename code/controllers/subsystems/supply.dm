@@ -7,11 +7,23 @@ SUBSYSTEM_DEF(supply)
 	//Initializes at default time
 	flags = SS_NO_TICK_CHECK
 
-	//supply points
+	/// Supply points
 	var/points = 50
-	var/points_per_process = 1.0	// Processes every 20 seconds, so this is 3 per minute
+	/// How many points we get every SSSupply fire.
+	var/points_per_process = 1.0
+	/// How much money we get for every stamped slip we return to Central
 	var/points_per_slip = 2
-	var/points_per_money = 0.02 // 1 point for $50
+	/// How much money one SP is worth in thalers. Shows up in the end of round stats.
+	var/money_per_points = 50
+	/// How much power we've sold this round.
+	var/watts_sold = 0
+	/// How many watts that have to be sold for a point - NYI
+	var/points_per_watt = 10 MEGAWATTS
+	/// How many TTVs we have sold this round.
+	var/warheads_sold = 0
+	/// How many points we've made selling TTVs
+	var/warheads_value = 0
+
 	//control
 	var/ordernum = 0						// Start at zero, it's per-shift tracking
 	var/list/shoppinglist = list()			// Approved orders
@@ -53,11 +65,11 @@ SUBSYSTEM_DEF(supply)
 		return 1
 	if(istype(A,/obj/item/radio/beacon))
 		return 1
-	if(istype(A,/obj/item/perfect_tele_beacon))	//VOREStation Addition: Translocator beacons
-		return 1										//VOREStation Addition: Translocator beacons
-	if(istype(A,/obj/machinery/power/quantumpad)) //	//VOREStation Add: Quantum pads
-		return 1					//VOREStation Add: Quantum pads
-	if(istype(A,/obj/structure/extraction_point )) // CHOMPStation Add: Fulton beacons
+	if(istype(A,/obj/item/perfect_tele_beacon))
+		return 1
+	if(istype(A,/obj/machinery/power/quantumpad))
+		return 1
+	if(istype(A,/obj/structure/extraction_point))
 		return 1
 
 	for(var/atom/B in A.contents)
@@ -70,7 +82,7 @@ SUBSYSTEM_DEF(supply)
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_SUPPLY_SHUTTLE_DEPART, shuttle.shuttle_area)
 	for(var/area/subarea in shuttle.shuttle_area)
 		for(var/atom/movable/MA in subarea)
-			if(MA.anchored)
+			if(MA.anchored && !istype(MA,/obj/mecha))
 				continue
 
 			var/datum/exported_crate/EC = new /datum/exported_crate()
@@ -191,8 +203,6 @@ SUBSYSTEM_DEF(supply)
 			slip.info +="CONTENTS:<br><ul>"
 
 		var/list/contains
-		// DQEdit — any pack may have a variant_pool; pick from it per spawn.
-		var/list/variant_pool_local = SP.variant_pool
 		if(istype(SP,/datum/supply_pack/randomised))
 			var/datum/supply_pack/randomised/SPR = SP
 			contains = list()
@@ -206,15 +216,13 @@ SUBSYSTEM_DEF(supply)
 			if(!typepath)
 				continue
 
-			// DQEdit — contains values are list(count, variant); for randomised, variant comes from pool.
-			var/list/spec = dq_resolve_spawn_value(contains[typepath])
-			var/number_of_items = max(1, spec["count"])
-			var/variant = spec["variant"]
+			var/number_of_items = max(1, contains[typepath])
 			for(var/j = 1 to number_of_items)
-				var/use_variant = variant
-				if(!use_variant && length(variant_pool_local))
-					use_variant = pick(variant_pool_local)
-				var/atom/B2 = spawn_with_variant(typepath, A || pickedloc, use_variant)
+				var/atom/B2
+				if(A)
+					B2 = new typepath(A)
+				else
+					B2 = new typepath(pickedloc)
 
 				if(slip)
 					slip.info += "<li>[B2.name]</li>" //add the item to the manifest
@@ -382,3 +390,6 @@ SUBSYSTEM_DEF(supply)
 	var/ordered_at							// Date and time the order was requested at
 	var/approved_at							// Date and time the order was approved at
 	var/status								// [Requested, Accepted, Denied, Shipped]
+
+/datum/controller/subsystem/supply/proc/points_to_cash(val)
+	return FLOOR(((val * money_per_points)), 1)

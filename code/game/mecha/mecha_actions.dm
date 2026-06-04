@@ -253,7 +253,7 @@
 	button_icon_state = "mech_phasing_off"
 
 /datum/action/innate/mecha/mech_toggle_cloaking/Activate()
-	button_icon_state = "mech_phasing_[dq_get_cloaked(chassis) ? "off" : "on"]"
+	button_icon_state = "mech_phasing_[chassis.cloaked ? "off" : "on"]"
 	build_all_button_icons()
 	chassis.toggle_cloaking()
 
@@ -457,12 +457,12 @@
 	if(usr!=src.occupant)
 		return
 
-	if(dq_get_cloaked(src))
+	if(cloaked)
 		uncloak()
 	else
 		cloak()
 
-	if(dq_get_cloaked(src))
+	if(cloaked)
 		src.occupant_message(span_blue("Enabled cloaking."))
 	else
 		src.occupant_message(span_red("Disabled cloaking."))

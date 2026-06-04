@@ -173,12 +173,6 @@ GLOBAL_LIST_EMPTY(mining_overlay_cache)
 	opacity = 0
 	blocks_air = 0
 	can_build_into_floor = TRUE
-	// DQEdit — under LINDA, a turf with blocks_air=0 but air=null trips
-	// process_cell guards on every neighbor share. Mineral walls start with
-	// air=null (because /turf/open/Initialize skips create_gas_mixture when
-	// blocks_air=1); when we carve them into a floor here we have to give
-	// them a real gas_mixture or any floor that sees this turf in its
-	// adjacency will null-deref during share.
 	if(isnull(air))
 		air = create_gas_mixture()
 	clear_ore_effects()

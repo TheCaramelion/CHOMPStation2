@@ -163,7 +163,6 @@
 
 	moles_per_tick = initial(moles_per_tick) + (manip_rating**2 - 1)
 
-	dq_apply_material_synergies(src) // DQAdd
 /obj/machinery/atmospherics/binary/algae_farm/tgui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
@@ -287,10 +286,9 @@
 /datum/material/algae
 	name = MAT_ALGAE
 	stack_type = /obj/item/stack/material/algae
-	material_class = MATCLASS_ORGANIC // DQEdit
 	icon_colour = "#557722"
 	shard_type = SHARD_STONE_PIECE
-	density = 10 // DQEdit — weight renamed to density.
+	weight = 10
 	hardness = 10
 	sheet_singular_name = "sheet"
 	sheet_plural_name = "sheets"

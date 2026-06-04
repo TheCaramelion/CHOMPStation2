@@ -115,14 +115,14 @@
 
 				tie_msg += " [lowertext(english_list(accessory_descs))]."
 		if(w_uniform.forensic_data?.has_blooddna())
-			msg += span_warning("[p_Theyre()] wearing [icon2html(w_uniform,user.client)] [w_uniform.gender==PLURAL?"some":"a"] [(dq_get_blood_color(w_uniform) != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[w_uniform]'>[w_uniform.name]</a>![tie_msg]")
+			msg += span_warning("[p_Theyre()] wearing [icon2html(w_uniform,user.client)] [w_uniform.gender==PLURAL?"some":"a"] [(w_uniform.blood_color != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[w_uniform]'>[w_uniform.name]</a>![tie_msg]")
 		else
 			msg += "[p_Theyre()] wearing [icon2html(w_uniform,user.client)] <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[w_uniform]'>\a [w_uniform]</a>.[tie_msg]"
 
 	//head
 	if(head && !(skip_gear & EXAMINE_SKIPHELMET) && head.show_examine)
 		if(head.forensic_data?.has_blooddna())
-			msg += span_warning("[p_Theyre()] wearing [icon2html(head,user.client)] [head.gender==PLURAL?"some":"a"] [(dq_get_blood_color(head) != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[head]'>[head.name]</a> on [p_their()] head!")
+			msg += span_warning("[p_Theyre()] wearing [icon2html(head,user.client)] [head.gender==PLURAL?"some":"a"] [(head.blood_color != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[head]'>[head.name]</a> on [p_their()] head!")
 		else
 			msg += "[p_Theyre()] wearing [icon2html(head,user.client)] <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[head]'>\a [head]</a> on [p_their()] head."
 
@@ -139,35 +139,35 @@
 				tie_msg += " [lowertext(english_list(accessory_descs))]."
 
 		if(wear_suit.forensic_data?.has_blooddna())
-			msg += span_warning("[p_Theyre()] wearing [icon2html(wear_suit,user.client)] [wear_suit.gender==PLURAL?"some":"a"] [(dq_get_blood_color(wear_suit) != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[wear_suit]'>[wear_suit.name]</a>![tie_msg]")
+			msg += span_warning("[p_Theyre()] wearing [icon2html(wear_suit,user.client)] [wear_suit.gender==PLURAL?"some":"a"] [(wear_suit.blood_color != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[wear_suit]'>[wear_suit.name]</a>![tie_msg]")
 		else
 			msg += "[p_Theyre()] wearing [icon2html(wear_suit,user.client)] <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[wear_suit]'>\a [wear_suit]</a>.[tie_msg]"
 
 		//suit/armour storage
 		if(s_store && !(skip_gear & EXAMINE_SKIPSUITSTORAGE) && s_store.show_examine)
 			if(s_store.forensic_data?.has_blooddna())
-				msg += span_warning("[p_Theyre()] carrying [icon2html(s_store,user.client)] [s_store.gender==PLURAL?"some":"a"] [(dq_get_blood_color(s_store) != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[s_store]'>[s_store.name]</a> on [p_their()] [wear_suit.name]!")
+				msg += span_warning("[p_Theyre()] carrying [icon2html(s_store,user.client)] [s_store.gender==PLURAL?"some":"a"] [(s_store.blood_color != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[s_store]'>[s_store.name]</a> on [p_their()] [wear_suit.name]!")
 			else
 				msg += "[p_Theyre()] carrying [icon2html(s_store,user.client)] <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[s_store]'>\a [s_store]</a> on [p_their()] [wear_suit.name]."
 
 	//back
 	if(back && !(skip_gear & EXAMINE_SKIPBACKPACK) && back.show_examine)
 		if(back.forensic_data?.has_blooddna())
-			msg += span_warning("[p_They()] [p_have()] [icon2html(back,user.client)] [back.gender==PLURAL?"some":"a"] [(dq_get_blood_color(back) != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[back]'>[back]</a> on [p_their()] back.")
+			msg += span_warning("[p_They()] [p_have()] [icon2html(back,user.client)] [back.gender==PLURAL?"some":"a"] [(back.blood_color != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[back]'>[back]</a> on [p_their()] back.")
 		else
 			msg += "[p_They()] [p_have()] [icon2html(back,user.client)] <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[back]'>\a [back]</a> on [p_their()] back."
 
 	//left hand
 	if(l_hand && l_hand.show_examine)
 		if(l_hand.forensic_data?.has_blooddna())
-			msg += span_warning("[p_Theyre()] holding [icon2html(l_hand,user.client)] [l_hand.gender==PLURAL?"some":"a"] [(dq_get_blood_color(l_hand) != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[l_hand]'>[l_hand.name]</a> in [p_their()] left hand!")
+			msg += span_warning("[p_Theyre()] holding [icon2html(l_hand,user.client)] [l_hand.gender==PLURAL?"some":"a"] [(l_hand.blood_color != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[l_hand]'>[l_hand.name]</a> in [p_their()] left hand!")
 		else
 			msg += "[p_Theyre()] holding [icon2html(l_hand,user.client)] <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[l_hand]'>\a [l_hand]</a> in [p_their()] left hand."
 
 	//right hand
 	if(r_hand && r_hand.show_examine)
 		if(r_hand.forensic_data?.has_blooddna())
-			msg += span_warning("[p_Theyre()] holding [icon2html(r_hand,user.client)] [r_hand.gender==PLURAL?"some":"a"] [(dq_get_blood_color(r_hand) != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[r_hand]'>[r_hand.name]</a> in [p_their()] right hand!")
+			msg += span_warning("[p_Theyre()] holding [icon2html(r_hand,user.client)] [r_hand.gender==PLURAL?"some":"a"] [(r_hand.blood_color != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[r_hand]'>[r_hand.name]</a> in [p_their()] right hand!")
 		else
 			msg += "[p_Theyre()] holding [icon2html(r_hand,user.client)] <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[r_hand]'>\a [r_hand]</a> in [p_their()] right hand."
 
@@ -184,7 +184,7 @@
 
 				gloves_acc_msg += " [lowertext(english_list(accessory_descs))]."
 		if(gloves.forensic_data?.has_blooddna())
-			msg += span_warning("[p_They()] [p_have()] [icon2html(gloves,user.client)] [gloves.gender==PLURAL?"some":"a"] [(dq_get_blood_color(gloves) != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[gloves]'>[gloves.name]</a> on [p_their()] hands![gloves_acc_msg]")
+			msg += span_warning("[p_They()] [p_have()] [icon2html(gloves,user.client)] [gloves.gender==PLURAL?"some":"a"] [(gloves.blood_color != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[gloves]'>[gloves.name]</a> on [p_their()] hands![gloves_acc_msg]")
 		else
 			msg += "[p_They()] [p_have()] [icon2html(gloves,user.client)] <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[gloves]'>\a [gloves]</a> on [p_their()] hands.[gloves_acc_msg]"
 
@@ -205,14 +205,14 @@
 	//belt
 	if(belt && !(skip_gear & EXAMINE_SKIPBELT) && belt.show_examine)
 		if(belt.forensic_data?.has_blooddna())
-			msg += span_warning("[p_They()] [p_have()] [icon2html(belt,user.client)] [belt.gender==PLURAL?"some":"a"] [(dq_get_blood_color(belt) != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[belt]'>[belt.name]</a> about [p_their()] waist!")
+			msg += span_warning("[p_They()] [p_have()] [icon2html(belt,user.client)] [belt.gender==PLURAL?"some":"a"] [(belt.blood_color != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[belt]'>[belt.name]</a> about [p_their()] waist!")
 		else
 			msg += "[p_They()] [p_have()] [icon2html(belt,user.client)] <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[belt]'>\a [belt]</a> about [p_their()] waist."
 
 	//shoes
 	if(shoes && !(skip_gear & EXAMINE_SKIPSHOES) && shoes.show_examine)
 		if(shoes.forensic_data?.has_blooddna())
-			msg += span_warning("[p_Theyre()] wearing [icon2html(shoes,user.client)] [shoes.gender==PLURAL?"some":"a"] [(dq_get_blood_color(shoes) != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[shoes]'>[shoes.name]</a> on [p_their()] feet!")
+			msg += span_warning("[p_Theyre()] wearing [icon2html(shoes,user.client)] [shoes.gender==PLURAL?"some":"a"] [(shoes.blood_color != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[shoes]'>[shoes.name]</a> on [p_their()] feet!")
 		else
 			msg += "[p_Theyre()] wearing [icon2html(shoes,user.client)] <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[shoes]'>\a [shoes]</a> on [p_their()] feet."
 	else if(feet_blood_DNA && !(skip_body & EXAMINE_SKIPHANDS))
@@ -225,14 +225,14 @@
 			descriptor = "in [p_their()] mouth"
 
 		if(wear_mask.forensic_data?.has_blooddna())
-			msg += span_warning("[p_They()] [p_have()] [icon2html(wear_mask,user.client)] [wear_mask.gender==PLURAL?"some":"a"] [(dq_get_blood_color(wear_mask) != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[wear_mask]'>[wear_mask.name]</a> [descriptor]!")
+			msg += span_warning("[p_They()] [p_have()] [icon2html(wear_mask,user.client)] [wear_mask.gender==PLURAL?"some":"a"] [(wear_mask.blood_color != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[wear_mask]'>[wear_mask.name]</a> [descriptor]!")
 		else
 			msg += "[p_They()] [p_have()] [icon2html(wear_mask,user.client)] <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[wear_mask]'>\a [wear_mask]</a> [descriptor]."
 
 	//eyes
 	if(glasses && !(skip_gear & EXAMINE_SKIPEYEWEAR) && glasses.show_examine)
 		if(glasses.forensic_data?.has_blooddna())
-			msg += span_warning("[p_They()] [p_have()] [icon2html(glasses,user.client)] [glasses.gender==PLURAL?"some":"a"] [(dq_get_blood_color(glasses) != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[glasses]'>[glasses]</a> covering [p_their()] eyes!")
+			msg += span_warning("[p_They()] [p_have()] [icon2html(glasses,user.client)] [glasses.gender==PLURAL?"some":"a"] [(glasses.blood_color != "#030303") ? "blood" : "oil"]-stained <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[glasses]'>[glasses]</a> covering [p_their()] eyes!")
 		else
 			msg += "[p_They()] [p_have()] [icon2html(glasses,user.client)] <a href='byond://?src=\ref[src];lookitem_desc_only=\ref[glasses]'>\a [glasses]</a> covering [p_their()] eyes."
 
@@ -383,14 +383,6 @@
 		msg += span_danger("[src] [user.p_have()] \a [implant] sticking out of [p_their()] flesh!")
 	if(digitalcamo)
 		msg += "[p_Theyre()] repulsively uncanny!"
-
-	// DQEdit Start — list externally-visible symptoms from cascading
-	// conditions. Anyone examining sees what's plainly visible (bleeding,
-	// pallor, blue lips, labored breathing). Patient-only sensations
-	// (pain, dizziness) stay hidden.
-	for(var/line in dq_externally_visible_symptom_lines())
-		msg += span_warning(line)
-	// DQEdit End
 
 	if(hasHUD(user,"security"))
 		var/perpname = name

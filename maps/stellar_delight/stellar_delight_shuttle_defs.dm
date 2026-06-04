@@ -159,11 +159,11 @@
 		else
 			mob_announce_cooldown = world.time + 5 MINUTES
 	var/message = "Sensor contact for vessel '[AM.name]' has [going ? "left" : "entered"] ATC control area."
-	//For landables, we need to see if their shuttle is dq_get_cloaked(src)
+	//For landables, we need to see if their shuttle is cloaked
 	if(istype(AM, /obj/effect/overmap/visitable/ship/landable))
 		var/obj/effect/overmap/visitable/ship/landable/SL = AM //Phew
 		var/datum/shuttle/autodock/multi/shuttle = SSshuttles.shuttles[SL.shuttle]
-		if(!istype(shuttle) || !dq_get_cloaked(shuttle)) //Not a multishuttle (the only kind that can cloak) or not dq_get_cloaked(src)
+		if(!istype(shuttle) || !shuttle.cloaked) //Not a multishuttle (the only kind that can cloak) or not cloaked
 			SSatc.msg(message)
 
 	//For ships, it's safe to assume they're big enough to not be sneaky

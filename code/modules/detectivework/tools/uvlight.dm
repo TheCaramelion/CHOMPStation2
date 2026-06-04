@@ -38,17 +38,17 @@
 	if(scanned.len)
 		for(var/atom/O in scanned)
 			O.invisibility = scanned[O]
-			if(dq_get_fluorescent(O) == 2) dq_set_fluorescent(O, 1)
+			if(O.fluorescent == 2) O.fluorescent = 1
 		scanned.Cut()
 	if(stored_alpha.len)
 		for(var/atom/O in stored_alpha)
 			O.alpha = stored_alpha[O]
-			if(dq_get_fluorescent(O) == 2) dq_set_fluorescent(O, 1)
+			if(O.fluorescent == 2) O.fluorescent = 1
 		stored_alpha.Cut()
 	if(reset_objects.len)
 		for(var/obj/item/I in reset_objects)
 			I.cut_overlay(I.blood_overlay)
-			if(dq_get_fluorescent(I) == 2) dq_set_fluorescent(I, 1)
+			if(I.fluorescent == 2) I.fluorescent = 1
 		reset_objects.Cut()
 
 /obj/item/uv_light/process()
@@ -61,8 +61,8 @@
 		for(var/turf/T in range(range, origin))
 			var/use_alpha = 255 - (step_alpha * get_dist(origin, T))
 			for(var/atom/A in T.contents)
-				if(dq_get_fluorescent(A) == 1)
-					dq_set_fluorescent(A, 2) //To prevent light crosstalk.
+				if(A.fluorescent == 1)
+					A.fluorescent = 2 //To prevent light crosstalk.
 					if(A.invisibility)
 						scanned[A] = A.invisibility
 						A.invisibility = INVISIBILITY_NONE
@@ -70,6 +70,6 @@
 						A.alpha = use_alpha
 					if(istype(A, /obj/item))
 						var/obj/item/O = A
-						if(dq_get_was_bloodied(O) && !(O.blood_overlay in O.overlays))
+						if(O.was_bloodied && !(O.blood_overlay in O.overlays))
 							O.add_overlay(O.blood_overlay)
 							reset_objects |= O
