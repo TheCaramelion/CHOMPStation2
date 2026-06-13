@@ -39,6 +39,7 @@
 		src.pixel_x = rand(-6.0, 6) //Randomizes postion
 		src.pixel_y = rand(-6.0, 6)
 	AddElement(/datum/element/sellable/food_snack)
+	AddComponent(/datum/component/germ_sensitive) // OP21 Edit - Germ sensitive
 
 /obj/item/reagent_containers/food/attackby(obj/item/W, mob/user)
 	. = ..()
