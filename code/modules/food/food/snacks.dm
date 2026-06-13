@@ -59,6 +59,9 @@
 	if(nutriment_amt)
 		reagents.add_reagent(REAGENT_ID_NUTRIMENT,(nutriment_amt*2),nutriment_desc)
 
+	if(!(canned || package)) // OP21 Edit - Germ Sensitive
+		AddComponent(/datum/component/germ_sensitive)
+
 //Placeholder for effect that trigger on eating that aren't tied to reagents.
 /obj/item/reagent_containers/food/snacks/proc/On_Consume(mob/living/eater, mob/living/feeder)
 	SEND_SIGNAL(src, COMSIG_FOOD_EATEN, eater, feeder)
@@ -463,6 +466,8 @@
 		if(package_opening_state)
 			flick(package_opening_state, src)
 
+	AddComponent(/datum/component/germ_sensitive) // OP21 Edit - Food goes bad
+
 /obj/item/reagent_containers/food/snacks/proc/uncan(mob/user)
 	canned = FALSE
 	to_chat(user, span_notice("You unseal \the [src] with a crack of metal."))
@@ -470,6 +475,8 @@
 	playsound(loc,opening_sound, rand(10,50), 1)
 	if(canned_open_state)
 		icon_state = canned_open_state
+
+	AddComponent(/datum/component/germ_sensitive) // OP21 Edit - Food goes bad
 
 ////////////////////////////////////////////////////////////////////////////////
 /// FOOD END
